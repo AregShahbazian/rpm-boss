@@ -66,6 +66,42 @@ for f in audio/*.aac; do b=$(basename "$f" .aac | tr ' ' '-' | tr 'A-Z' 'a-z'); 
   ffmpeg -y -i "$f" -ac 1 -ar 16000 "test/fixtures/$b.wav"; done
 ```
 
+## Android
+
+The same web build, wrapped in Capacitor. The app is `RPM Boss`,
+`com.mby4m.rpmboss`.
+
+```bash
+./scripts/apk.sh         # signed release APK
+./scripts/install.sh     # the above, then install and launch it over USB
+./scripts/uninstall.sh   # remove it from the phone
+```
+
+Both build the web app, copy it into the native project and run Gradle, so
+there is no separate sync step to remember. `npm run android:sync` and
+`npm run android:build` do the same without the checks, if you prefer them.
+
+**JDK 21 is required.** Capacitor 8 compiles its own module at source level 21,
+so a Gradle daemon on 17 fails with `invalid source release: 21`. The scripts
+look for a 21 and use it; `JAVA_HOME` wins if you have already set one. The
+path is machine-specific, so it is not committed.
+
+After installing, `adb logcat -d -s RawAudio` says which microphone source the
+app actually opened.
+
+Uninstalling drops the granted microphone permission, which is how to get the
+permission prompt back for testing. `./scripts/uninstall.sh --keep` leaves the
+app's stored data in place.
+
+Release signing reads `android/key.properties`, which is gitignored; copy
+`android/key.properties.example` and fill it in. Without it, release builds fall
+back to debug signing.
+
+Recording is native on Android: a small plugin opens `AudioRecord` on
+`MediaRecorder.AudioSource.UNPROCESSED`, because the browser path cannot get
+unprocessed audio and the processed kind has the engine note gated out of it.
+The plugin logs which source it actually opened.
+
 ## Stack
 
 TypeScript, React, Vite, vitest. Hand-written DSP over `Float32Array`, no

@@ -39,7 +39,9 @@ export function InputScreen() {
 
   return (
     <main className="screen">
-      <h1>rpm-boss</h1>
+      {/* No title: the launcher, the tab and the app switcher all carry the
+          name already, and on a phone the screen is short enough that a
+          heading costs more than it says. */}
       <div className="row">
         <UploadButton disabled={busy} onFile={upload} />
         <RecordButton

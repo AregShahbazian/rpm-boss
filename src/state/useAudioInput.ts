@@ -37,6 +37,12 @@ export function useAudioInput() {
   const player = useRef<Player>(undefined)
   const raf = useRef<number>(undefined)
 
+  const stopPlayback = () => {
+    player.current?.stop()
+    if (raf.current) cancelAnimationFrame(raf.current)
+    setState((s) => (s.playing ? { ...s, playing: false, positionS: 0 } : s))
+  }
+
   const disposePlayer = () => {
     player.current?.dispose()
     player.current = undefined
@@ -87,7 +93,11 @@ export function useAudioInput() {
   }, [])
 
   const startRecording = useCallback(() => {
-    disposePlayer()
+    // Stop playback but keep the player: `setClip` disposes it when a
+    // recording actually arrives. Disposing here left a refused recording, a
+    // denied microphone above all, with a loaded clip whose Play button did
+    // nothing until the file was loaded again.
+    stopPlayback()
     setState((s) => ({ ...s, status: 'recording', elapsedS: 0, error: undefined, playing: false, positionS: 0 }))
     recording.current = record({
       maxS: MAX_RECORD_S,
@@ -111,12 +121,6 @@ export function useAudioInput() {
   const dismissError = useCallback(() => {
     setState((s) => ({ ...s, status: s.clip ? 'loaded' : 'idle', error: undefined }))
   }, [])
-
-  const stopPlayback = () => {
-    player.current?.stop()
-    if (raf.current) cancelAnimationFrame(raf.current)
-    setState((s) => (s.playing ? { ...s, playing: false, positionS: 0 } : s))
-  }
 
   const setSelection = useCallback((selection: Selection) => {
     stopPlayback()
