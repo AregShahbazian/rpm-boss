@@ -41,7 +41,12 @@ Phone testing, with the dev server on the laptop:
 Serves on the LAN and, when a phone is attached over USB with debugging on,
 runs `adb reverse` so `http://localhost:5173` on the phone reaches the laptop.
 The localhost origin is what lets Chrome use the microphone; the LAN address
-works for file upload only.
+works for file upload only. The mapping is lost when the phone reconnects; the
+script re-applies it every few seconds, or do it by hand:
+
+```bash
+adb reverse tcp:5173 tcp:5173
+```
 
 Fixtures are regenerated from the originals with:
 
