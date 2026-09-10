@@ -15,39 +15,39 @@
   },
   "fixtures": {
     "standard-recording-1.wav": {
-      "pulsesPerS": 13.3902,
+      "pulsesPerS": 13.39,
       "peakPulsesPerS": 13.2143,
-      "confidence": 1.0948
+      "confidence": 1.0926
     },
     "standard-recording-2.wav": {
-      "pulsesPerS": 13.263,
+      "pulsesPerS": 13.2625,
       "peakPulsesPerS": 13.2725,
-      "confidence": 1.0019
+      "confidence": 1.0025
     },
     "standard-recording-5.wav": {
-      "pulsesPerS": 14.9655,
+      "pulsesPerS": 14.9651,
       "peakPulsesPerS": 14.738,
-      "confidence": 1.3137
+      "confidence": 1.3133
     },
     "after-cold.wav": {
       "pulsesPerS": 12.0755,
       "peakPulsesPerS": 11.7188,
-      "confidence": 1.0325
+      "confidence": 1.0293
     },
     "after-hot.wav": {
-      "pulsesPerS": 11.8177,
+      "pulsesPerS": 11.8178,
       "peakPulsesPerS": 11.6432,
-      "confidence": 1.0044
+      "confidence": 1.0045
     },
     "before-cold-clutch.wav": {
-      "pulsesPerS": 13.3872,
+      "pulsesPerS": 13.387,
       "peakPulsesPerS": 13.321,
-      "confidence": 0.9164
+      "confidence": 0.9154
     },
     "before-cold.wav": {
-      "pulsesPerS": 12.0519,
+      "pulsesPerS": 12.052,
       "peakPulsesPerS": 11.7801,
-      "confidence": 1.0652
+      "confidence": 1.0647
     }
   }
 }

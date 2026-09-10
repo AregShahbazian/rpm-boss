@@ -2,7 +2,11 @@
  * Exhaust envelope: the slow shape of the combustion pulses, with the engine's
  * tone and the room's rumble taken out.
  *
- * Mirrors `envelope()` in `scripts/reference/analyse.py`.
+ * The band is a highpass cascaded with a lowpass rather than a true Butterworth
+ * bandpass. The two agree to 0.06 rpm across the fixtures, and the cascade is
+ * three sections of one shape instead of a pole-mapping routine. The Python
+ * baseline in `scripts/reference/analyse.py` was changed to match, so the
+ * fixture check grades this chain rather than a near neighbour of it.
  */
 import { filtfilt, highpass, lowpass } from './biquad'
 

@@ -111,7 +111,8 @@ function oddExtend(x: Float64Array, padLength: number): Float64Array {
  * on these positions, so a shifted envelope would be visibly wrong.
  */
 export function filtfilt(sections: readonly Section[], x: Float64Array): Float64Array {
-  const padLength = 3 * (2 * sections.length + 1) - 1
+  // scipy's sosfiltfilt: edge = 3 * ntaps, ntaps = 2 * n_sections + 1.
+  const padLength = 3 * (2 * sections.length + 1)
   if (x.length <= padLength) throw new RangeError(`need more than ${padLength} samples, got ${x.length}`)
 
   const padded = oddExtend(x, padLength)

@@ -26,12 +26,18 @@ describe('analysis over the fixtures', () => {
     expect(spread).toBeLessThan(0.03)
   })
 
-  it.each(analysed)('$fixture.file matches the scipy baseline within 1 %', ({ fixture, result }) => {
+  // The baseline runs the same three sections in the same order, so the two
+  // should agree to rounding. Observed spread is 0.0004 %, and reference.json
+  // is stored to four decimals; 0.01 % leaves a wide margin and still catches
+  // any real drift in a filter stage, which a loose tolerance would hide.
+  const BASELINE_TOLERANCE = 0.0001
+
+  it.each(analysed)('$fixture.file matches the scipy baseline', ({ fixture, result }) => {
     if (!result.ok) throw new Error(result.message)
     const want = reference.fixtures[fixture.file as keyof typeof reference.fixtures]
 
-    expect(Math.abs(result.pulsesPerS - want.pulsesPerS) / want.pulsesPerS).toBeLessThan(0.01)
-    expect(Math.abs(result.peakPulsesPerS - want.peakPulsesPerS) / want.peakPulsesPerS).toBeLessThan(0.01)
+    expect(Math.abs(result.pulsesPerS - want.pulsesPerS) / want.pulsesPerS).toBeLessThan(BASELINE_TOLERANCE)
+    expect(Math.abs(result.peakPulsesPerS - want.peakPulsesPerS) / want.peakPulsesPerS).toBeLessThan(BASELINE_TOLERANCE)
   })
 
   it.each(analysed)('$fixture.file is read with confidence', ({ result }) => {

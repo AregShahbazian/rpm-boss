@@ -29,7 +29,22 @@ FIXTURES = os.path.join(ROOT, "test", "fixtures")
 
 
 def envelope(x):
-    band = butter(2, [BAND_LOW_HZ, BAND_HIGH_HZ], btype="band", fs=SR, output="sos")
+    """Bandpass, rectify, smooth — the same three sections the app applies.
+
+    The band is a 2nd-order highpass cascaded with a 2nd-order lowpass rather
+    than `butter(2, [low, high], btype="band")`. The two agree to 0.06 rpm
+    across the fixtures (the band spans a factor of 33, so the skirts never
+    interact), and the cascade is what src/dsp/envelope.ts ships. They are kept
+    identical on purpose: this file is the baseline the TypeScript is graded
+    against, so it has to grade the chain that actually runs, not a near
+    neighbour of it.
+    """
+    band = np.vstack(
+        [
+            butter(2, BAND_LOW_HZ, btype="high", fs=SR, output="sos"),
+            butter(2, BAND_HIGH_HZ, btype="low", fs=SR, output="sos"),
+        ]
+    )
     smooth = butter(2, ENVELOPE_HZ, btype="low", fs=SR, output="sos")
     return sosfiltfilt(smooth, np.abs(sosfiltfilt(band, x)))
 
