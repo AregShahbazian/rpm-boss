@@ -1,12 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { AudioClip } from '../audio/types'
 import { computePeaks } from '../waveform/peaks'
+import type { TimeRange } from '../waveform/range'
 import { moveBy, setEnd, setStart, type Selection } from '../waveform/selection'
-
-export interface TimeRange {
-  fromS: number
-  toS: number
-}
 
 interface Props {
   clip: AudioClip

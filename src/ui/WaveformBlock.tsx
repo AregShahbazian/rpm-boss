@@ -1,18 +1,7 @@
 import type { AudioClip } from '../audio/types'
 import { selectionLength, type Selection } from '../waveform/selection'
-import { WaveformCanvas, type TimeRange } from './WaveformCanvas'
-
-/** Above this the block shows an overview strip plus a 30 s detail view. */
-export const LONG_CLIP_S = 30
-const DETAIL_SPAN_S = 30
-
-export function detailRange(sel: Selection, durationS: number): TimeRange {
-  if (durationS <= DETAIL_SPAN_S) return { fromS: 0, toS: durationS }
-  const mid = (sel.startS + sel.endS) / 2
-  let fromS = mid - DETAIL_SPAN_S / 2
-  fromS = Math.max(0, Math.min(fromS, durationS - DETAIL_SPAN_S))
-  return { fromS, toS: fromS + DETAIL_SPAN_S }
-}
+import { LONG_CLIP_S, detailRange } from '../waveform/range'
+import { WaveformCanvas } from './WaveformCanvas'
 
 const fmt = (s: number) => {
   const m = Math.floor(s / 60)
