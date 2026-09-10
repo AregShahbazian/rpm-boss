@@ -15,8 +15,11 @@ export function StatusLine({ state, onDismiss }: Props) {
       return <p className="status">Recording… hold the phone near the engine.</p>
     case 'error':
       return (
-        <p className="status error" role="alert" onClick={onDismiss}>
-          {state.error}
+        <p className="status error" role="alert">
+          {state.error}{' '}
+          <button type="button" className="link" onClick={onDismiss}>
+            Dismiss
+          </button>
         </p>
       )
     case 'loaded':

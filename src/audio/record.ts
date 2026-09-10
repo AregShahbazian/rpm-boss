@@ -64,6 +64,10 @@ export function record({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordO
   }
 
   void (async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      onError(new InputError('insecure-origin'))
+      return
+    }
     try {
       stream = await navigator.mediaDevices.getUserMedia(MIC_CONSTRAINTS)
     } catch (e) {
@@ -105,7 +109,13 @@ export function record({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordO
       }
     }
 
-    recorder.start(250)
+    try {
+      recorder.start(250)
+    } catch (e) {
+      cleanup()
+      onError(new InputError('record-failed', e))
+      return
+    }
     onTick?.(0)
     ticker = setInterval(() => onTick?.((performance.now() - startedAt) / 1000), 100)
     hardStop = setTimeout(stop, maxS * 1000)

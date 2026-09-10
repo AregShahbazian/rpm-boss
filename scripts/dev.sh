@@ -12,8 +12,12 @@ set -e
 cd "$(dirname "$0")/.."
 PORT=${PORT:-5173}
 
+reverse() { adb reverse "tcp:$PORT" "tcp:$PORT" >/dev/null 2>&1; }
 if command -v adb >/dev/null && adb get-state >/dev/null 2>&1; then
-  adb reverse "tcp:$PORT" "tcp:$PORT" && echo "adb reverse set: phone http://localhost:$PORT -> laptop"
+  reverse && echo "adb reverse set: phone http://localhost:$PORT -> laptop"
+  # the mapping is lost when the phone reconnects; keep re-applying it
+  ( while sleep 5; do adb get-state >/dev/null 2>&1 && reverse; done ) &
+  trap 'kill $! 2>/dev/null' EXIT
 else
   echo "no phone attached via adb; mic will not work over the LAN address"
 fi

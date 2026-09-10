@@ -26,6 +26,7 @@ h1 { margin: 0; font-size: 1.5rem; }
 .mono { font-variant-numeric: tabular-nums; }
 .status { margin: 0; min-height: 1.5em; }
 .muted { color: var(--muted); }
-.error { color: var(--error); cursor: pointer; }
+.error { color: var(--error); }
+.link { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font: inherit; }
 .player { display: flex; align-items: center; gap: 12px; }
 .player .btn { flex: 0 0 auto; }

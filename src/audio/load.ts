@@ -1,9 +1,14 @@
 import { decodeToClip } from './decode'
-import { InputError, MAX_FILE_BYTES, type AudioClip, type AudioSource } from './types'
+import { InputError, MAX_FILE_BYTES, SAMPLE_RATE, type AudioClip, type AudioSource } from './types'
 
-/** Decode any browser-decodable audio container to the app clip. Browser only. */
+/**
+ * Decode any browser-decodable audio container to the app clip. Browser only.
+ * The AudioContext is created at the app rate so the browser's own resampler
+ * delivers 16 kHz directly; `decodeToClip` then only mixes to mono. Should the
+ * WebView ignore the requested rate, `decodeToClip` still resamples.
+ */
 export async function decodeBuffer(buf: ArrayBuffer, source: AudioSource): Promise<AudioClip> {
-  const ctx = new AudioContext()
+  const ctx = new AudioContext({ sampleRate: SAMPLE_RATE })
   try {
     let decoded: AudioBuffer
     try {
