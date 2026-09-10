@@ -12,10 +12,15 @@ export interface TimeRange {
  * of detail — both tuned against a 360 px phone canvas, which is 12 px/s. On a
  * landscape screen the canvas is more than twice that wide and the same 30 s
  * wasted the extra pixels; on a narrower one it was already too dense. Deriving
- * the span from the measured width keeps the density constant instead, and
- * reproduces the old 30 s exactly at the width it was chosen for.
+ * the span from the measured width keeps the density constant instead.
+ *
+ * 25 px/s, not the 12 the old constants implied. At 12 a widened waveform put
+ * 63 seconds on screen at once, which is a great deal of context for placing a
+ * ten second window and makes the handles hard to land. At 25 a ten second
+ * window is 250 px wide wherever it is drawn, which is enough to grab an edge,
+ * and the detail view shows two to three windows of context rather than six.
  */
-export const MIN_PX_PER_S = 12
+export const MIN_PX_PER_S = 25
 
 /**
  * How many seconds the detail view shows at a given canvas width.

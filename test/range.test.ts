@@ -1,21 +1,24 @@
 import { describe, expect, it } from 'vitest'
 import { detailSpanS, MIN_PX_PER_S, nextDetailRange } from '../src/waveform/range'
 
-/** The span the old constants assumed: a 360 px phone canvas at 12 px/s. */
+/** A span wide enough to hold more than one window, for the scrolling tests. */
 const SPAN = 30
 
 describe('detailSpanS', () => {
-  it('reproduces the old 30 s at the width the constant assumed', () => {
-    expect(detailSpanS(360)).toBe(SPAN)
+  it('holds the density the crop needs', () => {
+    // A ten second window is 250 px wide at any canvas size.
+    expect(detailSpanS(360)).toBeCloseTo(14.4)
+    expect(360 / detailSpanS(360)).toBeCloseTo(MIN_PX_PER_S)
   })
 
   it('keeps the density constant as the canvas grows', () => {
     expect(detailSpanS(760)).toBeCloseTo(760 / MIN_PX_PER_S)
-    expect(detailSpanS(1080)).toBeCloseTo(90)
+    expect(detailSpanS(1080)).toBeCloseTo(43.2)
   })
 
   it('never shows less than a full window', () => {
     expect(detailSpanS(60)).toBe(10)
+    expect(detailSpanS(240)).toBe(10)
   })
 
   it('is infinite before the canvas has been measured', () => {
