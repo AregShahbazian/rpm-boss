@@ -14,7 +14,6 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg); }
 .screen { max-width: 480px; margin: 0 auto; padding: 24px 16px; display: flex; flex-direction: column; gap: 16px; }
-h1 { margin: 0; font-size: 1.5rem; }
 .row { display: flex; gap: 12px; flex-wrap: wrap; }
 .btn {
   min-height: 48px; padding: 0 20px; font-size: 1rem; border: 0; border-radius: 10px;
