@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import type { AudioClip } from '../audio/types'
 import { detailSpanS, nextDetailRange, type TimeRange } from '../waveform/range'
 import { selectionLength, type Selection } from '../waveform/selection'
@@ -35,10 +35,8 @@ interface Props {
  * sliding out from under the finger.
  */
 export function WaveformBlock({ clip, selection, onChange, positionS, marks }: Props) {
-  const overviewBox = useRef<HTMLDivElement>(null)
-  const detailBox = useRef<HTMLDivElement>(null)
-  const overview = useElementSize(overviewBox)
-  const detail = useElementSize(detailBox)
+  const [overviewBox, overview] = useElementSize()
+  const [detailBox, detail] = useElementSize()
 
   const spanS = detailSpanS(detail.width)
   const long = clip.durationS > spanS

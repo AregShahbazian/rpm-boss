@@ -141,7 +141,10 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
 .player .btn { flex: 0 0 auto; }
 .player .mono { flex: 1 1 auto; }
 
-.wave { position: relative; inline-size: 100%; }
+/* No explicit width: as a flex child it already stretches, and 100% plus the
+   detail view's side margins overflowed to the right instead of insetting
+   both edges. */
+.wave { position: relative; }
 /* Out of flow: the canvas is told its size by the box above it, so letting its
    intrinsic size feed back into that box is a loop, and a grid row a few
    pixels taller than it should be. */
