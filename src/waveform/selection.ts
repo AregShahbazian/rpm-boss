@@ -1,10 +1,13 @@
+import { MIN_CLIP_S } from '../audio/types'
+
 /** A time window inside a clip, in absolute seconds. */
 export interface Selection {
   startS: number
   endS: number
 }
 
-export const MIN_WINDOW_S = 1
+/** Same number as the load gate: a loaded clip can always fill one window. */
+export const MIN_WINDOW_S = MIN_CLIP_S
 export const MAX_WINDOW_S = 10
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi)

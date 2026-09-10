@@ -1,13 +1,32 @@
+import { useState } from 'react'
+import { useAnalysis } from '../state/useAnalysis'
 import { useAudioInput } from '../state/useAudioInput'
+import type { ExpectedRange } from '../dsp/types'
+import { ExportButton } from './ExportButton'
+import { MicCheck } from './MicCheck'
 import { Player } from './Player'
+import { RangeFields } from './RangeFields'
+import { ResultLine } from './ResultLine'
 import { RecordButton } from './RecordButton'
 import { StatusLine } from './StatusLine'
 import { UploadButton } from './UploadButton'
 import { WaveformBlock } from './WaveformBlock'
 
 export function InputScreen() {
-  const { state, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection } = useAudioInput()
+  const { state, getWindowClip, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection } =
+    useAudioInput()
+  const [range, setRange] = useState({ minRpm: '', maxRpm: '' })
+  // Any change to the clip or the window clears the last result.
+  const windowKey = `${state.clipId}:${state.selection.startS}:${state.selection.endS}`
+  const { analysis, analyse } = useAnalysis(windowKey)
+
   const busy = state.status === 'decoding' || state.status === 'recording'
+  const running = analysis.status === 'running'
+
+  const onCalculate = () => {
+    const clip = getWindowClip()
+    if (clip) void analyse(clip, windowKey, parseRange(range))
+  }
 
   return (
     <main className="screen">
@@ -23,6 +42,7 @@ export function InputScreen() {
         />
       </div>
       <StatusLine state={state} onDismiss={dismissError} />
+      <MicCheck />
       {state.clip && state.status !== 'recording' && (
         <>
           <WaveformBlock
@@ -37,8 +57,22 @@ export function InputScreen() {
             durationS={state.selection.endS - state.selection.startS}
             onToggle={togglePlay}
           />
+          <RangeFields {...range} disabled={running} onChange={setRange} />
+          <button type="button" className="btn" disabled={busy || running} onClick={onCalculate}>
+            Calculate
+          </button>
+          <ResultLine analysis={analysis} />
+          <ExportButton clip={state.clip} selection={state.selection} />
         </>
       )}
     </main>
   )
+}
+
+/** Both fields filled and sane, or no range at all. */
+function parseRange(fields: { minRpm: string; maxRpm: string }): ExpectedRange | undefined {
+  const minRpm = Number(fields.minRpm)
+  const maxRpm = Number(fields.maxRpm)
+  if (!fields.minRpm || !fields.maxRpm || !(minRpm > 0) || !(maxRpm > minRpm)) return undefined
+  return { minRpm, maxRpm }
 }

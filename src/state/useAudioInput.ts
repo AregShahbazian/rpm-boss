@@ -13,6 +13,12 @@ export type InputStatus = 'idle' | 'decoding' | 'loaded' | 'recording' | 'error'
 export interface AudioInputState {
   status: InputStatus
   clip?: AudioClip
+  /**
+   * Rises with every clip loaded. Names are not unique — two recordings in the
+   * same minute share one, and a file can be uploaded twice — so anything that
+   * has to notice "this is a different clip now" keys off this instead.
+   */
+  clipId: number
   selection: Selection
   elapsedS: number
   error?: string
@@ -26,7 +32,7 @@ export interface AudioInputState {
  * any  -> error -> idle (next action)
  */
 export function useAudioInput() {
-  const [state, setState] = useState<AudioInputState>({ status: 'idle', selection: { startS: 0, endS: 0 }, elapsedS: 0, playing: false, positionS: 0 })
+  const [state, setState] = useState<AudioInputState>({ status: 'idle', clipId: 0, selection: { startS: 0, endS: 0 }, elapsedS: 0, playing: false, positionS: 0 })
   const recording = useRef<Recording>(undefined)
   const player = useRef<Player>(undefined)
   const raf = useRef<number>(undefined)
@@ -59,7 +65,15 @@ export function useAudioInput() {
     const p = createPlayer(clip)
     p.onEnded(() => setState((s) => ({ ...s, playing: false, positionS: 0 })))
     player.current = p
-    setState({ status: 'loaded', clip, selection: defaultSelection(clip.durationS), elapsedS: 0, playing: false, positionS: 0 })
+    setState((s) => ({
+      status: 'loaded',
+      clip,
+      clipId: s.clipId + 1,
+      selection: defaultSelection(clip.durationS),
+      elapsedS: 0,
+      playing: false,
+      positionS: 0,
+    }))
   }
 
   const upload = useCallback(async (file: File) => {
