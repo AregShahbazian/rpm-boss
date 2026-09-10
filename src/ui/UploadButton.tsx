@@ -21,7 +21,7 @@ export function UploadButton({ disabled, onFile }: Props) {
         }}
       />
       <button type="button" className="btn" disabled={disabled} onClick={() => input.current?.click()}>
-        Upload audio
+        Open audio
       </button>
     </>
   )

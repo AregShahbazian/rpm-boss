@@ -38,16 +38,15 @@ export const MAX_FILE_BYTES = 50 * 1024 * 1024
 export const MIN_CLIP_S = MIN_ANALYSIS_S
 
 export const INPUT_ERROR_MESSAGES: Record<InputErrorCode, string> = {
-  'too-large': 'That file is over 50 MB. Pick a shorter recording.',
-  undecodable: "Couldn't read that file. Use WAV, MP3, AAC/M4A or OGG.",
-  'mic-denied': 'Microphone access was denied. Allow it in the browser and try again.',
-  'no-mic': 'No microphone found on this device.',
-  'insecure-origin': 'The microphone only works over https or localhost. Open the app from a secure address.',
-  'too-short': `That clip is too short. Record or pick at least ${MIN_CLIP_S} ${MIN_CLIP_S === 1 ? 'second' : 'seconds'}.`,
-  'no-audio': 'No audio was captured. Check that no other app is using the microphone and try again.',
+  'too-large': 'Too big. Use a recording under 50 MB.',
+  undecodable: 'Cannot open that file. Use WAV, MP3, AAC/M4A or OGG.',
+  'mic-denied': 'Microphone blocked. Allow it, then try again.',
+  'no-mic': 'No microphone on this device.',
+  'insecure-origin': 'The microphone needs a secure address (https).',
+  'too-short': `Record at least ${MIN_CLIP_S} ${MIN_CLIP_S === 1 ? 'second' : 'seconds'}.`,
+  'no-audio': 'Nothing was recorded. Close other apps using the microphone.',
   'record-failed': 'Recording failed. Try again.',
-  'capture-blocked':
-    'This browser will not record without the processing that mutes engine sound. Record in Chrome, or upload a file instead.',
+  'capture-blocked': 'This browser cannot record engine sound. Use Chrome, or open a file.',
 }
 
 export class InputError extends Error {

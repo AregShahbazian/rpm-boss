@@ -8,11 +8,11 @@ interface Props {
 export function StatusLine({ state, onDismiss }: Props) {
   switch (state.status) {
     case 'idle':
-      return <p className="status muted">Upload a recording or record the engine.</p>
+      return <p className="status muted">Open a recording, or record the engine.</p>
     case 'decoding':
       return <p className="status">Decoding…</p>
     case 'recording':
-      return <p className="status">Recording… hold the phone near the engine.</p>
+      return <p className="status">Recording. Hold the phone near the engine.</p>
     case 'error':
       return (
         <p className="status error" role="alert">

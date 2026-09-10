@@ -24,9 +24,9 @@ export const MIN_CONFIDENCE = 0.45
 export type AnalysisErrorCode = 'too-short' | 'no-signal' | 'worker-failed'
 
 export const ANALYSIS_ERROR_MESSAGES: Record<AnalysisErrorCode, string> = {
-  'too-short': `The selected window is under ${MIN_ANALYSIS_S} seconds. Widen it and try again.`,
-  'no-signal': "Couldn't hear a steady engine in that section. Try a clearer part of the recording.",
-  'worker-failed': "Couldn't run the analysis. Reload the page and try again.",
+  'too-short': `Choose at least ${MIN_ANALYSIS_S} seconds.`,
+  'no-signal': 'No steady engine sound here. Try another part.',
+  'worker-failed': 'Analysis could not start. Reload the page.',
 }
 
 export interface ExpectedRange {
