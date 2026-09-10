@@ -74,6 +74,7 @@ The same web build, wrapped in Capacitor. The app is `RPM Boss`,
 ```bash
 ./scripts/apk.sh         # signed release APK
 ./scripts/install.sh     # the above, then install and launch it over USB
+./scripts/uninstall.sh   # remove it from the phone
 ```
 
 Both build the web app, copy it into the native project and run Gradle, so
@@ -87,6 +88,10 @@ path is machine-specific, so it is not committed.
 
 After installing, `adb logcat -d -s RawAudio` says which microphone source the
 app actually opened.
+
+Uninstalling drops the granted microphone permission, which is how to get the
+permission prompt back for testing. `./scripts/uninstall.sh --keep` leaves the
+app's stored data in place.
 
 Release signing reads `android/key.properties`, which is gitignored; copy
 `android/key.properties.example` and fill it in. Without it, release builds fall
