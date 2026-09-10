@@ -11,6 +11,7 @@ import { Player } from './Player'
 import { RangeFields } from './RangeFields'
 import { ResultView } from './ResultView'
 import { RecordButton } from './RecordButton'
+import { SampleButton } from './SampleButton'
 import { StatusLine } from './StatusLine'
 import { UploadButton } from './UploadButton'
 import { WaveformBlock } from './WaveformBlock'
@@ -54,6 +55,7 @@ export function InputScreen() {
           onStart={startRecording}
           onStop={stopRecording}
         />
+        <SampleButton disabled={busy} onFile={upload} />
       </div>
       <LanguagePicker />
       <StatusLine state={state} onDismiss={dismissError} />

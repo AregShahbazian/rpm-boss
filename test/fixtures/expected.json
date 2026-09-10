@@ -2,12 +2,12 @@
   "_note": "Single-cylinder 4-stroke at idle. expectedRpm = mean of the two independent estimates in audio/combustion-counts.md; toleranceRpm = max(|A-B|, half of B's min-max spread) + 20.",
   "engine": { "strokes": 4, "cylinders": 1 },
   "fixtures": [
-    { "file": "standard-recording-1.wav", "source": "Standard recording 1.aac", "durationS": 11.2, "expectedRpm": 1598, "toleranceRpm": 78, "pulsesPerS": { "peakCount": 13.2, "autocorr": 13.4 } },
-    { "file": "standard-recording-2.wav", "source": "Standard recording 2.aac", "durationS": 9.5,  "expectedRpm": 1589, "toleranceRpm": 73, "pulsesPerS": { "peakCount": 13.3, "autocorr": 13.2 } },
-    { "file": "standard-recording-5.wav", "source": "Standard recording 5.aac", "durationS": 9.8,  "expectedRpm": 1783, "toleranceRpm": 50, "pulsesPerS": { "peakCount": 14.7, "autocorr": 15.0 } },
-    { "file": "after-cold.wav",           "source": "after cold.aac",           "durationS": 6.4,  "expectedRpm": 1427, "toleranceRpm": 62, "pulsesPerS": { "peakCount": 11.7, "autocorr": 12.1 } },
-    { "file": "after-hot.wav",            "source": "after hot.aac",            "durationS": 6.6,  "expectedRpm": 1409, "toleranceRpm": 43, "pulsesPerS": { "peakCount": 11.6, "autocorr": 11.8 } },
-    { "file": "before-cold-clutch.wav",   "source": "before cold clutch.aac",   "durationS": 15.9, "expectedRpm": 1603, "toleranceRpm": 73, "pulsesPerS": { "peakCount": 13.3, "autocorr": 13.4 } },
-    { "file": "before-cold.wav",          "source": "before cold.aac",          "durationS": 8.1,  "expectedRpm": 1430, "toleranceRpm": 52, "pulsesPerS": { "peakCount": 11.8, "autocorr": 12.0 } }
+    { "file": "standard-recording-1.wav", "source": "sample-1.m4a", "durationS": 11.2, "expectedRpm": 1598, "toleranceRpm": 78, "pulsesPerS": { "peakCount": 13.2, "autocorr": 13.4 } },
+    { "file": "standard-recording-2.wav", "source": "sample-2.m4a", "durationS": 9.5,  "expectedRpm": 1589, "toleranceRpm": 73, "pulsesPerS": { "peakCount": 13.3, "autocorr": 13.2 } },
+    { "file": "standard-recording-5.wav", "source": "sample-3.m4a", "durationS": 9.8,  "expectedRpm": 1783, "toleranceRpm": 50, "pulsesPerS": { "peakCount": 14.7, "autocorr": 15.0 } },
+    { "file": "after-cold.wav",           "source": "sample-4.m4a",           "durationS": 6.4,  "expectedRpm": 1427, "toleranceRpm": 62, "pulsesPerS": { "peakCount": 11.7, "autocorr": 12.1 } },
+    { "file": "after-hot.wav",            "source": "sample-5.m4a",            "durationS": 6.6,  "expectedRpm": 1409, "toleranceRpm": 43, "pulsesPerS": { "peakCount": 11.6, "autocorr": 11.8 } },
+    { "file": "before-cold-clutch.wav",   "source": "sample-6.m4a",   "durationS": 15.9, "expectedRpm": 1603, "toleranceRpm": 73, "pulsesPerS": { "peakCount": 13.3, "autocorr": 13.4 } },
+    { "file": "before-cold.wav",          "source": "sample-7.m4a",          "durationS": 8.1,  "expectedRpm": 1430, "toleranceRpm": 52, "pulsesPerS": { "peakCount": 11.8, "autocorr": 12.0 } }
   ]
 }

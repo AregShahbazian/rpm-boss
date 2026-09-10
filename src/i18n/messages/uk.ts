@@ -13,6 +13,7 @@ export const messages: Messages = {
   statusLoaded: "Завантажено: {name} · {duration}",
   dismiss: "Закрити",
   openAudio: "Відкрити аудіо",
+  pickSample: "Спробувати приклад",
   record: "Записати",
   stopRecording: "Стоп",
   play: "Прослухати",

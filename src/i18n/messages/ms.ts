@@ -13,6 +13,7 @@ export const messages: Messages = {
   statusLoaded: "Dimuatkan: {name} · {duration}",
   dismiss: "Tutup",
   openAudio: "Buka audio",
+  pickSample: "Cuba sampel",
   record: "Rakam",
   stopRecording: "Berhenti",
   play: "Main",

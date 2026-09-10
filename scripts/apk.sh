@@ -1,13 +1,21 @@
 #!/bin/sh
 # Build a signed release APK.
 #
-#   ./scripts/apk.sh
+#   ./scripts/apk.sh              a release APK
+#   ./scripts/apk.sh --samples    the same, carrying the demo recordings
 #
 # Builds the web app, copies it into the native project, and runs Gradle. The
 # APK is signed with the key named in android/key.properties; without that file
 # Gradle falls back to debug signing and the APK still builds.
 set -e
 cd "$(dirname "$0")/.."
+
+# The bundled engine recordings, off unless asked for. See README.
+if [ "$1" = "--samples" ]; then
+  VITE_SAMPLES=1
+  export VITE_SAMPLES
+  echo "Samples: bundled."
+fi
 
 APK=android/app/build/outputs/apk/release/app-release.apk
 

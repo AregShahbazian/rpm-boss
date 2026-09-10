@@ -13,6 +13,7 @@ export const messages: Messages = {
   statusLoaded: "Na-load: {name} · {duration}",
   dismiss: "Sirad-i",
   openAudio: "Ablihi ang audio",
+  pickSample: "Sulayi ang sample",
   record: "Irekord",
   stopRecording: "Hunong",
   play: "Patugtoga",

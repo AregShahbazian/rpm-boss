@@ -13,6 +13,7 @@ export const messages: Messages = {
   statusLoaded: "لوڈ ہو گیا: {name} · {duration}",
   dismiss: "بند کریں",
   openAudio: "آڈیو کھولیں",
+  pickSample: "نمونہ آزمائیں",
   record: "ریکارڈ",
   stopRecording: "روکیں",
   play: "چلائیں",
