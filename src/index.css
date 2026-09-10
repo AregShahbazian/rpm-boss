@@ -25,7 +25,7 @@
    * ceiling leaves the waveform more than 500 px on a 844 px screen, which is
    * where the marks stop being a fence and start being countable.
    */
-  --col: clamp(300px, 34vw, 360px);
+  --col: clamp(300px, 34vw, 460px);
 }
 
 /*
@@ -100,10 +100,16 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
        height to hold everything the portrait screen holds in 640. */
     --gap: 8px;
     padding: 10px;
-    /* Above phone size the app stops growing and centres: it has a fixed
-       amount to show, and a waveform stretched to fill a tablet is worse
-       than the margin. */
-    align-content: center;
+    /*
+     * The leftover height goes to the result row, which means it goes to the
+     * waveform too: the wave spans rows one to four, so its height is whatever
+     * those rows come to. Centring a block of content-sized rows instead left
+     * 60 % of a tablet empty and the waveform a 185 px strip. The control
+     * column spreads out with it — buttons at the top, Calculate at the
+     * bottom, the number with air around it — and `.wave-detail` carries the
+     * cap that stops the waveform growing without limit.
+     */
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
     grid-template-columns: minmax(0, var(--col)) minmax(0, 1fr);
     grid-template-areas:
       'source wave'
@@ -122,7 +128,12 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
   .screen-empty {
     max-inline-size: 480px;
     margin-inline: auto;
+    align-content: center;
     grid-template-columns: minmax(0, 1fr);
+    /* Two tracks, not five: the flexible row above belongs to a result that
+       does not exist yet, and left in place it would push the buttons off the
+       top of the screen. */
+    grid-template-rows: auto auto;
     grid-template-areas: 'source' 'status';
   }
   .area-source.row { gap: 8px; }
