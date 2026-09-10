@@ -66,6 +66,31 @@ for f in audio/*.aac; do b=$(basename "$f" .aac | tr ' ' '-' | tr 'A-Z' 'a-z'); 
   ffmpeg -y -i "$f" -ac 1 -ar 16000 "test/fixtures/$b.wav"; done
 ```
 
+## Android
+
+The same web build, wrapped in Capacitor. The app is `RPM Boss`,
+`com.mby4m.rpmboss`.
+
+```bash
+npm run android:sync     # build the web app and copy it into android/
+npm run android:build    # the above, then a release APK
+```
+
+**JDK 21 is required.** Capacitor 8 compiles its own module at source level 21,
+so a Gradle daemon on 17 fails with `invalid source release: 21`. Point
+`JAVA_HOME` at a 21 before building, or set `org.gradle.java.home` in your own
+`~/.gradle/gradle.properties`. The path is machine-specific, so it is not
+committed.
+
+Release signing reads `android/key.properties`, which is gitignored; copy
+`android/key.properties.example` and fill it in. Without it, release builds fall
+back to debug signing.
+
+Recording is native on Android: a small plugin opens `AudioRecord` on
+`MediaRecorder.AudioSource.UNPROCESSED`, because the browser path cannot get
+unprocessed audio and the processed kind has the engine note gated out of it.
+The plugin logs which source it actually opened.
+
 ## Stack
 
 TypeScript, React, Vite, vitest. Hand-written DSP over `Float32Array`, no

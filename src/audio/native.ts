@@ -27,7 +27,7 @@ export interface StopResult {
 }
 
 interface RawAudioPlugin {
-  start(): Promise<StartResult>
+  start(options: { maxS: number }): Promise<StartResult>
   stop(): Promise<StopResult>
 }
 
@@ -52,9 +52,14 @@ export function pcm16ToFloat(bytes: Uint8Array): Float32Array {
   return out
 }
 
+/**
+ * Capacitor keeps a rejection's message and its code apart, and the plugin puts
+ * the app's own error code in the code. Reading the message instead is how a
+ * denied microphone came back as "Recording failed".
+ */
 function toError(e: unknown): InputError {
-  const message = (e as { message?: string })?.message ?? ''
-  if (message === 'mic-denied' || message === 'no-mic') return new InputError(message)
+  const code = (e as { code?: string })?.code
+  if (code === 'mic-denied' || code === 'no-mic' || code === 'no-audio') return new InputError(code)
   return new InputError('record-failed', e)
 }
 
@@ -103,7 +108,7 @@ export function recordNative({ maxS = MAX_RECORD_S, onTick, onDone, onError }: R
 
   void (async () => {
     try {
-      const started = await RawAudio.start()
+      const started = await RawAudio.start({ maxS })
       lastSource = started.source
       if (import.meta.env.DEV) console.info('[rec] native source', started)
     } catch (e) {
@@ -111,7 +116,15 @@ export function recordNative({ maxS = MAX_RECORD_S, onTick, onDone, onError }: R
       onError(toError(e))
       return
     }
-    if (stopped) return
+    if (stopped) {
+      // Stop was pressed while the microphone was still opening. The native
+      // side is recording now with nobody left to end it, so end it here;
+      // without this the microphone stays hot and every later take is refused
+      // as busy.
+      finished = true
+      void RawAudio.stop().catch(() => undefined)
+      return
+    }
 
     const startedAt = performance.now()
     onTick?.(0)

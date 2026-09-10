@@ -13,6 +13,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
 
 import java.io.ByteArrayOutputStream;
 
@@ -47,13 +48,35 @@ public class RawAudioPlugin extends Plugin {
     };
 
     private static final int[] RATES = { 16000, 48000, 44100 };
+    private static final int CHUNK_BYTES = 4096;
+    private static final int BYTES_PER_FRAME = 2;
+    private static final double DEFAULT_MAX_S = 10;
 
-    private AudioRecord recorder;
-    private Thread reader;
-    private volatile boolean running;
-    private ByteArrayOutputStream captured;
-    private int activeSource;
-    private int activeRate;
+    /**
+     * One recording. Everything the reader thread touches lives here and is
+     * handed to it as a final local, so a take that is being torn down can
+     * never be confused with the next one.
+     */
+    private static final class Take {
+        final AudioRecord recorder;
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final int source;
+        final int rate;
+        final int maxBytes;
+        volatile boolean running = true;
+        /** A negative AudioRecord error code, or 0 if the read loop was healthy. */
+        volatile int readError = 0;
+        Thread reader;
+
+        Take(AudioRecord recorder, int source, int rate, int maxBytes) {
+            this.recorder = recorder;
+            this.source = source;
+            this.rate = rate;
+            this.maxBytes = maxBytes;
+        }
+    }
+
+    private Take take;
 
     private static String sourceName(int source) {
         if (source == MediaRecorder.AudioSource.UNPROCESSED) return "UNPROCESSED";
@@ -70,31 +93,41 @@ public class RawAudioPlugin extends Plugin {
         begin(call);
     }
 
-    @com.getcapacitor.annotation.PermissionCallback
+    @PermissionCallback
     private void permissionCallback(PluginCall call) {
         if (getPermissionState("microphone") != PermissionState.GRANTED) {
-            call.reject("denied", "mic-denied");
+            // The message carries the code the web layer maps on; Capacitor
+            // keeps `message` and `code` apart across the bridge, so the two
+            // are deliberately the same string.
+            call.reject("mic-denied", "mic-denied");
             return;
         }
         begin(call);
     }
 
-    private void begin(PluginCall call) {
-        if (running) {
-            call.reject("busy", "record-failed");
+    private synchronized void begin(PluginCall call) {
+        if (take != null) {
+            call.reject("record-failed", "record-failed");
             return;
         }
 
-        for (int source : SOURCES) {
-            for (int rate : RATES) {
+        double maxS = call.getDouble("maxS", DEFAULT_MAX_S);
+        AudioRecord opened = null;
+        int source = 0;
+        int rate = 0;
+
+        outer:
+        for (int candidateSource : SOURCES) {
+            for (int candidateRate : RATES) {
                 int minBuffer = AudioRecord.getMinBufferSize(
-                    rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
+                    candidateRate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
                 );
                 if (minBuffer <= 0) continue;
                 AudioRecord candidate;
                 try {
                     candidate = new AudioRecord(
-                        source, rate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, minBuffer * 4
+                        candidateSource, candidateRate, AudioFormat.CHANNEL_IN_MONO,
+                        AudioFormat.ENCODING_PCM_16BIT, minBuffer * 4
                     );
                 } catch (IllegalArgumentException | SecurityException e) {
                     continue;
@@ -103,42 +136,52 @@ public class RawAudioPlugin extends Plugin {
                     candidate.release();
                     continue;
                 }
-                recorder = candidate;
-                activeSource = source;
-                activeRate = rate;
-                break;
+                opened = candidate;
+                source = candidateSource;
+                rate = candidateRate;
+                break outer;
             }
-            if (recorder != null) break;
         }
 
-        if (recorder == null) {
+        if (opened == null) {
             call.reject("no-mic", "no-mic");
             return;
         }
 
-        captured = new ByteArrayOutputStream();
-        running = true;
+        // A native cap as well as the web one. The web hard stop is a JS
+        // timer, and Android suspends those when the activity is stopped, so
+        // switching apps mid-recording would otherwise hold the microphone and
+        // grow the buffer with nobody left to stop it.
+        int maxBytes = (int) Math.ceil(maxS * rate) * BYTES_PER_FRAME;
+        final Take t = new Take(opened, source, rate, maxBytes);
+
         try {
-            recorder.startRecording();
+            t.recorder.startRecording();
         } catch (IllegalStateException e) {
-            release();
+            t.recorder.release();
             call.reject("record-failed", "record-failed");
             return;
         }
+        take = t;
 
-        final int chunk = 4096;
-        reader = new Thread(() -> {
-            byte[] buffer = new byte[chunk];
-            while (running) {
-                int read = recorder.read(buffer, 0, chunk);
+        t.reader = new Thread(() -> {
+            byte[] buffer = new byte[CHUNK_BYTES];
+            while (t.running) {
+                int read = t.recorder.read(buffer, 0, CHUNK_BYTES);
                 if (read > 0) {
-                    synchronized (captured) {
-                        captured.write(buffer, 0, read);
+                    synchronized (t.out) {
+                        t.out.write(buffer, 0, read);
+                        if (t.out.size() >= t.maxBytes) t.running = false;
                     }
+                } else if (read < 0) {
+                    // The microphone went away: a call came in, or another app
+                    // took it. Reading again would spin a core for nothing.
+                    t.readError = read;
+                    t.running = false;
                 }
             }
         }, "rpmboss-capture");
-        reader.start();
+        t.reader.start();
 
         // Logged unconditionally, not only in a debug build: which source the
         // device actually gave is the first thing worth knowing about a
@@ -146,15 +189,13 @@ public class RawAudioPlugin extends Plugin {
         // other way to say it.
         android.util.Log.i(
             "RawAudio",
-            "opened source=" + sourceName(activeSource) + " rate=" + activeRate +
+            "opened source=" + sourceName(t.source) + " rate=" + t.rate +
             " deviceClaimsUnprocessed=" + claimsUnprocessed()
         );
 
         JSObject result = new JSObject();
-        result.put("source", sourceName(activeSource));
-        result.put("sampleRate", activeRate);
-        // What the device claims, next to what it gave. A device that advertises
-        // UNPROCESSED and then downgrades is exactly the failure worth catching.
+        result.put("source", sourceName(t.source));
+        result.put("sampleRate", t.rate);
         result.put("claimsUnprocessed", claimsUnprocessed());
         call.resolve(result);
     }
@@ -171,49 +212,65 @@ public class RawAudioPlugin extends Plugin {
 
     @PluginMethod
     public void stop(PluginCall call) {
-        if (!running) {
-            call.reject("not-recording", "record-failed");
+        Take finished = end();
+        if (finished == null) {
+            call.reject("record-failed", "record-failed");
             return;
         }
-        running = false;
-        try {
-            if (reader != null) reader.join(500);
-        } catch (InterruptedException ignored) {
-            Thread.currentThread().interrupt();
+        if (finished.readError != 0) {
+            android.util.Log.w("RawAudio", "read failed with " + finished.readError);
+            call.reject("no-audio", "no-audio");
+            return;
         }
 
         byte[] pcm;
-        synchronized (captured) {
-            pcm = captured.toByteArray();
+        synchronized (finished.out) {
+            pcm = finished.out.toByteArray();
         }
-        int source = activeSource;
-        int rate = activeRate;
-        release();
 
         // The whole take crosses the bridge once. Ten seconds is 320 kB; going
         // frame by frame to save that would cost hundreds of crossings.
         JSObject result = new JSObject();
         result.put("pcm16", Base64.encodeToString(pcm, Base64.NO_WRAP));
-        result.put("sampleRate", rate);
-        result.put("source", sourceName(source));
+        result.put("sampleRate", finished.rate);
+        result.put("source", sourceName(finished.source));
         call.resolve(result);
     }
 
-    private void release() {
-        running = false;
-        if (recorder != null) {
-            try {
-                if (recorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) recorder.stop();
-            } catch (IllegalStateException ignored) {
-            }
-            recorder.release();
-            recorder = null;
+    /**
+     * Stop the current take and wait for its reader to leave `read()` before
+     * releasing the recorder underneath it. Unconditional: releasing a native
+     * AudioRecord while a thread is still reading it is a crash on a thread
+     * nobody is catching.
+     */
+    private Take end() {
+        Take finished;
+        synchronized (this) {
+            finished = take;
+            take = null;
         }
-        reader = null;
+        if (finished == null) return null;
+
+        finished.running = false;
+        if (finished.reader != null) {
+            try {
+                finished.reader.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        try {
+            if (finished.recorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
+                finished.recorder.stop();
+            }
+        } catch (IllegalStateException ignored) {
+        }
+        finished.recorder.release();
+        return finished;
     }
 
     @Override
     protected void handleOnDestroy() {
-        release();
+        end();
     }
 }

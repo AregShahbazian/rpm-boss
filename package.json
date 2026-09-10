@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev:phone": "sh scripts/dev.sh"
+    "dev:phone": "sh scripts/dev.sh",
+    "android:sync": "npm run build && cap sync android",
+    "android:build": "npm run android:sync && cd android && ./gradlew assembleRelease"
   },
   "dependencies": {
     "@capacitor/core": "^8.5.1",

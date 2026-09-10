@@ -2,7 +2,11 @@ apply plugin: 'com.android.application'
 
 // Release signing, the same shape as the other apps published from this
 // account: real values in an untracked key.properties, an example beside it,
-// and a fall back to debug signing so a fresh clone still builds.
+// and a fall back to debug signing so the keystore is not needed to build.
+//
+// A fresh clone needs `npm run android:sync` first: the Capacitor-generated
+// pieces this project depends on (the cordova plugins module, the web assets,
+// the generated config) are not committed.
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
