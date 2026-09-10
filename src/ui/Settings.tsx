@@ -26,6 +26,23 @@ export function Settings() {
   const { t } = useI18n()
   const [theme, setTheme] = useTheme()
 
+  /**
+   * A press on the backdrop closes it.
+   *
+   * A backdrop press is reported against the dialog element itself, but so is
+   * a press on the dialog's own padding, so the target alone would close the
+   * sheet when someone taps the margin beside a control. The point has to be
+   * outside the box as well. Both conditions also keep a keyboard-driven
+   * click, which arrives at 0,0 from a control inside, from closing it.
+   */
+  const closeOnBackdrop = (e: React.MouseEvent<HTMLDialogElement>) => {
+    const el = dialog.current
+    if (!el || e.target !== el) return
+    const r = el.getBoundingClientRect()
+    const outside = e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom
+    if (outside) el.close()
+  }
+
   return (
     <>
       <button
@@ -36,7 +53,7 @@ export function Settings() {
       >
         <GearIcon />
       </button>
-      <dialog className="sheet" ref={dialog}>
+      <dialog className="sheet" ref={dialog} onClick={closeOnBackdrop}>
         <h2>{t('settings')}</h2>
         <div className="sheet-body">
           <LanguagePicker />
