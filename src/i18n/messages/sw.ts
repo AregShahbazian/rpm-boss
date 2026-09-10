@@ -13,6 +13,7 @@ export const messages: Messages = {
   statusLoaded: "Imepakiwa: {name} · {duration}",
   dismiss: "Funga",
   openAudio: "Fungua sauti",
+  pickSample: "Jaribu sampuli",
   record: "Rekodi",
   stopRecording: "Simamisha",
   play: "Sikiliza",

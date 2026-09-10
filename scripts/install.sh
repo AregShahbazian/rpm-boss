@@ -1,8 +1,9 @@
 #!/bin/sh
 # Build a signed release APK and install it on the phone over USB.
 #
-#   ./scripts/install.sh          build, install, launch
-#   ./scripts/install.sh --keep   install without launching
+#   ./scripts/install.sh            build, install, launch
+#   ./scripts/install.sh --keep     install without launching
+#   ./scripts/install.sh --samples  build with the demo recordings, then launch
 #
 # Needs a phone attached with USB debugging on. Installing over an existing copy
 # keeps its data and its granted permissions.
@@ -22,7 +23,11 @@ if [ -z "$(adb devices | awk 'NR>1 && $2=="device"')" ]; then
   exit 1
 fi
 
-./scripts/apk.sh
+if [ "$1" = "--samples" ]; then
+  ./scripts/apk.sh --samples
+else
+  ./scripts/apk.sh
+fi
 
 echo
 echo "Installing on $(adb shell getprop ro.product.model | tr -d '\r')…"

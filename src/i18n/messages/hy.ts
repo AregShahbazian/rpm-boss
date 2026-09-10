@@ -13,6 +13,7 @@ export const messages: Messages = {
   statusLoaded: "Բեռնված է՝ {name} · {duration}",
   dismiss: "Փակել",
   openAudio: "Բացել ձայնագրություն",
+  pickSample: "Փորձել նմուշը",
   record: "Ձայնագրել",
   stopRecording: "Կանգ",
   play: "Նվագարկել",

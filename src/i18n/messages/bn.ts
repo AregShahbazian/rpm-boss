@@ -13,6 +13,7 @@ export const messages: Messages = {
   statusLoaded: "লোড হয়েছে: {name} · {duration}",
   dismiss: "বন্ধ",
   openAudio: "অডিও খুলুন",
+  pickSample: "নমুনা শুনে দেখুন",
   record: "রেকর্ড",
   stopRecording: "থামান",
   play: "বাজান",

@@ -13,6 +13,7 @@ export const messages: Messages = {
   statusLoaded: "Chargé : {name} · {duration}",
   dismiss: "Fermer",
   openAudio: "Ouvrir un audio",
+  pickSample: "Essayer un exemple",
   record: "Enregistrer",
   stopRecording: "Arrêter",
   play: "Écouter",
