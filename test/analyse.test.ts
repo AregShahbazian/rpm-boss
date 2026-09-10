@@ -46,9 +46,29 @@ describe('resolveOctave', () => {
     expect(resolveOctave(1500, { minRpm: 1300, maxRpm: 1700 })).toBe(1500)
   })
 
-  it('takes the candidate nearest the middle when two fit', () => {
-    // 800 and 1600 both sit inside; 1600 is nearer the midpoint of 1800.
-    expect(resolveOctave(800, { minRpm: 700, maxRpm: 2900 })).toBe(1600)
+  it('keeps the measurement when it fits, even if an octave fits better', () => {
+    // 800 and 1600 both sit inside, and 1600 is nearer the midpoint of 1800.
+    // The measurement still wins: the range is there to catch an estimate that
+    // cannot be right, not to second-guess one that can.
+    expect(resolveOctave(800, { minRpm: 700, maxRpm: 2900 })).toBe(800)
+  })
+
+  it('does not halve a correct estimate on a tie', () => {
+    // Range midpoint 1500, so 1000 and 2000 are equally close. Preferring the
+    // first candidate would report half the real figure.
+    expect(resolveOctave(2000, { minRpm: 900, maxRpm: 2100 })).toBe(2000)
+  })
+
+  it('never has two octaves to choose between', () => {
+    // A range holding both half and double holds the estimate between them, so
+    // whenever an octave is picked it is the only one that fits.
+    for (const rpm of [800, 1450, 2000]) {
+      for (const range of [{ minRpm: 300, maxRpm: 3000 }, { minRpm: 1300, maxRpm: 1700 }]) {
+        const fits = (c: number) => c >= range.minRpm && c <= range.maxRpm
+        const octaves = [rpm / 2, rpm * 2].filter(fits)
+        expect(fits(rpm) || octaves.length <= 1).toBe(true)
+      }
+    }
   })
 
   it('ignores a range that nothing fits', () => {

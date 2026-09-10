@@ -27,11 +27,15 @@ export const toRpm = (pulsesPerS: number): number => pulsesPerS * 60 * REVS_PER_
 export function resolveOctave(rpm: number, range?: ExpectedRange): number {
   if (!range || !(range.minRpm > 0) || !(range.maxRpm > range.minRpm)) return rpm
 
-  const inside = [rpm / 2, rpm, rpm * 2].filter((c) => c >= range.minRpm && c <= range.maxRpm)
-  if (!inside.length) return rpm
+  const fits = (c: number) => c >= range.minRpm && c <= range.maxRpm
+  // The measurement is trusted unless the range says it cannot be right, so an
+  // estimate that already fits is never traded for an equally close octave.
+  if (fits(rpm)) return rpm
 
-  const middle = (range.minRpm + range.maxRpm) / 2
-  return inside.reduce((best, c) => (Math.abs(c - middle) < Math.abs(best - middle) ? c : best))
+  // At most one of the two can fit here: a range holding both half and double
+  // also holds the estimate between them, which returned above. So there is
+  // never a choice to make.
+  return [rpm / 2, rpm * 2].find(fits) ?? rpm
 }
 
 export function analyse(
