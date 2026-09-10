@@ -64,9 +64,19 @@ export function WaveformBlock({ clip, selection, onChange, positionS, marks }: P
     }
   }
 
-  /** The way back out of the zoomed view: touching the waveform at all. */
-  const releaseSnap = () => {
+  /**
+   * The way back out of the zoomed view: touching the waveform at all.
+   *
+   * The press is swallowed rather than passed on. Widening the range is a state
+   * change, so the canvas below would still handle this same event against the
+   * zoomed mapping and then resolve every later move against the wide one — a
+   * handle grabbed at the edge of the window would sit dead for a third of the
+   * canvas before jumping to the finger. One press widens the view and does
+   * nothing else; the drag happens in the view the user can see.
+   */
+  const releaseSnap = (e: React.PointerEvent) => {
     if (!snapped) return
+    e.stopPropagation()
     setSnapped(false)
     setRange(nextDetailRange(undefined, selection, clip.durationS, spanS))
   }

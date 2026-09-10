@@ -92,7 +92,7 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
  * everything from width, so a tall screen wants the stacked column, not a
  * squashed split.
  */
-@media (min-width: 600px) and (min-aspect-ratio: 1 / 1) {
+@media (min-width: 600px) and (orientation: landscape) {
   .screen {
     max-inline-size: none;
     block-size: 100dvh;
@@ -193,12 +193,16 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
 /* Stacked on a big screen — a portrait tablet — the 480 px column is a ribbon.
    Give it room, and the waveform with it. Scoped to the tall shape: this sits
    after the split block, so an unscoped `.screen` rule here would put a cap
-   back on the landscape layout and undo it. */
-@media (min-width: 700px) and (max-aspect-ratio: 1 / 1) {
+   back on the landscape layout and undo it. `orientation` rather than a pair
+   of aspect-ratio bounds, because `min-aspect-ratio: 1/1` and
+   `max-aspect-ratio: 1/1` both match a square viewport and the two blocks
+   would fight over it; portrait and landscape are exclusive by definition,
+   and a square screen counts as portrait. */
+@media (min-width: 700px) and (orientation: portrait) {
   .screen { max-inline-size: 720px; }
   .wave-detail { block-size: clamp(150px, 24dvh, 340px); }
 }
-@media (min-width: 600px) and (min-aspect-ratio: 1 / 1) {
+@media (min-width: 600px) and (orientation: landscape) {
   .wave-detail { block-size: auto; max-block-size: 560px; margin-inline: 0; }
 }
 
