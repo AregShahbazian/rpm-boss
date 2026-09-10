@@ -45,43 +45,34 @@ export function WaveformCanvas({ clip, range, selection, onChange, positionS, ha
   const xToS = useCallback((x: number) => range.fromS + (x / width) * spanS, [range.fromS, spanS, width])
   const sToX = useCallback((s: number) => ((s - range.fromS) / spanS) * width, [range.fromS, spanS, width])
 
-  // Waveform layer, cached per (range, width, clip).
-  const layer = useMemo(() => {
+  // Peaks, cached per (range, width, clip). Pure; drawing happens in the effect.
+  const peaks = useMemo(() => {
     if (width === 0) return undefined
     const w = Math.round(width * dpr)
-    const h = Math.round(height * dpr)
-    const off = document.createElement('canvas')
-    off.width = w
-    off.height = h
-    const ctx = off.getContext('2d')
-    if (!ctx) return undefined
-    const peaks = computePeaks(clip.samples, range.fromS * clip.sampleRate, range.toS * clip.sampleRate, w)
-    ctx.fillStyle = wrap.current ? cssVar(wrap.current, '--muted', '#888') : '#888'
-    const mid = h / 2
-    for (let c = 0; c < w; c++) {
-      const top = mid - peaks.max[c] * mid
-      const bottom = mid - peaks.min[c] * mid
-      ctx.fillRect(c, top, 1, Math.max(1, bottom - top))
-    }
-    return off
-  }, [clip, range.fromS, range.toS, width, height, dpr])
+    return computePeaks(clip.samples, range.fromS * clip.sampleRate, range.toS * clip.sampleRate, w)
+  }, [clip, range.fromS, range.toS, width, dpr])
 
-  // Overlay, redrawn on every selection/position change.
+  // Redrawn on every selection/position change; the waveform itself is ~800 rects, cheap.
   useEffect(() => {
     const cv = canvas.current
-    if (!cv || !layer || width === 0) return
+    if (!cv || !peaks || width === 0) return
     const ctx = cv.getContext('2d')
     if (!ctx) return
     const raf = requestAnimationFrame(() => {
       const w = cv.width
       const h = cv.height
+      const mid = h / 2
       ctx.clearRect(0, 0, w, h)
-      ctx.drawImage(layer, 0, 0)
+      ctx.fillStyle = cssVar(cv, '--muted', '#888')
+      for (let c = 0; c < w; c++) {
+        const top = mid - peaks.max[c] * mid
+        const bottom = mid - peaks.min[c] * mid
+        ctx.fillRect(c, top, 1, Math.max(1, bottom - top))
+      }
       const sx = sToX(selection.startS) * dpr
       const ex = sToX(selection.endS) * dpr
-      const bg = cssVar(cv, '--bg', '#fff')
       ctx.globalAlpha = 0.6
-      ctx.fillStyle = bg
+      ctx.fillStyle = cssVar(cv, '--bg', '#fff')
       if (sx > 0) ctx.fillRect(0, 0, Math.max(0, sx), h)
       if (ex < w) ctx.fillRect(Math.min(w, ex), 0, w - ex, h)
       ctx.globalAlpha = 1
@@ -106,7 +97,7 @@ export function WaveformCanvas({ clip, range, selection, onChange, positionS, ha
       }
     })
     return () => cancelAnimationFrame(raf)
-  }, [layer, selection, positionS, handles, width, dpr, sToX, range.fromS, range.toS])
+  }, [peaks, selection, positionS, handles, width, dpr, sToX, range.fromS, range.toS])
 
   const localX = (e: React.PointerEvent) => e.clientX - (canvas.current?.getBoundingClientRect().left ?? 0)
 
