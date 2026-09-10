@@ -41,4 +41,9 @@ export const messages: Messages = {
   errorNoSignal: "Здесь нет ровного звука двигателя. Попробуйте другой участок.",
   errorWorkerFailed: "Анализ не запустился. Перезагрузите страницу.",
   languageLabel: "Язык",
+  settings: "Настройки",
+  theme: "Тема",
+  themeSystem: "Системная",
+  themeLight: "Светлая",
+  themeDark: "Тёмная",
 }

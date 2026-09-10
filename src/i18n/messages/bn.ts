@@ -41,4 +41,9 @@ export const messages: Messages = {
   errorNoSignal: "এখানে স্থির ইঞ্জিনের শব্দ নেই। অন্য অংশ দেখুন।",
   errorWorkerFailed: "বিশ্লেষণ শুরু হয়নি। পাতা আবার লোড করুন।",
   languageLabel: "ভাষা",
+  settings: "সেটিংস",
+  theme: "থিম",
+  themeSystem: "সিস্টেম",
+  themeLight: "উজ্জ্বল",
+  themeDark: "গাঢ়",
 }

@@ -41,4 +41,9 @@ export const messages: Messages = {
   errorNoSignal: "Tidak ada suara mesin yang tetap di sini. Coba bagian lain.",
   errorWorkerFailed: "Analisis tidak bisa dimulai. Muat ulang halaman.",
   languageLabel: "Bahasa",
+  settings: "Pengaturan",
+  theme: "Tema",
+  themeSystem: "Sistem",
+  themeLight: "Terang",
+  themeDark: "Gelap",
 }

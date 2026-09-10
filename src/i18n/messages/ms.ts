@@ -41,4 +41,9 @@ export const messages: Messages = {
   errorNoSignal: "Tiada bunyi enjin yang tetap di sini. Cuba bahagian lain.",
   errorWorkerFailed: "Analisis tidak dapat bermula. Muat semula halaman.",
   languageLabel: "Bahasa",
+  settings: "Tetapan",
+  theme: "Tema",
+  themeSystem: "Sistem",
+  themeLight: "Cerah",
+  themeDark: "Gelap",
 }

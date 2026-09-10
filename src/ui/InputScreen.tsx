@@ -1,20 +1,19 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useAnalysis } from '../state/useAnalysis'
 import { useAudioInput } from '../state/useAudioInput'
-import type { AudioClip } from '../audio/types'
 import type { ExpectedRange } from '../dsp/types'
 import { useI18n } from '../i18n'
 import { ExportButton } from './ExportButton'
-import { LanguagePicker } from './LanguagePicker'
 import { MicCheck } from './MicCheck'
 import { Player } from './Player'
 import { RangeFields } from './RangeFields'
 import { ResultView } from './ResultView'
 import { RecordButton } from './RecordButton'
 import { SampleButton } from './SampleButton'
+import { Settings } from './Settings'
 import { StatusLine } from './StatusLine'
 import { UploadButton } from './UploadButton'
-import { WaveformBlock } from './WaveformBlock'
+import { WaveformBlock, type Marks } from './WaveformBlock'
 
 export function InputScreen() {
   const { state, getWindowClip, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection } =
@@ -28,25 +27,36 @@ export function InputScreen() {
   const busy = state.status === 'decoding' || state.status === 'recording'
   const running = analysis.status === 'running'
 
-  // Held so the marks are drawn against the window that was analysed, not
-  // whatever the crop is now. It is overwritten on each Calculate and never
-  // cleared; nothing renders it unless `useAnalysis` says the run is done, and
-  // that is reset the moment the clip or the window changes.
-  const [analysed, setAnalysed] = useState<AudioClip | undefined>(undefined)
+  // The window the marks belong to, held so they are drawn against what was
+  // analysed rather than whatever the crop is now. It is replaced on each
+  // Calculate; `useAnalysis` drops the result the moment the clip or the
+  // window changes, which is what takes the marks off the waveform again.
+  const [analysedWindow, setAnalysedWindow] = useState<{ offsetS: number; windowS: number } | undefined>(undefined)
+
+  const marks = useMemo<Marks | undefined>(
+    () =>
+      analysis.status === 'done' && analysis.result && analysedWindow
+        ? { timesS: analysis.result.pulseTimesS, offsetS: analysedWindow.offsetS, windowS: analysedWindow.windowS }
+        : undefined,
+    [analysis, analysedWindow],
+  )
 
   const onCalculate = () => {
     const clip = getWindowClip()
     if (!clip) return
-    setAnalysed(clip)
+    setAnalysedWindow({ offsetS: state.selection.startS, windowS: clip.durationS })
     void analyse(clip, windowKey, parseRange(range))
   }
 
+  // Nothing to split until there is something to show in the second column.
+  const loaded = state.clip !== undefined && state.status !== 'recording'
+
   return (
-    <main className="screen">
+    <main className={loaded ? 'screen' : 'screen screen-empty'}>
       {/* No title: the launcher, the tab and the app switcher all carry the
           name already, and on a phone the screen is short enough that a
           heading costs more than it says. */}
-      <div className="row">
+      <div className="row area-source">
         <UploadButton disabled={busy} onFile={upload} />
         <RecordButton
           recording={state.status === 'recording'}
@@ -56,30 +66,41 @@ export function InputScreen() {
           onStop={stopRecording}
         />
         <SampleButton disabled={busy} onFile={upload} />
+        <Settings />
       </div>
-      <LanguagePicker />
-      <StatusLine state={state} onDismiss={dismissError} />
-      <MicCheck />
+      <div className="area-status">
+        <StatusLine state={state} onDismiss={dismissError} />
+        <MicCheck />
+      </div>
       {state.clip && state.status !== 'recording' && (
         <>
-          <WaveformBlock
-            clip={state.clip}
-            selection={state.selection}
-            onChange={setSelection}
-            positionS={state.playing ? state.positionS : undefined}
-          />
-          <Player
-            playing={state.playing}
-            positionS={state.playing ? state.positionS - state.selection.startS : 0}
-            durationS={state.selection.endS - state.selection.startS}
-            onToggle={togglePlay}
-          />
-          <RangeFields {...range} disabled={running} onChange={setRange} />
-          <button type="button" className="btn" disabled={busy || running} onClick={onCalculate}>
+          <div className="area-wave">
+            <WaveformBlock
+              clip={state.clip}
+              selection={state.selection}
+              onChange={setSelection}
+              positionS={state.playing ? state.positionS : undefined}
+              marks={marks}
+            />
+          </div>
+          <div className="area-transport">
+            <Player
+              playing={state.playing}
+              positionS={state.playing ? state.positionS - state.selection.startS : 0}
+              durationS={state.selection.endS - state.selection.startS}
+              onToggle={togglePlay}
+            />
+            <ExportButton clip={state.clip} selection={state.selection} />
+          </div>
+          <div className="area-range">
+            <RangeFields {...range} disabled={running} onChange={setRange} />
+          </div>
+          <button type="button" className="btn area-calc" disabled={busy || running} onClick={onCalculate}>
             {t('calculate')}
           </button>
-          <ResultView analysis={analysis} clip={analysed} />
-          <ExportButton clip={state.clip} selection={state.selection} />
+          <div className="area-result">
+            <ResultView analysis={analysis} />
+          </div>
         </>
       )}
     </main>

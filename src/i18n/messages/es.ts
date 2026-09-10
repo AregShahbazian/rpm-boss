@@ -41,4 +41,9 @@ export const messages: Messages = {
   errorNoSignal: "Aquí no hay un motor constante. Prueba otra parte.",
   errorWorkerFailed: "No se pudo iniciar el análisis. Recarga la página.",
   languageLabel: "Idioma",
+  settings: "Ajustes",
+  theme: "Tema",
+  themeSystem: "Sistema",
+  themeLight: "Claro",
+  themeDark: "Oscuro",
 }

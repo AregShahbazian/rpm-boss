@@ -41,4 +41,9 @@ export const messages: Messages = {
   errorNoSignal: "یہاں مسلسل انجن کی آواز نہیں۔ کوئی اور حصہ دیکھیں۔",
   errorWorkerFailed: "تجزیہ شروع نہ ہو سکا۔ صفحہ دوبارہ لوڈ کریں۔",
   languageLabel: "زبان",
+  settings: "ترتیبات",
+  theme: "تھیم",
+  themeSystem: "سسٹم",
+  themeLight: "روشن",
+  themeDark: "گہرا",
 }
