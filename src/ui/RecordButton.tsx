@@ -14,8 +14,10 @@ export function RecordButton({ recording, elapsedS, disabled, onStart, onStop }:
   if (recording) {
     return (
       <button type="button" className="btn btn-rec" onClick={onStop}>
-        <span aria-hidden>■</span>{' '}
-        <span className="mono">{t('stopRecording', { elapsed: elapsedS.toFixed(1), max: MAX_RECORD_S })}</span>
+        <span aria-hidden>■</span> {t('stopRecording')}{' '}
+        <span className="mono">
+          {elapsedS.toFixed(1)} / {MAX_RECORD_S} s
+        </span>
       </button>
     )
   }

@@ -22,7 +22,7 @@ interface Props {
  */
 export function ResultView({ analysis, clip }: Props) {
   const box = useRef<HTMLDivElement>(null)
-  const { t, lang } = useI18n()
+  const { t, n, lang } = useI18n()
   const settled = analysis.status === 'done' || analysis.status === 'failed'
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function ResultView({ analysis, clip }: Props) {
       </p>
       {clip && <ResultWaveform clip={clip} pulseTimesS={pulseTimesS} />}
       <p className="readout muted" data-testid="result-caption">
-        {t('marked', { count: pulseTimesS.length })}
+        {t('marked', { count: n(pulseTimesS.length) })}
         {octaveAdjusted ? ` · ${t(octaveKey(rpm, pulsesPerS))}` : ''}
       </p>
     </div>

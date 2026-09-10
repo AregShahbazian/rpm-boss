@@ -8,7 +8,8 @@ import type { MessageKey } from '../i18n'
  * reads, and a code survives a worker boundary where a translated string would
  * arrive already in the wrong language.
  */
-export const INPUT_ERROR_KEYS: Record<InputErrorCode, MessageKey> = {
+export const INPUT_ERROR_KEYS: Record<InputErrorCode | 'unknown', MessageKey> = {
+  unknown: 'errorUnknown',
   'too-large': 'errorTooLarge',
   undecodable: 'errorUndecodable',
   'mic-denied': 'errorMicDenied',

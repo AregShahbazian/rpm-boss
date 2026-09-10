@@ -64,10 +64,8 @@ describe('assertMinLength', () => {
   })
 
   it('carries the code rather than a sentence, so the screen can translate it', () => {
-    try {
-      assertMinLength(mk(MIN_CLIP_S - 0.1))
-    } catch (e) {
-      expect((e as InputError).message).toBe('too-short')
-    }
+    // Asserted on the throw itself: inside a bare catch, a version that stops
+    // throwing would run no assertions and pass.
+    expect(() => assertMinLength(mk(MIN_CLIP_S - 0.1))).toThrow('too-short')
   })
 })

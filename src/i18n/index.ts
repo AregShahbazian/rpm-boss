@@ -1,4 +1,14 @@
-import { createContext, createElement, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import { en, type MessageKey, type Messages } from './en'
 import { detectLanguage, LANGUAGES } from './languages'
 
@@ -60,6 +70,8 @@ interface I18n {
   lang: string
   setLang: (code: string) => void
   t: (key: MessageKey, args?: Args) => string
+  /** Whole numbers inside messages, in the reader's digits. */
+  n: (value: number) => string
 }
 
 const Context = createContext<I18n | undefined>(undefined)
@@ -67,10 +79,16 @@ const Context = createContext<I18n | undefined>(undefined)
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState(initialLanguage)
   const [messages, setMessages] = useState<Messages>(en)
+  /**
+   * Which load is current. A user who picks Russian and then Thai on a slow
+   * connection would otherwise get whichever chunk happens to land last, and
+   * could end up reading Russian under a `lang` of Thai.
+   */
+  const request = useRef(0)
 
-  const setLang = useCallback((code: string) => {
+  const apply = useCallback((code: string) => {
+    const token = ++request.current
     setLangState(code)
-    writeStored(code)
     if (code === 'en') {
       setMessages(en)
       return
@@ -78,16 +96,49 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     // Bundles load on demand: seventeen languages in the first payload would
     // cost every user sixteen they cannot read.
     void BUNDLES[code]?.()
-      .then((mod) => setMessages(mod.messages))
-      .catch(() => setMessages(en))
+      .then((mod) => {
+        if (token === request.current) setMessages(mod.messages)
+      })
+      .catch(() => {
+        // The chunk did not arrive: offline, or a stale hash after a deploy.
+        // Fall back to English *and say so in `lang`*, otherwise the picker
+        // still shows the failed language, selecting it again fires no change
+        // event, and there is no way to retry.
+        if (token !== request.current) return
+        setMessages(en)
+        setLangState('en')
+      })
   }, [])
 
-  // The first language is applied once, on mount, through the same path.
-  const [loaded, setLoaded] = useState(false)
-  if (!loaded) {
-    setLoaded(true)
-    if (lang !== 'en') setLang(lang)
-  }
+  /** The picker. A deliberate choice, unlike a detected one, is remembered. */
+  const setLang = useCallback(
+    (code: string) => {
+      writeStored(code)
+      apply(code)
+    },
+    [apply],
+  )
+
+  // The first language is applied once, on mount, and deliberately *not*
+  // stored: a language merely detected from the device is not a choice, and
+  // storing it would freeze the app on whatever the phone said the first time
+  // it was opened.
+  //
+  // In an effect rather than during render, because the chunk loads
+  // asynchronously either way; there is nothing to gain from starting it a
+  // paint earlier, and reading the request token during render is a lie about
+  // when the work happens.
+  useEffect(() => {
+    if (lang !== 'en') apply(lang)
+    // Mount only: later changes come through setLang.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Screen readers and the browser's own font and line-breaking rules both go
+  // by this. Without it a Thai or Armenian screen is read by an English voice.
+  useEffect(() => {
+    document.documentElement.lang = lang
+  }, [lang])
 
   const value = useMemo<I18n>(
     () => ({
@@ -96,6 +147,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       // A missing key falls back to English. The test suite fails the build if
       // any language is short one, so this should never fire.
       t: (key, args) => format(messages[key] ?? en[key], args),
+      // Counts inside sentences follow the reader's digits, the way the
+      // durations already do. The rpm figure deliberately does not: it is a
+      // gauge reading, and a rider comparing it against a manual should see
+      // the same shape everywhere.
+      n: (value) => new Intl.NumberFormat(lang).format(value),
     }),
     [lang, setLang, messages],
   )

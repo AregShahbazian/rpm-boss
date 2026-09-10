@@ -25,8 +25,9 @@ export const en = {
   openAudio: 'Open audio',
   // Starts recording from the microphone.
   record: 'Record',
-  // Ends the recording early. {elapsed} and {max} are seconds.
-  stopRecording: 'Stop {elapsed} / {max} s',
+  // Ends the recording early. The counter is drawn beside this, in a
+  // monospaced font, which is no font at all for several of these scripts.
+  stopRecording: "Stop",
   // Plays back the selected part of the recording.
   play: 'Play',
   // Stops playback.
@@ -69,6 +70,10 @@ export const en = {
   errorRecordFailed: 'Recording failed. Try again.',
   // This browser grants unprocessed recording and then delivers silence.
   errorCaptureBlocked: 'This browser cannot record engine sound. Use Chrome, or open a file.',
+
+  // Anything that went wrong without a name of its own. Deliberately
+  // neutral: an upload that fails must not blame the microphone.
+  errorUnknown: "Something went wrong. Try again.",
 
   // The selected part is shorter than the analysis needs. {duration} is a length.
   errorWindowTooShort: 'Choose at least {duration}.',

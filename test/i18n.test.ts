@@ -114,21 +114,39 @@ describe('duration', () => {
 
 describe('no bare strings left', () => {
   // AC 1. This is the test that stops the layer rotting the first time someone
-  // is in a hurry.
-  const roots = ['src/ui', 'src/audio', 'src/dsp']
+  // is in a hurry, so it looks for a bare label as well as a bare sentence:
+  // "Calculate" is far likelier to be pasted back than a full sentence is.
+  const roots = ['src/ui', 'src/audio', 'src/dsp', 'src/state', 'src/waveform', 'src/analysis']
   const skip = /MicCheck|ExportButton/
-  const files = roots.flatMap((dir) =>
-    readdirSync(dir)
-      .filter((f) => (f.endsWith('.tsx') || f.endsWith('.ts')) && !skip.test(f))
-      .map((f) => join(dir, f)),
-  )
 
-  it.each(files)('%s holds no user-facing sentence', (file) => {
-    const source = readFileSync(file, 'utf8')
-    // A sentence: a capitalised run of words ending in a full stop, inside
-    // quotes. Enough to catch a message put back by hand.
-    const sentences = source.match(/['"`][A-Z][a-z]+ [^'"`]{10,}[.?!]['"`]/g) ?? []
-    const real = sentences.filter((s) => !/Error|error\(|Cannot access|must be|not supported/.test(s))
-    expect(real).toEqual([])
+  function walk(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name)
+      if (entry.isDirectory()) return walk(path)
+      if (!/\.tsx?$/.test(entry.name) || skip.test(entry.name)) return []
+      return [path]
+    })
+  }
+
+  const files = roots.flatMap(walk)
+
+  it('finds the files it means to scan', () => {
+    expect(files.length).toBeGreaterThan(15)
+    expect(files).toContain(join('src', 'ui', 'StatusLine.tsx'))
+  })
+
+  /** Comments discuss the strings; they are not the strings. */
+  const withoutComments = (source: string) =>
+    source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
+
+  it.each(files)('%s holds no user-facing text', (file) => {
+    const source = withoutComments(readFileSync(file, 'utf8'))
+    // Quoted English: two or more words, or one capitalised word on its own,
+    // which is what a button label looks like.
+    const quoted = source.match(/(['"])[A-Z][A-Za-z]*(?: [A-Za-z][^'"`]*)?\1/g) ?? []
+    const allowed =
+      /^(['"])(?:[A-Z][A-Za-z0-9]*|WAV|MP3|OGG|RIFF|WAVE|PCM|UNPROCESSED|MIC|RawAudio)\1$/
+    const suspects = quoted.filter((q) => !allowed.test(q))
+    expect(suspects).toEqual([])
   })
 })

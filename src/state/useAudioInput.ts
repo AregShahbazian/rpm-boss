@@ -21,8 +21,11 @@ export interface AudioInputState {
   clipId: number
   selection: Selection
   elapsedS: number
-  /** What went wrong, as a code. The screen turns it into words. */
-  error?: InputErrorCode
+  /**
+   * What went wrong, as a code, or `unknown` for anything without a name of
+   * its own. The screen turns it into words.
+   */
+  error?: InputErrorCode | 'unknown'
   /** Development only: the underlying cause chain, shown beside the message. */
   errorDetail?: string
   playing: boolean
@@ -53,7 +56,9 @@ export function useAudioInput() {
   }
 
   const fail = (e: unknown) => {
-    const code: InputErrorCode = e instanceof InputError ? e.code : 'record-failed'
+    // Not 'record-failed': an upload that fails for its own reasons must not
+    // tell a user who never touched the microphone that recording failed.
+    const code: InputErrorCode | 'unknown' = e instanceof InputError ? e.code : 'unknown'
     let detail: string | undefined
     if (import.meta.env.DEV) {
       // debug aid: the underlying cause chain, while diagnosing on the phone
