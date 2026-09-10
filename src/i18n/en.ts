@@ -23,6 +23,9 @@ export const en = {
 
   // Opens the device's file picker. Not "upload": nothing is sent anywhere.
   openAudio: 'Open audio',
+  // Opens the list of engine recordings bundled with the app, so someone
+  // with no motorcycle to hand can still see it work. Demo builds only.
+  pickSample: 'Try a sample',
   // Starts recording from the microphone.
   record: 'Record',
   // Ends the recording early. The counter is drawn beside this, in a

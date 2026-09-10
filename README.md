@@ -53,17 +53,31 @@ the seven recordings joined end to end (~68 s) for the long-clip path, and
 `too-short-0.5s.m4a` for the minimum-length gate. Regenerate them with:
 
 ```bash
-for f in audio/*.aac; do ffmpeg -y -i "$f" -ac 1 -ar 48000 "/tmp/$(basename "$f" .aac).wav"; done
-printf "file '%s'\n" /tmp/*.wav > /tmp/cat.txt
+for f in audio/sample-*.m4a; do ffmpeg -y -i "$f" -ac 1 -ar 48000 "/tmp/$(basename "$f" .m4a).wav"; done
+printf "file '%s'\n" /tmp/sample-*.wav > /tmp/cat.txt
 ffmpeg -y -f concat -safe 0 -i /tmp/cat.txt -c:a aac -b:a 96k audio/testing/all-samples.m4a
-ffmpeg -y -i "audio/after cold.aac" -t 0.5 -c:a aac -b:a 96k audio/testing/too-short-0.5s.m4a
+ffmpeg -y -i audio/sample-4.m4a -t 0.5 -c:a aac -b:a 96k audio/testing/too-short-0.5s.m4a
 ```
 
-Fixtures are regenerated from the originals with:
+Fixture names predate the renumbering, so the mapping is read back out of
+`expected.json` rather than derived from the file name:
 
 ```bash
-for f in audio/*.aac; do b=$(basename "$f" .aac | tr ' ' '-' | tr 'A-Z' 'a-z'); \
-  ffmpeg -y -i "$f" -ac 1 -ar 16000 "test/fixtures/$b.wav"; done
+jq -r '.fixtures[] | "\(.source) \(.file)"' test/fixtures/expected.json |
+  while read -r src dst; do ffmpeg -y -i "audio/$src" -ac 1 -ar 16000 "test/fixtures/$dst"; done
+```
+
+## Bundled samples
+
+The seven recordings double as demo audio: `Try a sample` loads one without a
+microphone or a file. They are off by default, and off means the audio is not
+copied into the build at all.
+
+```bash
+npm run dev                      # on
+VITE_SAMPLES=0 npm run dev       # off
+VITE_SAMPLES=1 npm run build     # a web build that carries them
+./scripts/apk.sh --samples       # an APK that carries them
 ```
 
 ## Android

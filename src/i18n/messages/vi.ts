@@ -13,6 +13,7 @@ export const messages: Messages = {
   statusLoaded: "Đã tải: {name} · {duration}",
   dismiss: "Đóng",
   openAudio: "Mở âm thanh",
+  pickSample: "Thử một mẫu",
   record: "Ghi âm",
   stopRecording: "Dừng",
   play: "Phát",
