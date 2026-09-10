@@ -47,8 +47,11 @@ export function InputScreen() {
     void analyse(clip, windowKey, parseRange(range))
   }
 
+  // Nothing to split until there is something to show in the second column.
+  const loaded = state.clip !== undefined && state.status !== 'recording'
+
   return (
-    <main className="screen">
+    <main className={loaded ? 'screen' : 'screen screen-empty'}>
       {/* No title: the launcher, the tab and the app switcher all carry the
           name already, and on a phone the screen is short enough that a
           heading costs more than it says. */}

@@ -105,6 +105,18 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
       'calc   transport';
   }
   .area-result { align-self: center; }
+  /*
+   * Before a recording is opened there is no second column to fill, and a
+   * split layout would leave two buttons pinned to the left edge of a laptop
+   * screen with the whole signal column empty beside them. The empty state is
+   * one centred column, the same shape the stacked layout has.
+   */
+  .screen-empty {
+    max-inline-size: 480px;
+    margin-inline: auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'source' 'status';
+  }
   .area-source.row { gap: 8px; }
   .result { gap: 8px; }
   .range { padding-block: 6px; }
