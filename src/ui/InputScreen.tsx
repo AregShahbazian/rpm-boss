@@ -25,8 +25,9 @@ export function InputScreen() {
   const running = analysis.status === 'running'
 
   // Held so the marks are drawn against the window that was analysed, not
-  // whatever the crop is now. `useAnalysis` clears the result when the window
-  // moves, and this is cleared with it.
+  // whatever the crop is now. It is overwritten on each Calculate and never
+  // cleared; nothing renders it unless `useAnalysis` says the run is done, and
+  // that is reset the moment the clip or the window changes.
   const [analysed, setAnalysed] = useState<AudioClip | undefined>(undefined)
 
   const onCalculate = () => {

@@ -72,7 +72,9 @@ export function ResultWaveform({ clip, pulseTimesS, height = 96 }: Props) {
       ctx.fillRect(at, 0, Math.max(1, dpr), tick)
       ctx.fillRect(at, h - tick, Math.max(1, dpr), tick)
     }
-  }, [peaks, palette, pulseTimesS, clip.durationS, width, dpr])
+    // `height` matters: setting the attribute resets and clears the canvas, so
+    // a change to it has to redraw.
+  }, [peaks, palette, pulseTimesS, clip.durationS, width, height, dpr])
 
   return (
     <div className="wave result-wave" ref={wrap}>

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { AudioClip } from '../audio/types'
 import type { AnalysisState } from '../state/useAnalysis'
+import { octaveNote } from './octave'
 import { ResultWaveform } from './ResultWaveform'
 
 interface Props {
@@ -35,7 +36,7 @@ export function ResultView({ analysis, clip }: Props) {
   }
   if (analysis.status !== 'done' || !analysis.result) return <div className="result" ref={box} />
 
-  const { rpm, pulseTimesS, octaveAdjusted } = analysis.result
+  const { rpm, pulsesPerS, pulseTimesS, octaveAdjusted } = analysis.result
 
   return (
     <div className="result" ref={box}>
@@ -44,9 +45,8 @@ export function ResultView({ analysis, clip }: Props) {
         <span className="rpm-unit">rpm</span>
       </p>
       {clip && <ResultWaveform clip={clip} pulseTimesS={pulseTimesS} />}
-      <p className="readout muted">
-        {pulseTimesS.length} combustions in {clip ? clip.durationS.toFixed(1) : '?'} s
-        {octaveAdjusted ? ' · corrected to your expected range' : ''}
+      <p className="readout muted" data-testid="result-caption">
+        {pulseTimesS.length} marked{octaveAdjusted ? ` · ${octaveNote(rpm, pulsesPerS)}` : ''}
       </p>
     </div>
   )
