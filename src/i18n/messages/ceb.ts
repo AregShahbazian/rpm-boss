@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "Kwentaha",
   analysing: "Gisusi…",
   rpm: "rpm",
-  marked: "{count} gimarkahan",
+  marked: "{count} ka pagbuto ang gimarkahan",
   octaveUp: "sumala sa imong range, ang matag marka duha ka pagbuto",
   octaveDown: "sumala sa imong range, duha ka marka usa ka pagbuto",
   errorTooLarge: "Dako kaayo. Gamit ug rekording nga ubos sa 50 MB.",

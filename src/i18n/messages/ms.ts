@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "Kira",
   analysing: "Menganalisis…",
   rpm: "rpm",
-  marked: "{count} ditanda",
+  marked: "{count} pembakaran ditanda",
   octaveUp: "mengikut julat anda, satu tanda ialah dua pembakaran",
   octaveDown: "mengikut julat anda, dua tanda ialah satu pembakaran",
   errorTooLarge: "Terlalu besar. Guna rakaman bawah 50 MB.",

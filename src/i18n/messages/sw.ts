@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "Hesabu",
   analysing: "Inachambua…",
   rpm: "rpm",
-  marked: "{count} zimewekwa alama",
+  marked: "milipuko {count} imewekwa alama",
   octaveUp: "kwa kiwango chako, kila alama ni milipuko miwili",
   octaveDown: "kwa kiwango chako, alama mbili ni mlipuko mmoja",
   errorTooLarge: "Kubwa mno. Tumia rekodi chini ya MB 50.",

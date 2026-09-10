@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "Calculer",
   analysing: "Analyse…",
   rpm: "rpm",
-  marked: "{count} repérées",
+  marked: "{count} explosions repérées",
   octaveUp: "selon ta plage, chaque repère vaut deux explosions",
   octaveDown: "selon ta plage, deux repères valent une explosion",
   errorTooLarge: "Trop gros. Utilise un enregistrement de moins de 50 Mo.",

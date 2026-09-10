@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "Calcular",
   analysing: "Analisando…",
   rpm: "rpm",
-  marked: "{count} marcadas",
+  marked: "{count} combustões marcadas",
   octaveUp: "pela sua faixa, cada marca são duas combustões",
   octaveDown: "pela sua faixa, duas marcas são uma combustão",
   errorTooLarge: "Grande demais. Use uma gravação com menos de 50 MB.",

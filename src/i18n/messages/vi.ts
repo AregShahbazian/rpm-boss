@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "Tính",
   analysing: "Đang phân tích…",
   rpm: "rpm",
-  marked: "{count} dấu",
+  marked: "{count} lần nổ được đánh dấu",
   octaveUp: "theo khoảng của bạn, mỗi dấu là hai lần nổ",
   octaveDown: "theo khoảng của bạn, hai dấu là một lần nổ",
   errorTooLarge: "Quá lớn. Dùng bản ghi dưới 50 MB.",

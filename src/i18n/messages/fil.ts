@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "Kalkulahin",
   analysing: "Sinusuri…",
   rpm: "rpm",
-  marked: "{count} namarkahan",
+  marked: "{count} pagsabog ang namarkahan",
   octaveUp: "ayon sa saklaw mo, bawat marka ay dalawang pagsabog",
   octaveDown: "ayon sa saklaw mo, dalawang marka ay isang pagsabog",
   errorTooLarge: "Masyadong malaki. Gumamit ng rekording na wala pang 50 MB.",

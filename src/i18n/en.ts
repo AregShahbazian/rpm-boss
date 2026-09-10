@@ -43,8 +43,9 @@ export const en = {
 
   // The unit beside the result. Never translate: it is what the gauge says.
   rpm: 'rpm',
-  // How many combustions were found. {count} is a whole number.
-  marked: '{count} marked',
+  // How many combustions the analysis found. {count} is a whole number.
+  // The noun is named rather than left implicit: "75 marked" does not say what.
+  marked: "{count} combustions marked",
   // The expected range doubled the reading, so each mark is two combustions.
   octaveUp: 'your range says each mark is two combustions',
   // The expected range halved the reading, so two marks are one combustion.

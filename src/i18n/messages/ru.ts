@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "Рассчитать",
   analysing: "Анализ…",
   rpm: "rpm",
-  marked: "отмечено: {count}",
+  marked: "отмечено вспышек: {count}",
   octaveUp: "по вашему диапазону каждая метка — две вспышки",
   octaveDown: "по вашему диапазону две метки — одна вспышка",
   errorTooLarge: "Слишком большой. Возьмите запись меньше 50 МБ.",

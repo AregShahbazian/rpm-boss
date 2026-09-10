@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "Հաշվել",
   analysing: "Վերլուծվում է…",
   rpm: "rpm",
-  marked: "նշված է՝ {count}",
+  marked: "նշված է {count} բռնկում",
   octaveUp: "ըստ ձեր միջակայքի՝ յուրաքանչյուր նշան երկու բռնկում է",
   octaveDown: "ըստ ձեր միջակայքի՝ երկու նշանը մեկ բռնկում է",
   errorTooLarge: "Չափազանց մեծ է։ Վերցրեք 50 ՄԲ-ից փոքր ձայնագրություն։",

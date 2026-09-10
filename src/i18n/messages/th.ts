@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "คำนวณ",
   analysing: "กำลังวิเคราะห์…",
   rpm: "rpm",
-  marked: "ทำเครื่องหมาย {count} จุด",
+  marked: "ทำเครื่องหมายการจุดระเบิด {count} ครั้ง",
   octaveUp: "ตามช่วงที่ตั้งไว้ หนึ่งจุดคือการจุดระเบิดสองครั้ง",
   octaveDown: "ตามช่วงที่ตั้งไว้ สองจุดคือการจุดระเบิดหนึ่งครั้ง",
   errorTooLarge: "ใหญ่เกินไป ใช้ไฟล์ต่ำกว่า 50 MB",

@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "হিসাব করুন",
   analysing: "বিশ্লেষণ চলছে…",
   rpm: "rpm",
-  marked: "{count} চিহ্নিত",
+  marked: "{count} দহন চিহ্নিত",
   octaveUp: "আপনার সীমা অনুযায়ী, প্রতিটি চিহ্ন দুটি দহন",
   octaveDown: "আপনার সীমা অনুযায়ী, দুটি চিহ্ন একটি দহন",
   errorTooLarge: "অনেক বড়। ৫০ MB-র কম রেকর্ডিং নিন।",

@@ -23,7 +23,7 @@ export const messages: Messages = {
   calculate: "حساب لگائیں",
   analysing: "تجزیہ ہو رہا ہے…",
   rpm: "rpm",
-  marked: "{count} نشان",
+  marked: "{count} دھماکے نشان زد",
   octaveUp: "آپ کی حد کے مطابق، ہر نشان دو دھماکے ہیں",
   octaveDown: "آپ کی حد کے مطابق، دو نشان ایک دھماکہ ہیں",
   errorTooLarge: "بہت بڑی ہے۔ 50 MB سے کم ریکارڈنگ لیں۔",
