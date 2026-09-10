@@ -84,7 +84,15 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
 .area-calc { grid-area: calc; }
 .area-result { grid-area: result; }
 
-@media (min-width: 600px) {
+/*
+ * The split needs width *and* a landscape shape. Width alone put a portrait
+ * tablet — 1137 by 1707 — into the landscape layout, where the whole app
+ * collapsed into a 289 px band across the middle of the screen with 693 px of
+ * nothing above and below it. A waveform gains almost nothing from height and
+ * everything from width, so a tall screen wants the stacked column, not a
+ * squashed split.
+ */
+@media (min-width: 600px) and (min-aspect-ratio: 1 / 1) {
   .screen {
     max-inline-size: none;
     block-size: 100dvh;
@@ -171,7 +179,15 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
 /* Stacked, the detail view is inset so both crop handles have room to be
    grabbed clear of the edge of the screen. */
 .wave-detail { flex: 1 1 auto; block-size: clamp(150px, 26dvh, 232px); margin-inline: 8px; }
-@media (min-width: 600px) {
+/* Stacked on a big screen — a portrait tablet — the 480 px column is a ribbon.
+   Give it room, and the waveform with it. Scoped to the tall shape: this sits
+   after the split block, so an unscoped `.screen` rule here would put a cap
+   back on the landscape layout and undo it. */
+@media (min-width: 700px) and (max-aspect-ratio: 1 / 1) {
+  .screen { max-inline-size: 720px; }
+  .wave-detail { block-size: clamp(150px, 24dvh, 340px); }
+}
+@media (min-width: 600px) and (min-aspect-ratio: 1 / 1) {
   .wave-detail { block-size: auto; max-block-size: 560px; margin-inline: 0; }
 }
 
