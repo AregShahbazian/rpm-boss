@@ -14,9 +14,17 @@ export interface Recording {
   stop: () => void
 }
 
+/**
+ * Echo cancellation is deliberately left at the browser default: on Android
+ * Chrome (seen on ASUS AI2302, Chrome 140) `echoCancellation: false` switches
+ * capture to a raw path that never delivers frames to MediaRecorder.
+ */
 const MIC_CONSTRAINTS: MediaStreamConstraints = {
-  audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 },
+  audio: { noiseSuppression: false, autoGainControl: false, channelCount: 1 },
 }
+
+/** Below this the recorder produced only container headers, no audio. */
+const MIN_BLOB_BYTES = 1024
 
 function micError(e: unknown): InputError {
   const name = (e as { name?: string })?.name
@@ -86,11 +94,14 @@ export function record({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordO
     recorder.onstop = async () => {
       cleanup()
       try {
-        const buf = await new Blob(chunks, { type: recorder?.mimeType }).arrayBuffer()
+        const blob = new Blob(chunks, { type: recorder?.mimeType })
+        if (import.meta.env.DEV) console.info('[rec] chunks', chunks.length, 'bytes', blob.size, 'type', blob.type, 'elapsed', ((performance.now() - startedAt) / 1000).toFixed(2))
+        if (blob.size < MIN_BLOB_BYTES) throw new InputError('no-audio')
+        const buf = await blob.arrayBuffer()
         const clip = await decodeBuffer(buf, { kind: 'mic', name })
         onDone(trimClip(clip, maxS))
       } catch (e) {
-        onError(e instanceof InputError ? new InputError('record-failed', e) : new InputError('record-failed', e))
+        onError(e instanceof InputError && e.code === 'no-audio' ? e : new InputError('record-failed', e))
       }
     }
 

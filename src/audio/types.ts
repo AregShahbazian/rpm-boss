@@ -14,13 +14,14 @@ export interface AudioClip {
   source: AudioSource
 }
 
-export type InputErrorCode = 'too-large' | 'undecodable' | 'mic-denied' | 'no-mic' | 'record-failed'
+export type InputErrorCode = 'too-large' | 'undecodable' | 'mic-denied' | 'no-mic' | 'no-audio' | 'record-failed'
 
 export const INPUT_ERROR_MESSAGES: Record<InputErrorCode, string> = {
   'too-large': 'That file is over 50 MB. Pick a shorter recording.',
   undecodable: "Couldn't read that file. Use WAV, MP3, AAC/M4A or OGG.",
   'mic-denied': 'Microphone access was denied. Allow it in the browser and try again.',
   'no-mic': 'No microphone found on this device.',
+  'no-audio': 'No audio was captured. Check that no other app is using the microphone and try again.',
   'record-failed': 'Recording failed. Try again.',
 }
 
