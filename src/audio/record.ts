@@ -1,4 +1,6 @@
+import { Capacitor } from '@capacitor/core'
 import { assertMinLength, decodeToClip, trimClip } from './decode'
+import { recordNative } from './native'
 import { InputError, MAX_RECORD_S, SAMPLE_RATE, type AudioClip } from './types'
 
 export interface RecordOptions {
@@ -65,15 +67,20 @@ function join(chunks: Float32Array[]): Float32Array {
 }
 
 /**
- * Record from the microphone with a wall-clock hard stop at `maxS` seconds.
+ * Record from the microphone. Native where there is a native recorder, the
+ * audio worklet in a browser.
  *
- * Capture goes through an audio worklet rather than `MediaRecorder`. Two
- * reasons, both learned the hard way: with the voice processors switched off
- * this device's MediaRecorder delivers container headers and no audio at all,
- * and a worklet hands over raw samples, so there is no encode, no container
- * and no decode round trip between the microphone and the analysis.
+ * Two implementations is the honest cost of shipping both a website and an app.
+ * The alternative is a browser build that cannot record at all, and the browser
+ * is the development loop. Both produce an `AudioClip` through `decodeToClip`
+ * and both raise the same `InputError` codes, so nothing above here can tell
+ * which one ran.
  */
-export function record({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordOptions): Recording {
+export function record(options: RecordOptions): Recording {
+  return Capacitor.isNativePlatform() ? recordNative(options) : recordWorklet(options)
+}
+
+export function recordWorklet({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordOptions): Recording {
   let stream: MediaStream | undefined
   let context: AudioContext | undefined
   let stopped = false

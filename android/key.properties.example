@@ -1,0 +1,10 @@
+# TEMPLATE — no real values in this file.
+#
+# Release signing. Copy to key.properties (gitignored, as are *.jks) and fill in
+# your own values. Never commit the real file or the keystore. Without
+# key.properties, release builds fall back to debug signing so a fresh clone
+# still builds.
+storePassword=CHANGEME
+keyPassword=CHANGEME
+keyAlias=rpmboss
+storeFile=/absolute/path/to/your-release-keystore.jks
