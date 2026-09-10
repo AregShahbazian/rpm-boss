@@ -15,7 +15,7 @@ export function InputScreen() {
     useAudioInput()
   const [range, setRange] = useState({ minRpm: '', maxRpm: '' })
   // Any change to the clip or the window clears the last result.
-  const windowKey = `${state.clip?.source.name ?? ''}:${state.selection.startS}:${state.selection.endS}`
+  const windowKey = `${state.clipId}:${state.selection.startS}:${state.selection.endS}`
   const { analysis, analyse } = useAnalysis(windowKey)
 
   const busy = state.status === 'decoding' || state.status === 'recording'
