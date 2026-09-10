@@ -103,8 +103,9 @@ export function WaveformCanvas({ clip, range, selection, onChange, positionS, ha
     const sx = sToX(selection.startS)
     const ex = sToX(selection.endS)
     let d: Drag | undefined
-    if (handles && Math.abs(x - ex) <= EDGE_HIT_PX) d = { kind: 'end' }
-    else if (handles && Math.abs(x - sx) <= EDGE_HIT_PX) d = { kind: 'start' }
+    const dStart = Math.abs(x - sx)
+    const dEnd = Math.abs(x - ex)
+    if (handles && Math.min(dStart, dEnd) <= EDGE_HIT_PX) d = { kind: dStart <= dEnd ? 'start' : 'end' }
     else if (x > sx && x < ex) d = { kind: 'body', x0: x, sel0: selection }
     else if (!handles) {
       const len = selection.endS - selection.startS
