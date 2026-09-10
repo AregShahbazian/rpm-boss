@@ -140,6 +140,16 @@ public class RawAudioPlugin extends Plugin {
         }, "rpmboss-capture");
         reader.start();
 
+        // Logged unconditionally, not only in a debug build: which source the
+        // device actually gave is the first thing worth knowing about a
+        // recording that behaves oddly, and a release APK on a phone has no
+        // other way to say it.
+        android.util.Log.i(
+            "RawAudio",
+            "opened source=" + sourceName(activeSource) + " rate=" + activeRate +
+            " deviceClaimsUnprocessed=" + claimsUnprocessed()
+        );
+
         JSObject result = new JSObject();
         result.put("source", sourceName(activeSource));
         result.put("sampleRate", activeRate);
