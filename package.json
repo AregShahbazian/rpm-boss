@@ -9,7 +9,8 @@
     "lint": "oxlint --ignore-path .gitignore src test",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "dev:phone": "sh scripts/dev.sh"
   },
   "dependencies": {
     "react": "^19.2.8",
