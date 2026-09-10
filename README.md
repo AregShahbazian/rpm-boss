@@ -22,6 +22,35 @@ Seven real idle recordings with independently verified pulse counts live in
 `audio/` and, decoded to 16 kHz mono, in `test/fixtures/`. The test suite judges
 every change to the analysis against them.
 
+## The screen
+
+One screen, one CSS grid, two layouts, and the same DOM order in both — which
+is also the reading order for a screen reader.
+
+Below 600 px, or on any screen taller than it is wide, everything stacks in one
+column. At 600 px and wider in landscape it splits into a control column beside
+a signal column. The switch is width *and* shape: a waveform gains almost
+nothing from height and everything from width, so a portrait tablet keeps the
+stacked column rather than collapsing the app into a band across the middle.
+
+There is one waveform, not two. When a result arrives, the crop canvas zooms to
+the analysed window and draws a mark on every combustion it found, so the
+number and the evidence for it are the same picture. Touching the waveform
+widens the view again. The marks matter: this method fails by a factor of two
+when it fails, and a comb that skips every other beat is obvious to a person
+and invisible in a number.
+
+Dark by default rather than the device's choice, with light available in
+settings. `prefers-color-scheme: no-preference` was removed from the spec, so a
+browser answers `light` both when the user chose light and when they chose
+nothing; the two cannot be told apart, and following the device would put most
+phones on the light theme.
+
+Seventeen languages. Urdu mirrors the whole layout from one `dir` attribute,
+because grid columns follow the inline direction; interpolated values are
+wrapped in bidi isolates so a Latin file name keeps its own direction inside an
+Urdu sentence.
+
 ## Develop
 
 ```bash
