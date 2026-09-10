@@ -3,6 +3,7 @@ import { useAnalysis } from '../state/useAnalysis'
 import { useAudioInput } from '../state/useAudioInput'
 import type { ExpectedRange } from '../dsp/types'
 import { ExportButton } from './ExportButton'
+import { MicCheck } from './MicCheck'
 import { Player } from './Player'
 import { RangeFields } from './RangeFields'
 import { ResultLine } from './ResultLine'
@@ -41,6 +42,7 @@ export function InputScreen() {
         />
       </div>
       <StatusLine state={state} onDismiss={dismissError} />
+      <MicCheck />
       {state.clip && state.status !== 'recording' && (
         <>
           <WaveformBlock
