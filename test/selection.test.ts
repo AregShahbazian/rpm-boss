@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defaultSelection, moveBy, selectionLength, setEnd, setStart } from '../src/waveform/selection'
+import { defaultSelection, MIN_WINDOW_S, moveBy, selectionLength, setEnd, setStart } from '../src/waveform/selection'
 
 describe('selection', () => {
   it('defaults to the first 10 s or the whole clip', () => {
@@ -13,9 +13,9 @@ describe('selection', () => {
     expect(setEnd({ startS: 10, endS: 12 }, 30, 15.9)).toEqual({ startS: 10, endS: 15.9 })
   })
 
-  it('setStart / setEnd hold the 1 s minimum', () => {
-    expect(setStart({ startS: 2, endS: 5 }, 4.9, 15.9)).toEqual({ startS: 4, endS: 5 })
-    expect(setEnd({ startS: 2, endS: 5 }, 2.1, 15.9)).toEqual({ startS: 2, endS: 3 })
+  it('setStart / setEnd hold the minimum window', () => {
+    expect(setStart({ startS: 2, endS: 5 }, 4.9, 15.9)).toEqual({ startS: 5 - MIN_WINDOW_S, endS: 5 })
+    expect(setEnd({ startS: 2, endS: 5 }, 2.1, 15.9)).toEqual({ startS: 2, endS: 2 + MIN_WINDOW_S })
   })
 
   it('setStart holds at 10 s from the end and at 0', () => {

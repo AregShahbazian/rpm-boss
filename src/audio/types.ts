@@ -1,3 +1,5 @@
+import { MIN_ANALYSIS_S } from '../dsp/types'
+
 /** The one input shape every later feature consumes. Fixed 16 kHz mono. */
 export const SAMPLE_RATE = 16000 as const
 
@@ -24,13 +26,23 @@ export type InputErrorCode =
   | 'insecure-origin'
   | 'record-failed'
 
+export const MAX_FILE_BYTES = 50 * 1024 * 1024
+/**
+ * Clips shorter than this are rejected at load, and it is also the smallest
+ * crop window. The two stay equal on purpose: a clip that cannot fill the
+ * smallest window can never be analysed, so refusing it at load beats
+ * accepting it and failing at Calculate. The value is the analysis module's,
+ * measured against the fixtures.
+ */
+export const MIN_CLIP_S = MIN_ANALYSIS_S
+
 export const INPUT_ERROR_MESSAGES: Record<InputErrorCode, string> = {
   'too-large': 'That file is over 50 MB. Pick a shorter recording.',
   undecodable: "Couldn't read that file. Use WAV, MP3, AAC/M4A or OGG.",
   'mic-denied': 'Microphone access was denied. Allow it in the browser and try again.',
   'no-mic': 'No microphone found on this device.',
   'insecure-origin': 'The microphone only works over https or localhost. Open the app from a secure address.',
-  'too-short': 'That clip is too short. Record or pick at least 1 second.',
+  'too-short': `That clip is too short. Record or pick at least ${MIN_CLIP_S} ${MIN_CLIP_S === 1 ? 'second' : 'seconds'}.`,
   'no-audio': 'No audio was captured. Check that no other app is using the microphone and try again.',
   'record-failed': 'Recording failed. Try again.',
 }
@@ -44,7 +56,4 @@ export class InputError extends Error {
   }
 }
 
-export const MAX_FILE_BYTES = 50 * 1024 * 1024
-/** Clips shorter than this are rejected at load; equals the minimum crop window. */
-export const MIN_CLIP_S = 1
 export const MAX_RECORD_S = 10

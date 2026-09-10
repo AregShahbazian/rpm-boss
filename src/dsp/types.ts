@@ -12,7 +12,7 @@ export const REVS_PER_PULSE = 2
  * below 2 s one fixture falls outside its tolerance at some window positions.
  * See `scripts/reference/sweep.py` and the phase 4 design.
  */
-export const MIN_ANALYSIS_S = 2
+export const MIN_ANALYSIS_S: number = 2
 
 /**
  * Least peak-above-trough contrast that counts as an engine. Fixtures score

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { assertMinLength, decodeToClip, sliceClip, trimClip } from '../src/audio/decode'
-import { InputError } from '../src/audio/types'
+import { INPUT_ERROR_MESSAGES, InputError, MIN_CLIP_S } from '../src/audio/types'
 import { fixtures, loadFixture } from './fixtures'
 
 const clipOf = (i: number) => {
@@ -58,7 +58,12 @@ describe('assertMinLength', () => {
       expect((e as InputError).code).toBe('too-short')
     }
   })
-  it('accepts 1.0 s', () => {
-    expect(assertMinLength(mk(1)).durationS).toBe(1)
+  it('rejects anything under the minimum and accepts the minimum itself', () => {
+    expect(() => assertMinLength(mk(MIN_CLIP_S - 0.1))).toThrow(InputError)
+    expect(assertMinLength(mk(MIN_CLIP_S)).durationS).toBe(MIN_CLIP_S)
+  })
+
+  it('names the minimum in the message, rather than hardcoding it', () => {
+    expect(INPUT_ERROR_MESSAGES['too-short']).toContain(String(MIN_CLIP_S))
   })
 })
