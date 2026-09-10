@@ -23,12 +23,6 @@ export const MIN_CONFIDENCE = 0.45
 
 export type AnalysisErrorCode = 'too-short' | 'no-signal' | 'worker-failed'
 
-export const ANALYSIS_ERROR_MESSAGES: Record<AnalysisErrorCode, string> = {
-  'too-short': `The selected window is under ${MIN_ANALYSIS_S} seconds. Widen it and try again.`,
-  'no-signal': "Couldn't hear a steady engine in that section. Try a clearer part of the recording.",
-  'worker-failed': "Couldn't run the analysis. Reload the page and try again.",
-}
-
 export interface ExpectedRange {
   minRpm: number
   maxRpm: number
@@ -48,16 +42,12 @@ export interface AnalysisResult {
   octaveAdjusted: boolean
 }
 
+/** A code, not a sentence: the wording is chosen where the language is known. */
 export interface AnalysisFailure {
   ok: false
   code: AnalysisErrorCode
-  message: string
 }
 
 export type Analysis = AnalysisResult | AnalysisFailure
 
-export const failure = (code: AnalysisErrorCode): AnalysisFailure => ({
-  ok: false,
-  code,
-  message: ANALYSIS_ERROR_MESSAGES[code],
-})
+export const failure = (code: AnalysisErrorCode): AnalysisFailure => ({ ok: false, code })

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useI18n } from '../i18n'
 
 interface Props {
   minRpm: string
@@ -37,6 +38,7 @@ function writeOpen(open: boolean): void {
  */
 export function RangeFields({ minRpm, maxRpm, disabled, onChange }: Props) {
   const [open, setOpen] = useState(readOpen)
+  const { t } = useI18n()
 
   return (
     <details
@@ -48,10 +50,10 @@ export function RangeFields({ minRpm, maxRpm, disabled, onChange }: Props) {
         writeOpen(next)
       }}
     >
-      <summary className="muted">Expected range (optional)</summary>
+      <summary className="muted">{t('rangeLegend')}</summary>
       <div className="row">
         <label>
-          Min
+          {t('rangeMin')}
           <input
             type="number"
             inputMode="numeric"
@@ -63,7 +65,7 @@ export function RangeFields({ minRpm, maxRpm, disabled, onChange }: Props) {
           />
         </label>
         <label>
-          Max
+          {t('rangeMax')}
           <input
             type="number"
             inputMode="numeric"

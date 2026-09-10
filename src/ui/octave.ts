@@ -1,4 +1,5 @@
 import { REVS_PER_PULSE } from '../dsp/types'
+import type { MessageKey } from '../i18n'
 
 /**
  * The marks are always the raw detection, never the corrected figure: when the
@@ -7,9 +8,7 @@ import { REVS_PER_PULSE } from '../dsp/types'
  * quietly disagree with the number by the very factor it exists to expose,
  * say what the range decided the marks mean.
  */
-export function octaveNote(rpm: number, pulsesPerS: number): string {
+export function octaveKey(rpm: number, pulsesPerS: number): MessageKey {
   const raw = pulsesPerS * 60 * REVS_PER_PULSE
-  return rpm > raw
-    ? 'your range says each mark is two combustions'
-    : 'your range says two marks are one combustion'
+  return rpm > raw ? 'octaveUp' : 'octaveDown'
 }
