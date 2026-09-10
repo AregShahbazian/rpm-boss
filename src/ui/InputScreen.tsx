@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAnalysis } from '../state/useAnalysis'
 import { useAudioInput } from '../state/useAudioInput'
 import type { ExpectedRange } from '../dsp/types'
+import { ExportButton } from './ExportButton'
 import { Player } from './Player'
 import { RangeFields } from './RangeFields'
 import { ResultLine } from './ResultLine'
@@ -59,6 +60,7 @@ export function InputScreen() {
             Calculate
           </button>
           <ResultLine analysis={analysis} />
+          <ExportButton clip={state.clip} selection={state.selection} />
         </>
       )}
     </main>
