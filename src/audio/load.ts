@@ -1,5 +1,4 @@
-import { decodeToClip } from './decode'
-import { assertMinLength } from '../waveform/slice'
+import { assertMinLength, decodeToClip } from './decode'
 import { InputError, MAX_FILE_BYTES, SAMPLE_RATE, type AudioClip, type AudioSource } from './types'
 
 /**

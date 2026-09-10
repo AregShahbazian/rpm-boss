@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { sliceClip } from '../audio/decode'
 import { loadFile } from '../audio/load'
 import { createPlayer, type Player } from '../audio/player'
 import { record, type Recording } from '../audio/record'
 import { InputError, MAX_RECORD_S, type AudioClip } from '../audio/types'
 import { defaultSelection, type Selection } from '../waveform/selection'
-import { sliceClip } from '../waveform/slice'
 
 export type InputStatus = 'idle' | 'decoding' | 'loaded' | 'recording' | 'error'
 
@@ -132,7 +132,7 @@ export function useAudioInput() {
   }, [])
 
   const windowClip = useMemo(
-    () => (state.clip ? sliceClip(state.clip, state.selection) : undefined),
+    () => (state.clip ? sliceClip(state.clip, state.selection.startS, state.selection.endS) : undefined),
     [state.clip, state.selection],
   )
 

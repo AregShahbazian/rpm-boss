@@ -14,7 +14,14 @@ interface Props {
   height: number
 }
 
+/** How near an edge a press outside the window still grabs that edge. */
 const EDGE_HIT_PX = 24
+/**
+ * The same, for a press *inside* the window. Kept small so a narrow window
+ * still has a draggable body: with 24 px on both sides, anything under 48 px
+ * wide could only ever be resized.
+ */
+const EDGE_HIT_INSIDE_PX = 8
 type Drag = { kind: 'start' | 'end' } | { kind: 'body'; x0: number; sel0: Selection }
 
 function cssVar(el: Element, name: string, fallback: string) {
@@ -105,8 +112,10 @@ export function WaveformCanvas({ clip, range, selection, onChange, positionS, ha
     let d: Drag | undefined
     const dStart = Math.abs(x - sx)
     const dEnd = Math.abs(x - ex)
-    if (handles && Math.min(dStart, dEnd) <= EDGE_HIT_PX) d = { kind: dStart <= dEnd ? 'start' : 'end' }
-    else if (x > sx && x < ex) d = { kind: 'body', x0: x, sel0: selection }
+    const inside = x > sx && x < ex
+    const slack = inside ? EDGE_HIT_INSIDE_PX : EDGE_HIT_PX
+    if (handles && Math.min(dStart, dEnd) <= slack) d = { kind: dStart <= dEnd ? 'start' : 'end' }
+    else if (inside) d = { kind: 'body', x0: x, sel0: selection }
     else if (!handles) {
       const len = selection.endS - selection.startS
       const centred = moveBy(selection, xToS(x) - len / 2 - selection.startS, clip.durationS)

@@ -45,4 +45,6 @@ export class InputError extends Error {
 }
 
 export const MAX_FILE_BYTES = 50 * 1024 * 1024
+/** Clips shorter than this are rejected at load; equals the minimum crop window. */
+export const MIN_CLIP_S = 1
 export const MAX_RECORD_S = 10

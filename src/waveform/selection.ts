@@ -6,8 +6,6 @@ export interface Selection {
 
 export const MIN_WINDOW_S = 1
 export const MAX_WINDOW_S = 10
-/** Clips shorter than this are rejected at load; equals the minimum window. */
-export const MIN_CLIP_S = MIN_WINDOW_S
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi)
 
