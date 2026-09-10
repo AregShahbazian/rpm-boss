@@ -1,0 +1,53 @@
+{
+  "_note": "Produced by scripts/reference/analyse.py. The scipy baseline the TypeScript port is checked against.",
+  "params": {
+    "sampleRate": 16000,
+    "bandHz": [
+      60,
+      2000
+    ],
+    "envelopeHz": 150,
+    "windowS": 1.0,
+    "rateRange": [
+      8.0,
+      100.0
+    ]
+  },
+  "fixtures": {
+    "standard-recording-1.wav": {
+      "pulsesPerS": 13.3902,
+      "peakPulsesPerS": 13.2143,
+      "confidence": 1.0948
+    },
+    "standard-recording-2.wav": {
+      "pulsesPerS": 13.263,
+      "peakPulsesPerS": 13.2725,
+      "confidence": 1.0019
+    },
+    "standard-recording-5.wav": {
+      "pulsesPerS": 14.9655,
+      "peakPulsesPerS": 14.738,
+      "confidence": 1.3137
+    },
+    "after-cold.wav": {
+      "pulsesPerS": 12.0755,
+      "peakPulsesPerS": 11.7188,
+      "confidence": 1.0325
+    },
+    "after-hot.wav": {
+      "pulsesPerS": 11.8177,
+      "peakPulsesPerS": 11.6432,
+      "confidence": 1.0044
+    },
+    "before-cold-clutch.wav": {
+      "pulsesPerS": 13.3872,
+      "peakPulsesPerS": 13.321,
+      "confidence": 0.9164
+    },
+    "before-cold.wav": {
+      "pulsesPerS": 12.0519,
+      "peakPulsesPerS": 11.7801,
+      "confidence": 1.0652
+    }
+  }
+}
