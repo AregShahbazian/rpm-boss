@@ -18,7 +18,14 @@
   /* How much background is laid over the audio outside the crop window. */
   --dim: 0.6;
   --gap: 12px;
-  --col: clamp(208px, 34vw, 360px);
+  /*
+   * The control column. The floor is what the source row needs on one line —
+   * two labelled buttons and the settings icon — because wrapping that row
+   * costs 52 px of height, and a landscape phone has 360 px in total. The
+   * ceiling leaves the waveform more than 500 px on a 844 px screen, which is
+   * where the marks stop being a fence and start being countable.
+   */
+  --col: clamp(300px, 34vw, 360px);
 }
 
 /*
@@ -81,7 +88,10 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
   .screen {
     max-inline-size: none;
     block-size: 100dvh;
-    padding: 12px;
+    /* Tighter than the stacked layout: a phone on its side has 360 px of
+       height to hold everything the portrait screen holds in 640. */
+    --gap: 8px;
+    padding: 10px;
     /* Above phone size the app stops growing and centres: it has a fixed
        amount to show, and a waveform stretched to fill a tablet is worse
        than the margin. */
@@ -95,6 +105,20 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
       'calc   transport';
   }
   .area-result { align-self: center; }
+  .area-source.row { gap: 8px; }
+  .result { gap: 8px; }
+  .range { padding-block: 6px; }
+  /*
+   * One line, and the rest elided. A landscape phone cannot spare the second
+   * line a long file name takes, and the name is the least of what the line
+   * says. Errors are exempt: they are longer, they matter more, and the
+   * Dismiss button sits at the end of them.
+   */
+  .area-status .status:not(.error) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .row { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -118,7 +142,11 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
 .player .mono { flex: 1 1 auto; }
 
 .wave { position: relative; inline-size: 100%; }
+/* Out of flow: the canvas is told its size by the box above it, so letting its
+   intrinsic size feed back into that box is a loop, and a grid row a few
+   pixels taller than it should be. */
 .wave canvas {
+  position: absolute; inset: 0;
   display: block; inline-size: 100%; block-size: 100%;
   touch-action: none; user-select: none;
   border-radius: 6px; background: color-mix(in srgb, var(--btn) 60%, transparent);
