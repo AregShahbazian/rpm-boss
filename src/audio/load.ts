@@ -1,4 +1,4 @@
-import { decodeToClip } from './decode'
+import { assertMinLength, decodeToClip } from './decode'
 import { InputError, MAX_FILE_BYTES, SAMPLE_RATE, type AudioClip, type AudioSource } from './types'
 
 /**
@@ -18,7 +18,7 @@ export async function decodeBuffer(buf: ArrayBuffer, source: AudioSource): Promi
     }
     const channels: Float32Array[] = []
     for (let c = 0; c < decoded.numberOfChannels; c++) channels.push(decoded.getChannelData(c))
-    return decodeToClip(channels, decoded.sampleRate, source)
+    return assertMinLength(decodeToClip(channels, decoded.sampleRate, source))
   } finally {
     void ctx.close()
   }

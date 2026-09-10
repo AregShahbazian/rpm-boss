@@ -1,9 +1,10 @@
 import type { AudioClip } from './types'
 
 export interface Player {
-  play: () => void
+  /** Play [startS, endS) of the clip; defaults to the whole clip. */
+  play: (startS?: number, endS?: number) => void
   stop: () => void
-  /** Seconds into the clip, 0 when not playing. */
+  /** Absolute seconds into the clip, 0 when not playing. */
   position: () => number
   playing: () => boolean
   onEnded: (cb: () => void) => void
@@ -18,6 +19,8 @@ export function createPlayer(clip: AudioClip): Player {
 
   let node: AudioBufferSourceNode | undefined
   let startedAt = 0
+  let winStart = 0
+  let winEnd = clip.durationS
   let endedCb: (() => void) | undefined
 
   const stop = () => {
@@ -34,9 +37,11 @@ export function createPlayer(clip: AudioClip): Player {
   }
 
   return {
-    play: () => {
+    play: (startS = 0, endS = clip.durationS) => {
       stop()
       void ctx.resume()
+      winStart = Math.max(0, Math.min(startS, clip.durationS))
+      winEnd = Math.max(winStart, Math.min(endS, clip.durationS))
       node = ctx.createBufferSource()
       node.buffer = buffer
       node.connect(ctx.destination)
@@ -45,10 +50,10 @@ export function createPlayer(clip: AudioClip): Player {
         endedCb?.()
       }
       startedAt = ctx.currentTime
-      node.start()
+      node.start(0, winStart, winEnd - winStart)
     },
     stop,
-    position: () => (node ? Math.min(ctx.currentTime - startedAt, clip.durationS) : 0),
+    position: () => (node ? Math.min(winStart + (ctx.currentTime - startedAt), winEnd) : 0),
     playing: () => node !== undefined,
     onEnded: (cb) => {
       endedCb = cb

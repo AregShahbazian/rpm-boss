@@ -20,6 +20,7 @@ export type InputErrorCode =
   | 'mic-denied'
   | 'no-mic'
   | 'no-audio'
+  | 'too-short'
   | 'insecure-origin'
   | 'record-failed'
 
@@ -29,6 +30,7 @@ export const INPUT_ERROR_MESSAGES: Record<InputErrorCode, string> = {
   'mic-denied': 'Microphone access was denied. Allow it in the browser and try again.',
   'no-mic': 'No microphone found on this device.',
   'insecure-origin': 'The microphone only works over https or localhost. Open the app from a secure address.',
+  'too-short': 'That clip is too short. Record or pick at least 1 second.',
   'no-audio': 'No audio was captured. Check that no other app is using the microphone and try again.',
   'record-failed': 'Recording failed. Try again.',
 }
@@ -43,4 +45,6 @@ export class InputError extends Error {
 }
 
 export const MAX_FILE_BYTES = 50 * 1024 * 1024
+/** Clips shorter than this are rejected at load; equals the minimum crop window. */
+export const MIN_CLIP_S = 1
 export const MAX_RECORD_S = 10

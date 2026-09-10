@@ -105,7 +105,7 @@ export function record({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordO
         const clip = await decodeBuffer(buf, { kind: 'mic', name })
         onDone(trimClip(clip, maxS))
       } catch (e) {
-        onError(e instanceof InputError && e.code === 'no-audio' ? e : new InputError('record-failed', e))
+        onError(e instanceof InputError && e.code !== 'undecodable' ? e : new InputError('record-failed', e))
       }
     }
 

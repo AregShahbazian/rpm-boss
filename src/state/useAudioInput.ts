@@ -1,14 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { sliceClip } from '../audio/decode'
 import { loadFile } from '../audio/load'
 import { createPlayer, type Player } from '../audio/player'
 import { record, type Recording } from '../audio/record'
 import { InputError, MAX_RECORD_S, type AudioClip } from '../audio/types'
+import { defaultSelection, type Selection } from '../waveform/selection'
+
+const POSITION_STEP_S = 0.05
 
 export type InputStatus = 'idle' | 'decoding' | 'loaded' | 'recording' | 'error'
 
 export interface AudioInputState {
   status: InputStatus
   clip?: AudioClip
+  selection: Selection
   elapsedS: number
   error?: string
   playing: boolean
@@ -21,7 +26,7 @@ export interface AudioInputState {
  * any  -> error -> idle (next action)
  */
 export function useAudioInput() {
-  const [state, setState] = useState<AudioInputState>({ status: 'idle', elapsedS: 0, playing: false, positionS: 0 })
+  const [state, setState] = useState<AudioInputState>({ status: 'idle', selection: { startS: 0, endS: 0 }, elapsedS: 0, playing: false, positionS: 0 })
   const recording = useRef<Recording>(undefined)
   const player = useRef<Player>(undefined)
   const raf = useRef<number>(undefined)
@@ -54,7 +59,7 @@ export function useAudioInput() {
     const p = createPlayer(clip)
     p.onEnded(() => setState((s) => ({ ...s, playing: false, positionS: 0 })))
     player.current = p
-    setState({ status: 'loaded', clip, elapsedS: 0, playing: false, positionS: 0 })
+    setState({ status: 'loaded', clip, selection: defaultSelection(clip.durationS), elapsedS: 0, playing: false, positionS: 0 })
   }
 
   const upload = useCallback(async (file: File) => {
@@ -93,19 +98,34 @@ export function useAudioInput() {
     setState((s) => ({ ...s, status: s.clip ? 'loaded' : 'idle', error: undefined }))
   }, [])
 
+  const stopPlayback = () => {
+    player.current?.stop()
+    if (raf.current) cancelAnimationFrame(raf.current)
+    setState((s) => (s.playing ? { ...s, playing: false, positionS: 0 } : s))
+  }
+
+  const setSelection = useCallback((selection: Selection) => {
+    stopPlayback()
+    setState((s) => ({ ...s, selection }))
+  }, [])
+
   const togglePlay = useCallback(() => {
     const p = player.current
     if (!p) return
     if (p.playing()) {
-      p.stop()
-      setState((s) => ({ ...s, playing: false, positionS: 0 }))
+      stopPlayback()
       return
     }
-    p.play()
-    setState((s) => ({ ...s, playing: true }))
+    setState((s) => {
+      p.play(s.selection.startS, s.selection.endS)
+      return { ...s, playing: true, positionS: s.selection.startS }
+    })
+    // The indicator is a 1 px line: quantise to ~20 Hz so a 10 s playback is
+    // ~200 React commits and canvas redraws instead of ~600.
     const tick = () => {
       if (!player.current?.playing()) return
-      setState((s) => ({ ...s, positionS: player.current?.position() ?? 0 }))
+      const at = player.current.position()
+      setState((s) => (Math.abs(at - s.positionS) >= POSITION_STEP_S ? { ...s, positionS: at } : s))
       raf.current = requestAnimationFrame(tick)
     }
     raf.current = requestAnimationFrame(tick)
@@ -116,5 +136,15 @@ export function useAudioInput() {
     disposePlayer()
   }, [])
 
-  return { state, upload, startRecording, stopRecording, dismissError, togglePlay }
+  /**
+   * The selected window as its own clip, cut on demand. Deliberately not a
+   * memo on the selection: that copied up to 640 kB on every pointer move of a
+   * drag, for a value only the analysis needs, once, when Calculate is pressed.
+   */
+  const getWindowClip = useCallback(
+    () => (state.clip ? sliceClip(state.clip, state.selection.startS, state.selection.endS) : undefined),
+    [state.clip, state.selection],
+  )
+
+  return { state, getWindowClip, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection }
 }

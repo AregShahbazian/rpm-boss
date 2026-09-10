@@ -41,7 +41,23 @@ Phone testing, with the dev server on the laptop:
 Serves on the LAN and, when a phone is attached over USB with debugging on,
 runs `adb reverse` so `http://localhost:5173` on the phone reaches the laptop.
 The localhost origin is what lets Chrome use the microphone; the LAN address
-works for file upload only.
+works for file upload only. The mapping is lost when the phone reconnects; the
+script re-applies it every few seconds, or do it by hand:
+
+```bash
+adb reverse tcp:5173 tcp:5173
+```
+
+`audio/testing/` holds two aids that are not ground truth: `all-samples.m4a`,
+the seven recordings joined end to end (~68 s) for the long-clip path, and
+`too-short-0.5s.m4a` for the minimum-length gate. Regenerate them with:
+
+```bash
+for f in audio/*.aac; do ffmpeg -y -i "$f" -ac 1 -ar 48000 "/tmp/$(basename "$f" .aac).wav"; done
+printf "file '%s'\n" /tmp/*.wav > /tmp/cat.txt
+ffmpeg -y -f concat -safe 0 -i /tmp/cat.txt -c:a aac -b:a 96k audio/testing/all-samples.m4a
+ffmpeg -y -i "audio/after cold.aac" -t 0.5 -c:a aac -b:a 96k audio/testing/too-short-0.5s.m4a
+```
 
 Fixtures are regenerated from the originals with:
 

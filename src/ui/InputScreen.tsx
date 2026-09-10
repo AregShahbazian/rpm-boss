@@ -3,9 +3,10 @@ import { Player } from './Player'
 import { RecordButton } from './RecordButton'
 import { StatusLine } from './StatusLine'
 import { UploadButton } from './UploadButton'
+import { WaveformBlock } from './WaveformBlock'
 
 export function InputScreen() {
-  const { state, upload, startRecording, stopRecording, dismissError, togglePlay } = useAudioInput()
+  const { state, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection } = useAudioInput()
   const busy = state.status === 'decoding' || state.status === 'recording'
 
   return (
@@ -23,7 +24,20 @@ export function InputScreen() {
       </div>
       <StatusLine state={state} onDismiss={dismissError} />
       {state.clip && state.status !== 'recording' && (
-        <Player playing={state.playing} positionS={state.positionS} durationS={state.clip.durationS} onToggle={togglePlay} />
+        <>
+          <WaveformBlock
+            clip={state.clip}
+            selection={state.selection}
+            onChange={setSelection}
+            positionS={state.playing ? state.positionS : undefined}
+          />
+          <Player
+            playing={state.playing}
+            positionS={state.playing ? state.positionS - state.selection.startS : 0}
+            durationS={state.selection.endS - state.selection.startS}
+            onToggle={togglePlay}
+          />
+        </>
       )}
     </main>
   )
