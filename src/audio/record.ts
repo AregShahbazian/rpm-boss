@@ -1,6 +1,5 @@
-import { trimClip } from './decode'
-import { decodeBuffer } from './load'
-import { InputError, MAX_RECORD_S, type AudioClip } from './types'
+import { assertMinLength, decodeToClip, trimClip } from './decode'
+import { InputError, MAX_RECORD_S, SAMPLE_RATE, type AudioClip } from './types'
 
 export interface RecordOptions {
   maxS?: number
@@ -15,16 +14,21 @@ export interface Recording {
 }
 
 /**
- * Echo cancellation is deliberately left at the browser default: on Android
- * Chrome (seen on ASUS AI2302, Chrome 140) `echoCancellation: false` switches
- * capture to a raw path that never delivers frames to MediaRecorder.
+ * All three processors off, which for this app is not optional: with echo
+ * cancellation on, Android hands back a voice-processed stream that gates a
+ * steady engine note about a second in, and a steady engine note is the only
+ * thing the app is listening for. Measured on an ASUS AI2302: full level for
+ * one second, then forty times quieter for two.
+ *
+ * `channelCount: 1` is a request, not a promise; the capture below mixes down
+ * whatever arrives.
  */
 const MIC_CONSTRAINTS: MediaStreamConstraints = {
-  audio: { noiseSuppression: false, autoGainControl: false, channelCount: 1 },
+  audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 },
 }
 
-/** Below this the recorder produced only container headers, no audio. */
-const MIN_BLOB_BYTES = 1024
+/** Under this the microphone delivered nothing worth decoding. */
+const MIN_FRAMES = 2048
 
 function micError(e: unknown): InputError {
   const name = (e as { name?: string })?.name
@@ -34,33 +38,68 @@ function micError(e: unknown): InputError {
 }
 
 function timeLabel(d = new Date()): string {
-  return `Recording ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `Recording ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
+function join(chunks: Float32Array[]): Float32Array {
+  let total = 0
+  for (const c of chunks) total += c.length
+  const out = new Float32Array(total)
+  let at = 0
+  for (const c of chunks) {
+    out.set(c, at)
+    at += c.length
+  }
+  return out
 }
 
 /**
  * Record from the microphone with a wall-clock hard stop at `maxS` seconds.
- * The blob goes through the same decode path as an uploaded file, then a
- * safety trim guarantees the duration contract even if the recorder overshoots.
+ *
+ * Capture goes through an audio worklet rather than `MediaRecorder`. Two
+ * reasons, both learned the hard way: with the voice processors switched off
+ * this device's MediaRecorder delivers container headers and no audio at all,
+ * and a worklet hands over raw samples, so there is no encode, no container
+ * and no decode round trip between the microphone and the analysis.
  */
 export function record({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordOptions): Recording {
-  let recorder: MediaRecorder | undefined
   let stream: MediaStream | undefined
+  let context: AudioContext | undefined
   let stopped = false
+  let finished = false
   let ticker: ReturnType<typeof setInterval> | undefined
   let hardStop: ReturnType<typeof setTimeout> | undefined
-  const chunks: BlobPart[] = []
+  const chunks: Float32Array[] = []
 
-  const cleanup = () => {
+  const release = () => {
     if (ticker) clearInterval(ticker)
     if (hardStop) clearTimeout(hardStop)
     stream?.getTracks().forEach((t) => t.stop())
+    void context?.close()
+  }
+
+  const finish = () => {
+    if (finished) return
+    finished = true
+    const rate = context?.sampleRate ?? SAMPLE_RATE
+    release()
+
+    try {
+      const samples = join(chunks)
+      if (samples.length < MIN_FRAMES) throw new InputError('no-audio')
+      const clip = decodeToClip([samples], rate, { kind: 'mic', name: timeLabel() })
+      onDone(assertMinLength(trimClip(clip, maxS)))
+    } catch (e) {
+      onError(e instanceof InputError ? e : new InputError('record-failed', e))
+    }
   }
 
   const stop = () => {
     if (stopped) return
     stopped = true
-    if (recorder && recorder.state !== 'inactive') recorder.stop()
-    else cleanup()
+    if (context) finish()
+    else release()
   }
 
   void (async () => {
@@ -75,47 +114,37 @@ export function record({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordO
       return
     }
     if (stopped) {
-      cleanup()
+      release()
       return
     }
-    try {
-      recorder = new MediaRecorder(stream)
-    } catch (e) {
-      cleanup()
-      onError(new InputError('record-failed', e))
-      return
+    if (import.meta.env.DEV) {
+      // What the platform actually applied, which on Android often differs
+      // from what was asked for. The first thing to read if capture misbehaves.
+      console.info('mic settings', stream.getAudioTracks()[0]?.getSettings())
     }
-    const startedAt = performance.now()
-    const name = timeLabel()
 
-    recorder.ondataavailable = (ev) => {
-      if (ev.data.size > 0) chunks.push(ev.data)
-    }
-    recorder.onerror = () => {
-      cleanup()
-      onError(new InputError('record-failed'))
-    }
-    recorder.onstop = async () => {
-      cleanup()
-      try {
-        const blob = new Blob(chunks, { type: recorder?.mimeType })
-        if (import.meta.env.DEV) console.info('[rec] chunks', chunks.length, 'bytes', blob.size, 'type', blob.type, 'elapsed', ((performance.now() - startedAt) / 1000).toFixed(2))
-        if (blob.size < MIN_BLOB_BYTES) throw new InputError('no-audio')
-        const buf = await blob.arrayBuffer()
-        const clip = await decodeBuffer(buf, { kind: 'mic', name })
-        onDone(trimClip(clip, maxS))
-      } catch (e) {
-        onError(e instanceof InputError && e.code !== 'undecodable' ? e : new InputError('record-failed', e))
+    try {
+      // The microphone's own rate, not the app rate: asking an input context
+      // to resample is where devices tend to disagree. `decodeToClip` brings
+      // it to 16 kHz afterwards with code that is under test.
+      context = new AudioContext()
+      await context.audioWorklet.addModule(new URL('./capture-worklet.js', import.meta.url))
+      if (stopped) {
+        release()
+        return
       }
-    }
-
-    try {
-      recorder.start(250)
+      const source = context.createMediaStreamSource(stream)
+      const capture = new AudioWorkletNode(context, 'capture', { numberOfOutputs: 0 })
+      capture.port.onmessage = (event: MessageEvent<Float32Array>) => chunks.push(event.data)
+      source.connect(capture)
+      await context.resume()
     } catch (e) {
-      cleanup()
+      release()
       onError(new InputError('record-failed', e))
       return
     }
+
+    const startedAt = performance.now()
     onTick?.(0)
     ticker = setInterval(() => onTick?.((performance.now() - startedAt) / 1000), 100)
     hardStop = setTimeout(stop, maxS * 1000)
