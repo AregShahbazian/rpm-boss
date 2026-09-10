@@ -72,15 +72,21 @@ The same web build, wrapped in Capacitor. The app is `RPM Boss`,
 `com.mby4m.rpmboss`.
 
 ```bash
-npm run android:sync     # build the web app and copy it into android/
-npm run android:build    # the above, then a release APK
+./scripts/apk.sh         # signed release APK
+./scripts/install.sh     # the above, then install and launch it over USB
 ```
 
+Both build the web app, copy it into the native project and run Gradle, so
+there is no separate sync step to remember. `npm run android:sync` and
+`npm run android:build` do the same without the checks, if you prefer them.
+
 **JDK 21 is required.** Capacitor 8 compiles its own module at source level 21,
-so a Gradle daemon on 17 fails with `invalid source release: 21`. Point
-`JAVA_HOME` at a 21 before building, or set `org.gradle.java.home` in your own
-`~/.gradle/gradle.properties`. The path is machine-specific, so it is not
-committed.
+so a Gradle daemon on 17 fails with `invalid source release: 21`. The scripts
+look for a 21 and use it; `JAVA_HOME` wins if you have already set one. The
+path is machine-specific, so it is not committed.
+
+After installing, `adb logcat -d -s RawAudio` says which microphone source the
+app actually opened.
 
 Release signing reads `android/key.properties`, which is gitignored; copy
 `android/key.properties.example` and fill it in. Without it, release builds fall
