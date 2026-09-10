@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint src test",
+    "lint": "oxlint --ignore-path .gitignore src test",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
