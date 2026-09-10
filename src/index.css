@@ -30,3 +30,7 @@ h1 { margin: 0; font-size: 1.5rem; }
 .link { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font: inherit; }
 .player { display: flex; align-items: center; gap: 12px; }
 .player .btn { flex: 0 0 auto; }
+.wave { width: 100%; position: relative; }
+.wave canvas { display: block; touch-action: none; user-select: none; border-radius: 6px; background: color-mix(in srgb, var(--btn) 60%, transparent); }
+.wave-block { display: flex; flex-direction: column; gap: 8px; }
+.readout { margin: 0; font-size: 0.95rem; }
