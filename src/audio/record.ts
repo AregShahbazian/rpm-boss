@@ -87,7 +87,12 @@ export function record({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordO
 
     try {
       const samples = join(chunks)
-      if (samples.length < MIN_FRAMES) throw new InputError('no-audio')
+      if (import.meta.env.DEV) {
+        let peak = 0
+        for (const v of samples) peak = Math.max(peak, Math.abs(v))
+        console.info('[rec] frames', samples.length, 'at', rate, 'Hz, peak', peak.toFixed(5))
+      }
+      if (samples.length < MIN_FRAMES || !samples.some((v) => v !== 0)) throw new InputError('no-audio')
       const clip = decodeToClip([samples], rate, { kind: 'mic', name: timeLabel() })
       onDone(assertMinLength(trimClip(clip, maxS)))
     } catch (e) {
@@ -134,9 +139,17 @@ export function record({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordO
         return
       }
       const source = context.createMediaStreamSource(stream)
-      const capture = new AudioWorkletNode(context, 'capture', { numberOfOutputs: 0 })
+      const capture = new AudioWorkletNode(context, 'capture')
       capture.port.onmessage = (event: MessageEvent<Float32Array>) => chunks.push(event.data)
+      // The graph is only rendered where it reaches the destination. A capture
+      // node left dangling still has its `process` called, but with silence in
+      // its input, which is exactly the all-zero recording this produced on
+      // Android. Routing it onward through a muted gain keeps the microphone
+      // flowing without playing it back into the room.
+      const muted = context.createGain()
+      muted.gain.value = 0
       source.connect(capture)
+      capture.connect(muted).connect(context.destination)
       await context.resume()
     } catch (e) {
       release()
