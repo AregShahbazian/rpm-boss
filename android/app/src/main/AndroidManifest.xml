@@ -37,7 +37,10 @@
 
     <!-- Permissions -->
 
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- No INTERNET permission. The web build is served from the app's own
+         bundle and nothing is fetched, so leaving it out makes "this app
+         transmits nothing" a fact Google can verify from the bundle rather
+         than a claim in the Data safety form. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!-- Without a microphone the app can still open files, so this is not required. -->
