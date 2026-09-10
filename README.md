@@ -26,11 +26,22 @@ every change to the analysis against them.
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
+npm run dev        # http://localhost:5173, desktop browser
 npm test           # vitest over the fixtures
 npm run lint
 npm run build
 ```
+
+Phone testing, with the dev server on the laptop:
+
+```bash
+./scripts/dev.sh   # or: npm run dev:phone
+```
+
+Serves on the LAN and, when a phone is attached over USB with debugging on,
+runs `adb reverse` so `http://localhost:5173` on the phone reaches the laptop.
+The localhost origin is what lets Chrome use the microphone; the LAN address
+works for file upload only.
 
 Fixtures are regenerated from the originals with:
 
