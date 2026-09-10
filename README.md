@@ -64,3 +64,11 @@ feature. The workflow docs are published separately.
 ## License
 
 MIT
+
+## Deploy
+
+Every push to `main` runs lint, tests and build on GitHub Actions and uploads
+`dist/` over FTPS to https://areg.nl/rpm-boss/. Credentials and the remote
+path live in the repository secrets `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`,
+`FTP_REMOTE_DIR`. The Vite `base` is relative so the build works under any
+subpath.
