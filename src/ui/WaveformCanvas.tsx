@@ -3,6 +3,7 @@ import type { AudioClip } from '../audio/types'
 import { computePeaks } from '../waveform/peaks'
 import type { TimeRange } from '../waveform/range'
 import { moveBy, setEnd, setStart, type Selection } from '../waveform/selection'
+import { usePalette } from './palette'
 
 interface Props {
   clip: AudioClip
@@ -24,48 +25,13 @@ const EDGE_HIT_PX = 24
 const EDGE_HIT_INSIDE_PX = 8
 type Drag = { kind: 'start' | 'end' } | { kind: 'body'; x0: number; sel0: Selection }
 
-function cssVar(name: string, fallback: string) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback
-}
-
-function prefersDark() {
-  return typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
-}
-
-/**
- * The `dark` argument is not used: the values come from the CSS variables,
- * which the media query has already switched. It is there to tie the read to
- * the colour scheme so it happens again when the scheme changes.
- */
-function readPalette(dark: boolean) {
-  void dark
-  return {
-    muted: cssVar('--muted', '#888'),
-    bg: cssVar('--bg', '#fff'),
-    accent: cssVar('--accent', '#1f4e79'),
-    error: cssVar('--error', '#b3261e'),
-  }
-}
-
 export function WaveformCanvas({ clip, range, selection, onChange, positionS, handles, height }: Props) {
   const wrap = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
   const [width, setWidth] = useState(0)
   const drag = useRef<Drag | undefined>(undefined)
   const dpr = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1
-  const [dark, setDark] = useState(prefersDark)
-
-  useEffect(() => {
-    if (typeof matchMedia !== 'function') return
-    const mq = matchMedia('(prefers-color-scheme: dark)')
-    const onChange = () => setDark(mq.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-
-  // Read once per theme change, never per frame: getComputedStyle forces a
-  // style recalculation, and the draw effect runs on every playback frame.
-  const palette = useMemo(() => readPalette(dark), [dark])
+  const palette = usePalette()
 
   useEffect(() => {
     const el = wrap.current

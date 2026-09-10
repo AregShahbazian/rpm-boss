@@ -39,4 +39,11 @@ h1 { margin: 0; font-size: 1.5rem; }
 .range[open] summary { margin-bottom: 8px; }
 .range label { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
 .range input { width: 6em; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--btn); background: var(--btn); color: inherit; font: inherit; }
+.result { display: flex; flex-direction: column; gap: 12px; }
+.result:empty { display: none; }
+.rpm { margin: 0; display: flex; align-items: baseline; gap: 8px; }
+.rpm-value { font-size: clamp(3rem, 18vw, 4.5rem); font-weight: 700; line-height: 1; letter-spacing: -0.02em; min-width: 4ch; text-align: right; }
+.rpm-unit { font-size: 1.1rem; color: var(--muted); }
+.result-wave canvas { border-radius: 6px; }
+
 .miccheck pre { white-space: pre-wrap; word-break: break-word; font-size: 0.75rem; background: var(--btn); border-radius: 6px; padding: 8px; margin: 6px 0 0; }
