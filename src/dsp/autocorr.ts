@@ -65,7 +65,13 @@ export function windowEstimate(window: Float64Array, sampleRate: number): Estima
   let lag = peak
   if (peak > 0 && peak + 1 < ac.length) {
     const curvature = ac[peak - 1] - 2 * ac[peak] + ac[peak + 1]
-    if (Math.abs(curvature) > 1e-12) lag += (0.5 * (ac[peak - 1] - ac[peak + 1])) / curvature
+    if (Math.abs(curvature) > 1e-12) {
+      const offset = (0.5 * (ac[peak - 1] - ac[peak + 1])) / curvature
+      // A true peak's refinement is within half a sample of it. Anything wider
+      // means the three points do not describe a maximum, which happens on
+      // degenerate audio and used to produce a negative lag and a negative rpm.
+      if (Math.abs(offset) <= 0.5) lag += offset
+    }
   }
 
   return { pulsesPerS: sampleRate / lag, confidence: ac[peak] - trough }

@@ -30,6 +30,16 @@ const MIC_CONSTRAINTS: MediaStreamConstraints = {
 /** Under this the microphone delivered nothing worth decoding. */
 const MIN_FRAMES = 2048
 
+/**
+ * How long a stream may be *exactly* zero before we call it dead. A real
+ * microphone always has a noise floor; exact zeros mean the browser granted
+ * the constraints and then handed back nothing, which is what Brave on Android
+ * does when asked for unprocessed capture. Long enough that a slow start is
+ * not mistaken for it, short enough that the user is not left recording ten
+ * seconds of nothing.
+ */
+const SILENCE_PROBE_S = 0.3
+
 function micError(e: unknown): InputError {
   const name = (e as { name?: string })?.name
   if (name === 'NotAllowedError' || name === 'SecurityError') return new InputError('mic-denied', e)
@@ -140,7 +150,24 @@ export function record({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordO
       }
       const source = context.createMediaStreamSource(stream)
       const capture = new AudioWorkletNode(context, 'capture')
-      capture.port.onmessage = (event: MessageEvent<Float32Array>) => chunks.push(event.data)
+      const probeFrames = Math.round(SILENCE_PROBE_S * context.sampleRate)
+      let probed = 0
+      let heardSomething = false
+
+      capture.port.onmessage = (event: MessageEvent<Float32Array>) => {
+        chunks.push(event.data)
+        if (heardSomething || stopped) return
+        if (event.data.some((v) => v !== 0)) {
+          heardSomething = true
+          return
+        }
+        probed += event.data.length
+        if (probed >= probeFrames) {
+          stopped = true
+          release()
+          onError(new InputError('capture-blocked'))
+        }
+      }
       // The graph is only rendered where it reaches the destination. A capture
       // node left dangling still has its `process` called, but with silence in
       // its input, which is exactly the all-zero recording this produced on

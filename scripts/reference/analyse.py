@@ -70,7 +70,12 @@ def window_rate(w, sr=SR):
         a, b, c = ac[k - 1], ac[k], ac[k + 1]
         d = a - 2 * b + c
         if abs(d) > 1e-12:
-            k = k + 0.5 * (a - c) / d
+            offset = 0.5 * (a - c) / d
+            # A true peak refines by under half a sample. Anything wider means
+            # these three points are not a maximum, which on degenerate audio
+            # used to hand back a negative lag. Kept identical to the port.
+            if abs(offset) <= 0.5:
+                k = k + offset
     return sr / k, confidence
 
 

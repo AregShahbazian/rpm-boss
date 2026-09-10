@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { median, rateFromEnvelope, windowEstimate } from '../src/dsp/autocorr'
+import { MAX_RATE, median, rateFromEnvelope, windowEstimate } from '../src/dsp/autocorr'
 
 const SR = 16000
 
@@ -50,6 +50,17 @@ describe('windowEstimate', () => {
 
     expect(engine?.confidence).toBeGreaterThan(0.5)
     expect(noise?.confidence).toBeLessThan(0.35)
+  })
+
+  it('never reports a negative or absurd rate on degenerate audio', () => {
+    // A near-constant window with a whisper of drift: the autocorrelation has
+    // no real maximum, and the parabolic fit used to run away with the lag.
+    const odd = Float64Array.from({ length: SR }, (_, i) => 0.5 + (i % 3) * 1e-9)
+    const got = windowEstimate(odd, SR)
+    if (got) {
+      expect(got.pulsesPerS).toBeGreaterThan(0)
+      expect(got.pulsesPerS).toBeLessThanOrEqual(MAX_RATE * 1.1)
+    }
   })
 
   it('gives up on a flat window', () => {
