@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useAnalysis } from '../state/useAnalysis'
 import { useAudioInput } from '../state/useAudioInput'
+import type { AudioClip } from '../audio/types'
 import type { ExpectedRange } from '../dsp/types'
 import { ExportButton } from './ExportButton'
 import { MicCheck } from './MicCheck'
 import { Player } from './Player'
 import { RangeFields } from './RangeFields'
-import { ResultLine } from './ResultLine'
+import { ResultView } from './ResultView'
 import { RecordButton } from './RecordButton'
 import { StatusLine } from './StatusLine'
 import { UploadButton } from './UploadButton'
@@ -23,9 +24,17 @@ export function InputScreen() {
   const busy = state.status === 'decoding' || state.status === 'recording'
   const running = analysis.status === 'running'
 
+  // Held so the marks are drawn against the window that was analysed, not
+  // whatever the crop is now. It is overwritten on each Calculate and never
+  // cleared; nothing renders it unless `useAnalysis` says the run is done, and
+  // that is reset the moment the clip or the window changes.
+  const [analysed, setAnalysed] = useState<AudioClip | undefined>(undefined)
+
   const onCalculate = () => {
     const clip = getWindowClip()
-    if (clip) void analyse(clip, windowKey, parseRange(range))
+    if (!clip) return
+    setAnalysed(clip)
+    void analyse(clip, windowKey, parseRange(range))
   }
 
   return (
@@ -61,7 +70,7 @@ export function InputScreen() {
           <button type="button" className="btn" disabled={busy || running} onClick={onCalculate}>
             Calculate
           </button>
-          <ResultLine analysis={analysis} />
+          <ResultView analysis={analysis} clip={analysed} />
           <ExportButton clip={state.clip} selection={state.selection} />
         </>
       )}

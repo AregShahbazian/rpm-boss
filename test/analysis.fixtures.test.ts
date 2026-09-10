@@ -12,7 +12,12 @@ import reference from './fixtures/reference.json'
 describe('analysis over the fixtures', () => {
   const analysed = fixtures.map((f) => {
     const wav = loadFixture(f)
-    return { fixture: f, result: analyse(wav.samples, wav.sampleRate) }
+    return {
+      fixture: f,
+      // The real length, not the rounded one in expected.json.
+      durationS: wav.samples.length / wav.sampleRate,
+      result: analyse(wav.samples, wav.sampleRate),
+    }
   })
 
   it.each(analysed)('$fixture.file reads an rpm inside its tolerance', ({ fixture, result }) => {
@@ -45,10 +50,21 @@ describe('analysis over the fixtures', () => {
     expect(result.confidence).toBeGreaterThan(0.5)
   })
 
+  // The result view draws one mark per entry, so this is also the check that
+  // the marks a user counts match the rate they are shown (phase 5, AC 1).
   it.each(analysed)('$fixture.file marks a combustion per pulse', ({ fixture, result }) => {
     if (!result.ok) throw new Error(result.message)
     const expectedCount = result.pulsesPerS * fixture.durationS
     expect(result.pulseTimesS.length).toBeGreaterThan(expectedCount * 0.95)
     expect(result.pulseTimesS.length).toBeLessThan(expectedCount * 1.05)
+  })
+
+  it.each(analysed)('$fixture.file marks are ordered and inside the window', ({ durationS, result }) => {
+    if (!result.ok) throw new Error(result.message)
+    for (let i = 1; i < result.pulseTimesS.length; i++) {
+      expect(result.pulseTimesS[i]).toBeGreaterThan(result.pulseTimesS[i - 1])
+    }
+    expect(result.pulseTimesS[0]).toBeGreaterThanOrEqual(0)
+    expect(result.pulseTimesS[result.pulseTimesS.length - 1]).toBeLessThanOrEqual(durationS)
   })
 })
