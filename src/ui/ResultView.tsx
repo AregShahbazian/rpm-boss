@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react'
 import type { AudioClip } from '../audio/types'
+import { MIN_ANALYSIS_S } from '../dsp/types'
 import type { AnalysisState } from '../state/useAnalysis'
-import { octaveNote } from './octave'
+import { duration, useI18n } from '../i18n'
+import { ANALYSIS_ERROR_KEYS } from './errorKeys'
+import { octaveKey } from './octave'
 import { ResultWaveform } from './ResultWaveform'
 
 interface Props {
@@ -19,6 +22,7 @@ interface Props {
  */
 export function ResultView({ analysis, clip }: Props) {
   const box = useRef<HTMLDivElement>(null)
+  const { t, lang } = useI18n()
   const settled = analysis.status === 'done' || analysis.status === 'failed'
 
   useEffect(() => {
@@ -26,11 +30,15 @@ export function ResultView({ analysis, clip }: Props) {
     if (settled) box.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [settled])
 
-  if (analysis.status === 'running') return <p className="status muted">Analysing…</p>
+  if (analysis.status === 'running') return <p className="status muted">{t('analysing')}</p>
   if (analysis.status === 'failed') {
     return (
       <div className="result" ref={box}>
-        <p className="status error">{analysis.error}</p>
+        <p className="status error">
+          {analysis.error
+            ? t(ANALYSIS_ERROR_KEYS[analysis.error], { duration: duration(MIN_ANALYSIS_S, lang) })
+            : t('errorWorkerFailed')}
+        </p>
       </div>
     )
   }
@@ -42,11 +50,12 @@ export function ResultView({ analysis, clip }: Props) {
     <div className="result" ref={box}>
       <p className="rpm mono" data-testid="result">
         <span className="rpm-value">{Math.round(rpm)}</span>
-        <span className="rpm-unit">rpm</span>
+        <span className="rpm-unit">{t('rpm')}</span>
       </p>
       {clip && <ResultWaveform clip={clip} pulseTimesS={pulseTimesS} />}
       <p className="readout muted" data-testid="result-caption">
-        {pulseTimesS.length} marked{octaveAdjusted ? ` · ${octaveNote(rpm, pulsesPerS)}` : ''}
+        {t('marked', { count: pulseTimesS.length })}
+        {octaveAdjusted ? ` · ${t(octaveKey(rpm, pulsesPerS))}` : ''}
       </p>
     </div>
   )

@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { useI18n } from '../i18n'
 
 interface Props {
   disabled?: boolean
@@ -7,6 +8,7 @@ interface Props {
 
 export function UploadButton({ disabled, onFile }: Props) {
   const input = useRef<HTMLInputElement>(null)
+  const { t } = useI18n()
   return (
     <>
       <input
@@ -21,7 +23,7 @@ export function UploadButton({ disabled, onFile }: Props) {
         }}
       />
       <button type="button" className="btn" disabled={disabled} onClick={() => input.current?.click()}>
-        Open audio
+        {t('openAudio')}
       </button>
     </>
   )

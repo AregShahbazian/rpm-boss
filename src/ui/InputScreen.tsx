@@ -3,7 +3,9 @@ import { useAnalysis } from '../state/useAnalysis'
 import { useAudioInput } from '../state/useAudioInput'
 import type { AudioClip } from '../audio/types'
 import type { ExpectedRange } from '../dsp/types'
+import { useI18n } from '../i18n'
 import { ExportButton } from './ExportButton'
+import { LanguagePicker } from './LanguagePicker'
 import { MicCheck } from './MicCheck'
 import { Player } from './Player'
 import { RangeFields } from './RangeFields'
@@ -17,6 +19,7 @@ export function InputScreen() {
   const { state, getWindowClip, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection } =
     useAudioInput()
   const [range, setRange] = useState({ minRpm: '', maxRpm: '' })
+  const { t } = useI18n()
   // Any change to the clip or the window clears the last result.
   const windowKey = `${state.clipId}:${state.selection.startS}:${state.selection.endS}`
   const { analysis, analyse } = useAnalysis(windowKey)
@@ -52,6 +55,7 @@ export function InputScreen() {
           onStop={stopRecording}
         />
       </div>
+      <LanguagePicker />
       <StatusLine state={state} onDismiss={dismissError} />
       <MicCheck />
       {state.clip && state.status !== 'recording' && (
@@ -70,7 +74,7 @@ export function InputScreen() {
           />
           <RangeFields {...range} disabled={running} onChange={setRange} />
           <button type="button" className="btn" disabled={busy || running} onClick={onCalculate}>
-            Calculate
+            {t('calculate')}
           </button>
           <ResultView analysis={analysis} clip={analysed} />
           <ExportButton clip={state.clip} selection={state.selection} />

@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createAnalysisClient, type AnalysisClient } from '../analysis/client'
 import type { AudioClip } from '../audio/types'
-import type { AnalysisResult, ExpectedRange } from '../dsp/types'
+import type { AnalysisErrorCode, AnalysisResult, ExpectedRange } from '../dsp/types'
 
 export type AnalysisStatus = 'idle' | 'running' | 'done' | 'failed'
 
 export interface AnalysisState {
   status: AnalysisStatus
   result?: AnalysisResult
-  error?: string
+  /** What went wrong, as a code. The screen turns it into words. */
+  error?: AnalysisErrorCode
 }
 
 const IDLE: AnalysisState = { status: 'idle' }
@@ -53,7 +54,7 @@ export function useAnalysis(resetKey: unknown) {
     // Drop the answer if another run started, or if the window moved under it.
     if (token !== runToken.current || key !== currentKey.current) return
 
-    setState(result.ok ? { status: 'done', result } : { status: 'failed', error: result.message })
+    setState(result.ok ? { status: 'done', result } : { status: 'failed', error: result.code })
   }, [])
 
   return { analysis: state, analyse }

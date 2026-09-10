@@ -3,7 +3,7 @@ import { sliceClip } from '../audio/decode'
 import { loadFile } from '../audio/load'
 import { createPlayer, type Player } from '../audio/player'
 import { record, type Recording } from '../audio/record'
-import { InputError, MAX_RECORD_S, type AudioClip } from '../audio/types'
+import { InputError, MAX_RECORD_S, type AudioClip, type InputErrorCode } from '../audio/types'
 import { defaultSelection, type Selection } from '../waveform/selection'
 
 const POSITION_STEP_S = 0.05
@@ -21,7 +21,10 @@ export interface AudioInputState {
   clipId: number
   selection: Selection
   elapsedS: number
-  error?: string
+  /** What went wrong, as a code. The screen turns it into words. */
+  error?: InputErrorCode
+  /** Development only: the underlying cause chain, shown beside the message. */
+  errorDetail?: string
   playing: boolean
   positionS: number
 }
@@ -50,9 +53,10 @@ export function useAudioInput() {
   }
 
   const fail = (e: unknown) => {
-    let message = e instanceof InputError ? e.message : 'Something went wrong. Try again.'
+    const code: InputErrorCode = e instanceof InputError ? e.code : 'record-failed'
+    let detail: string | undefined
     if (import.meta.env.DEV) {
-      // debug aid: show the underlying cause chain while diagnosing on the phone
+      // debug aid: the underlying cause chain, while diagnosing on the phone
       const chain: string[] = []
       let c: unknown = e
       while (c && chain.length < 4) {
@@ -60,10 +64,10 @@ export function useAudioInput() {
         chain.push(`${err.name ?? typeof c}: ${err.message ?? String(c)}`)
         c = err.cause
       }
-      message += ` [dev: ${chain.join(' <- ')}]`
+      detail = chain.join(' <- ')
       console.error('audio input failed', e)
     }
-    setState((s) => ({ ...s, status: 'error', error: message, playing: false, positionS: 0 }))
+    setState((s) => ({ ...s, status: 'error', error: code, errorDetail: detail, playing: false, positionS: 0 }))
   }
 
   const setClip = (clip: AudioClip) => {

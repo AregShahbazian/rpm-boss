@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { octaveNote } from '../src/ui/octave'
+import { octaveKey } from '../src/ui/octave'
 import { tickPositions, tickX } from '../src/ui/tick'
 
 describe('tickX', () => {
@@ -43,13 +43,13 @@ describe('tickPositions', () => {
   })
 })
 
-describe('octaveNote', () => {
+describe('octaveKey', () => {
   it('says a doubled reading means each mark is two combustions', () => {
     // 12.08 pulses/s is 1449 rpm raw; the range pushed it to 2898.
-    expect(octaveNote(2898, 12.08)).toBe('your range says each mark is two combustions')
+    expect(octaveKey(2898, 12.08)).toBe('octaveUp')
   })
 
   it('says a halved reading means two marks are one combustion', () => {
-    expect(octaveNote(725, 12.08)).toBe('your range says two marks are one combustion')
+    expect(octaveKey(725, 12.08)).toBe('octaveDown')
   })
 })

@@ -37,22 +37,17 @@ export const MAX_FILE_BYTES = 50 * 1024 * 1024
  */
 export const MIN_CLIP_S = MIN_ANALYSIS_S
 
-export const INPUT_ERROR_MESSAGES: Record<InputErrorCode, string> = {
-  'too-large': 'Too big. Use a recording under 50 MB.',
-  undecodable: 'Cannot open that file. Use WAV, MP3, AAC/M4A or OGG.',
-  'mic-denied': 'Microphone blocked. Allow it, then try again.',
-  'no-mic': 'No microphone on this device.',
-  'insecure-origin': 'The microphone needs a secure address (https).',
-  'too-short': `Record at least ${MIN_CLIP_S} ${MIN_CLIP_S === 1 ? 'second' : 'seconds'}.`,
-  'no-audio': 'Nothing was recorded. Close other apps using the microphone.',
-  'record-failed': 'Recording failed. Try again.',
-  'capture-blocked': 'This browser cannot record engine sound. Use Chrome, or open a file.',
-}
-
+/**
+ * The error carries a code, not a sentence. The wording lives in the
+ * translation files and is chosen at the edge, in the component that displays
+ * it, because nothing down here knows what language the user reads. The
+ * message is the code, which is what a developer wants in a stack trace
+ * anyway.
+ */
 export class InputError extends Error {
   readonly code: InputErrorCode
   constructor(code: InputErrorCode, cause?: unknown) {
-    super(INPUT_ERROR_MESSAGES[code], cause === undefined ? undefined : { cause })
+    super(code, cause === undefined ? undefined : { cause })
     this.name = 'InputError'
     this.code = code
   }
