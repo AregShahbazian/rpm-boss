@@ -51,6 +51,24 @@ export function initialLanguage(): string {
   return detectLanguage(preferred.filter(Boolean))
 }
 
+/**
+ * Bidi isolates, wrapped around every interpolated value in a right-to-left
+ * language.
+ *
+ * An Urdu sentence with a Latin file name in it — "Loaded: {name}" — is two
+ * directions in one line, and the bidi algorithm will otherwise reorder the
+ * run's trailing punctuation and digits into the wrong place, and truncate it
+ * from the wrong end. Isolating the value says "whatever is in here has its
+ * own direction", which is exactly true of a file name, a duration or a count.
+ */
+const FSI = '\u2068'
+const PDI = '\u2069'
+
+function isolate(args?: Args): Args | undefined {
+  if (!args) return args
+  return Object.fromEntries(Object.entries(args).map(([key, value]) => [key, `${FSI}${value}${PDI}`]))
+}
+
 /** `{name}` becomes the matching argument. Anything unmatched is left alone. */
 export function format(template: string, args?: Args): string {
   if (!args) return template
@@ -134,11 +152,18 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const rtl = LANGUAGES.find((l) => l.code === lang)?.rtl === true
+
   // Screen readers and the browser's own font and line-breaking rules both go
   // by this. Without it a Thai or Armenian screen is read by an English voice.
+  //
+  // `dir` is what turns the whole layout around for Urdu. The grid columns,
+  // the logical margins and the text alignment all follow it, so this one line
+  // is the entire right-to-left implementation outside the stylesheet.
   useEffect(() => {
     document.documentElement.lang = lang
-  }, [lang])
+    document.documentElement.dir = rtl ? 'rtl' : 'ltr'
+  }, [lang, rtl])
 
   const value = useMemo<I18n>(
     () => ({
@@ -146,14 +171,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       setLang,
       // A missing key falls back to English. The test suite fails the build if
       // any language is short one, so this should never fire.
-      t: (key, args) => format(messages[key] ?? en[key], args),
+      t: (key, args) => format(messages[key] ?? en[key], rtl ? isolate(args) : args),
       // Counts inside sentences follow the reader's digits, the way the
       // durations already do. The rpm figure deliberately does not: it is a
       // gauge reading, and a rider comparing it against a manual should see
       // the same shape everywhere.
       n: (value) => new Intl.NumberFormat(lang).format(value),
     }),
-    [lang, setLang, messages],
+    [lang, setLang, messages, rtl],
   )
 
   return createElement(Context.Provider, { value }, children)

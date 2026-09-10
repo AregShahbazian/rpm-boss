@@ -40,4 +40,9 @@ export const messages: Messages = {
   errorNoSignal: "Այստեղ շարժիչի կայուն ձայն չկա։ Փորձեք այլ հատված։",
   errorWorkerFailed: "Վերլուծությունը չմեկնարկեց։ Վերբեռնեք էջը։",
   languageLabel: "Լեզու",
+  settings: "Կարգավորումներ",
+  theme: "Տեսք",
+  themeSystem: "Համակարգային",
+  themeLight: "Բաց",
+  themeDark: "Մուգ",
 }

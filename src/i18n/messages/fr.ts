@@ -40,4 +40,9 @@ export const messages: Messages = {
   errorNoSignal: "Pas de moteur régulier ici. Essaie une autre partie.",
   errorWorkerFailed: "L'analyse n'a pas pu démarrer. Recharge la page.",
   languageLabel: "Langue",
+  settings: "Réglages",
+  theme: "Thème",
+  themeSystem: "Système",
+  themeLight: "Clair",
+  themeDark: "Sombre",
 }

@@ -84,6 +84,17 @@ export const en = {
 
   // Labels the language chooser for someone who cannot read the current language.
   languageLabel: 'Language',
+
+  // Opens the settings, and labels the icon button that opens them.
+  settings: 'Settings',
+  // Labels the light/dark choice inside the settings.
+  theme: 'Theme',
+  // Follow whatever the phone is set to.
+  themeSystem: 'System',
+  // Dark text on a light background.
+  themeLight: 'Light',
+  // The app's own default: light text on a dark background.
+  themeDark: 'Dark',
 } as const
 
 export type MessageKey = keyof typeof en

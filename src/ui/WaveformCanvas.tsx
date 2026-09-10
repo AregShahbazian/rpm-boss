@@ -1,9 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import type { AudioClip } from '../audio/types'
 import { computePeaks } from '../waveform/peaks'
 import type { TimeRange } from '../waveform/range'
 import { moveBy, setEnd, setStart, type Selection } from '../waveform/selection'
 import { usePalette } from './palette'
+import { tickPositionsInRange } from './tick'
+
+/** The combustions found in a window, and where that window starts. */
+export interface Marks {
+  timesS: readonly number[]
+  offsetS: number
+}
 
 interface Props {
   clip: AudioClip
@@ -12,7 +19,10 @@ interface Props {
   onChange: (sel: Selection) => void
   positionS?: number
   handles: boolean
+  /** Measured by the block above; see `useElementSize`. */
+  width: number
   height: number
+  marks?: Marks
 }
 
 /** How near an edge a press outside the window still grabs that edge. */
@@ -23,24 +33,15 @@ const EDGE_HIT_PX = 24
  * wide could only ever be resized.
  */
 const EDGE_HIT_INSIDE_PX = 8
+/** How far a combustion tick reaches in from the top and bottom edges. */
+const TICK_PX = 10
 type Drag = { kind: 'start' | 'end' } | { kind: 'body'; x0: number; sel0: Selection }
 
-export function WaveformCanvas({ clip, range, selection, onChange, positionS, handles, height }: Props) {
-  const wrap = useRef<HTMLDivElement>(null)
+export function WaveformCanvas({ clip, range, selection, onChange, positionS, handles, width, height, marks }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null)
-  const [width, setWidth] = useState(0)
   const drag = useRef<Drag | undefined>(undefined)
   const dpr = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1
   const palette = usePalette()
-
-  useEffect(() => {
-    const el = wrap.current
-    if (!el) return
-    const ro = new ResizeObserver(([e]) => setWidth(Math.round(e.contentRect.width)))
-    ro.observe(el)
-    setWidth(Math.round(el.getBoundingClientRect().width))
-    return () => ro.disconnect()
-  }, [])
 
   const spanS = range.toS - range.fromS
   const xToS = useCallback((x: number) => range.fromS + (x / width) * spanS, [range.fromS, spanS, width])
@@ -57,7 +58,7 @@ export function WaveformCanvas({ clip, range, selection, onChange, positionS, ha
   // column by column on every selection change or playback frame would be
   // thousands of fillRects a second on a phone; this is one drawImage.
   const raster = useMemo(() => {
-    if (!peaks || width === 0) return undefined
+    if (!peaks || width === 0 || height === 0) return undefined
     const w = Math.round(width * dpr)
     const h = Math.round(height * dpr)
     const off = document.createElement('canvas')
@@ -88,11 +89,22 @@ export function WaveformCanvas({ clip, range, selection, onChange, positionS, ha
       ctx.drawImage(raster, 0, 0)
       const sx = sToX(selection.startS) * dpr
       const ex = sToX(selection.endS) * dpr
-      ctx.globalAlpha = 0.6
+      ctx.globalAlpha = palette.dim
       ctx.fillStyle = palette.bg
       if (sx > 0) ctx.fillRect(0, 0, Math.max(0, sx), h)
       if (ex < w) ctx.fillRect(Math.min(w, ex), 0, w - ex, h)
       ctx.globalAlpha = 1
+      // Marks before the frame and the handles: a combustion drawn over a
+      // handle would hide the thing the user is reaching for.
+      if (marks) {
+        ctx.fillStyle = palette.accent
+        const tick = TICK_PX * dpr
+        for (const x of tickPositionsInRange(marks.timesS, marks.offsetS, range, w)) {
+          const at = Math.min(w - dpr, x)
+          ctx.fillRect(at, 0, Math.max(1, dpr), tick)
+          ctx.fillRect(at, h - tick, Math.max(1, dpr), tick)
+        }
+      }
       ctx.strokeStyle = palette.accent
       ctx.lineWidth = 2 * dpr
       ctx.strokeRect(sx, dpr, ex - sx, h - 2 * dpr)
@@ -113,7 +125,7 @@ export function WaveformCanvas({ clip, range, selection, onChange, positionS, ha
       }
     })
     return () => cancelAnimationFrame(frame)
-  }, [raster, palette, selection, positionS, handles, width, dpr, sToX, range.fromS, range.toS])
+  }, [raster, palette, selection, positionS, handles, width, dpr, sToX, range, marks])
 
   const localX = (e: React.PointerEvent) => e.clientX - (canvas.current?.getBoundingClientRect().left ?? 0)
 
@@ -156,17 +168,14 @@ export function WaveformCanvas({ clip, range, selection, onChange, positionS, ha
   }
 
   return (
-    <div ref={wrap} className="wave" style={{ height }}>
-      <canvas
-        ref={canvas}
-        width={Math.round(width * dpr)}
-        height={Math.round(height * dpr)}
-        style={{ width: '100%', height }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-      />
-    </div>
+    <canvas
+      ref={canvas}
+      width={Math.round(width * dpr)}
+      height={Math.round(height * dpr)}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+    />
   )
 }

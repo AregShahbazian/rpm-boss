@@ -40,4 +40,9 @@ export const messages: Messages = {
   errorNoSignal: "यहाँ लगातार इंजन की आवाज़ नहीं है। दूसरा हिस्सा चुनें।",
   errorWorkerFailed: "विश्लेषण शुरू नहीं हो सका। पेज दोबारा लोड करें।",
   languageLabel: "भाषा",
+  settings: "सेटिंग",
+  theme: "थीम",
+  themeSystem: "सिस्टम",
+  themeLight: "हल्का",
+  themeDark: "गहरा",
 }

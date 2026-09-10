@@ -40,4 +40,9 @@ export const messages: Messages = {
   errorNoSignal: "Không có tiếng động cơ đều ở đây. Thử phần khác.",
   errorWorkerFailed: "Không khởi động được phân tích. Tải lại trang.",
   languageLabel: "Ngôn ngữ",
+  settings: "Cài đặt",
+  theme: "Giao diện",
+  themeSystem: "Hệ thống",
+  themeLight: "Sáng",
+  themeDark: "Tối",
 }

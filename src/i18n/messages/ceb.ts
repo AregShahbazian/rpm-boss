@@ -40,4 +40,9 @@ export const messages: Messages = {
   errorNoSignal: "Walay kanunay nga tingog sa makina dinhi. Sulayi ang laing bahin.",
   errorWorkerFailed: "Wala makasugod ang pagsusi. I-reload ang page.",
   languageLabel: "Pinulongan",
+  settings: "Mga setting",
+  theme: "Tema",
+  themeSystem: "Sistema",
+  themeLight: "Hayag",
+  themeDark: "Ngitngit",
 }

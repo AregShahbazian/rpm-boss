@@ -1,26 +1,112 @@
+/*
+ * Dark first. The bare `:root` is the dark theme, because dark is what an app
+ * with no stored choice shows; `prefers-color-scheme` is consulted only when
+ * the user has explicitly asked for it, which `theme.ts` stamps as
+ * `data-theme="system"`. See the design note: a browser cannot report "no
+ * preference", so following the device by default would put most phones on the
+ * light theme.
+ */
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
   font-family: system-ui, sans-serif;
+  --fg: #f0f0f0;
+  --bg: #121212;
+  --muted: #a0a0a0;
+  --accent: #8ab4f8;
+  --error: #f2b8b5;
+  --btn: #2a2f36;
+  /* How much background is laid over the audio outside the crop window. */
+  --dim: 0.6;
+  --gap: 12px;
+  --col: clamp(208px, 34vw, 360px);
+}
+
+/*
+ * The light tokens, twice: once for someone who asked to follow the device and
+ * whose device says light, once for someone who asked for light outright.
+ * `--error` is not an inversion — the pale pink that reads as a warning on
+ * black is barely visible on white — and neither is `--dim`, which has to be
+ * heavier to mute a waveform on a light ground by the same amount.
+ */
+@media (prefers-color-scheme: light) {
+  :root[data-theme='system'] {
+    color-scheme: light;
+    --fg: #1a1a1a;
+    --bg: #fafafa;
+    --muted: #6b6b6b;
+    --accent: #1f4e79;
+    --error: #b3261e;
+    --btn: #e9eef4;
+    --dim: 0.72;
+  }
+}
+:root[data-theme='light'] {
+  color-scheme: light;
   --fg: #1a1a1a;
   --bg: #fafafa;
   --muted: #6b6b6b;
   --accent: #1f4e79;
   --error: #b3261e;
   --btn: #e9eef4;
+  --dim: 0.72;
 }
-@media (prefers-color-scheme: dark) {
-  :root { --fg: #f0f0f0; --bg: #121212; --muted: #a0a0a0; --accent: #8ab4f8; --error: #f2b8b5; --btn: #2a2f36; }
-}
+
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg); }
-.screen { max-width: 480px; margin: 0 auto; padding: 24px 16px; display: flex; flex-direction: column; gap: 16px; }
+
+/*
+ * One grid, one DOM order, two layouts. The DOM order is the stacked one, so
+ * it is also the reading order for a screen reader; the split layout only
+ * re-places the areas. Grid columns follow the inline direction, which is what
+ * makes Urdu put the controls on the right for free.
+ */
+.screen {
+  display: grid;
+  gap: var(--gap);
+  max-inline-size: 480px;
+  margin-inline: auto;
+  padding-block: 24px;
+  padding-inline: 16px;
+  grid-template-areas: 'source' 'status' 'wave' 'transport' 'range' 'calc' 'result';
+}
+.area-source { grid-area: source; }
+.area-status { grid-area: status; }
+.area-wave { grid-area: wave; min-inline-size: 0; }
+.area-transport { grid-area: transport; }
+.area-range { grid-area: range; }
+.area-calc { grid-area: calc; }
+.area-result { grid-area: result; }
+
+@media (min-width: 600px) {
+  .screen {
+    max-inline-size: none;
+    block-size: 100dvh;
+    padding: 12px;
+    /* Above phone size the app stops growing and centres: it has a fixed
+       amount to show, and a waveform stretched to fill a tablet is worse
+       than the margin. */
+    align-content: center;
+    grid-template-columns: minmax(0, var(--col)) minmax(0, 1fr);
+    grid-template-areas:
+      'source wave'
+      'status wave'
+      'result wave'
+      'range  wave'
+      'calc   transport';
+  }
+  .area-result { align-self: center; }
+}
+
 .row { display: flex; gap: 12px; flex-wrap: wrap; }
 .btn {
   min-height: 48px; padding: 0 20px; font-size: 1rem; border: 0; border-radius: 10px;
   background: var(--btn); color: var(--fg); cursor: pointer; flex: 1 1 auto;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
 }
 .btn:disabled { opacity: 0.5; cursor: default; }
 .btn-rec { background: var(--error); color: #fff; }
+/* A square target for an icon with no label. Still 48 px, still a hit target. */
+.btn-icon { flex: 0 0 auto; inline-size: 48px; padding: 0; }
 .dot { color: var(--error); }
 .mono { font-variant-numeric: tabular-nums; }
 .status { margin: 0; min-height: 1.5em; }
@@ -29,22 +115,47 @@ body { margin: 0; background: var(--bg); color: var(--fg); }
 .link { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font: inherit; }
 .player { display: flex; align-items: center; gap: 12px; }
 .player .btn { flex: 0 0 auto; }
-.wave { width: 100%; position: relative; }
-.wave canvas { display: block; touch-action: none; user-select: none; border-radius: 6px; background: color-mix(in srgb, var(--btn) 60%, transparent); }
-.wave-block { display: flex; flex-direction: column; gap: 8px; }
+.player .mono { flex: 1 1 auto; }
+
+.wave { position: relative; inline-size: 100%; }
+.wave canvas {
+  display: block; inline-size: 100%; block-size: 100%;
+  touch-action: none; user-select: none;
+  border-radius: 6px; background: color-mix(in srgb, var(--btn) 60%, transparent);
+}
+.wave-block { display: flex; flex-direction: column; gap: 8px; block-size: 100%; }
+.wave-overview { flex: 0 0 48px; }
+/* Stacked, the detail view is inset so both crop handles have room to be
+   grabbed clear of the edge of the screen. */
+.wave-detail { flex: 1 1 auto; block-size: clamp(150px, 26dvh, 232px); margin-inline: 8px; }
+@media (min-width: 600px) {
+  .wave-detail { block-size: auto; max-block-size: 560px; margin-inline: 0; }
+}
+
 .readout { margin: 0; font-size: 0.95rem; }
 .range { border: 1px solid var(--btn); border-radius: 6px; padding: 8px 12px; margin: 0; }
 .range summary { font-size: 0.9rem; cursor: pointer; padding: 4px 0; list-style-position: inside; }
-.range[open] summary { margin-bottom: 8px; }
+.range[open] summary { margin-block-end: 8px; }
 .range label { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
-.range input { width: 6em; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--btn); background: var(--btn); color: inherit; font: inherit; }
+.range input { inline-size: 6em; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--btn); background: var(--btn); color: inherit; font: inherit; }
+
 .result { display: flex; flex-direction: column; gap: 12px; }
 .result:empty { display: none; }
 .rpm { margin: 0; display: flex; align-items: baseline; gap: 8px; }
-.rpm-value { font-size: clamp(3rem, 18vw, 4.5rem); font-weight: 700; line-height: 1; letter-spacing: -0.02em; min-width: 4ch; text-align: right; }
+.rpm-value { font-size: clamp(3rem, 12vmin, 6rem); font-weight: 700; line-height: 1; letter-spacing: -0.02em; min-inline-size: 4ch; text-align: end; }
 .rpm-unit { font-size: 1.1rem; color: var(--muted); }
-.result-wave canvas { border-radius: 6px; }
 
 .miccheck pre { white-space: pre-wrap; word-break: break-word; font-size: 0.75rem; background: var(--btn); border-radius: 6px; padding: 8px; margin: 6px 0 0; }
-.language { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
-.language select { padding: 6px 8px; border-radius: 6px; border: 1px solid var(--btn); background: var(--btn); color: inherit; font: inherit; max-width: 14em; }
+
+.sheet {
+  border: 0; border-radius: 12px; padding: 20px; color: var(--fg); background: var(--bg);
+  inline-size: min(320px, calc(100vw - 32px));
+}
+.sheet::backdrop { background: rgb(0 0 0 / 0.5); }
+.sheet h2 { margin: 0 0 16px; font-size: 1.1rem; }
+.sheet-body { display: flex; flex-direction: column; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; }
+.field select { padding: 8px; border-radius: 6px; border: 1px solid var(--btn); background: var(--btn); color: inherit; font: inherit; }
+.themes { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.themes legend { padding: 0; margin-block-end: 6px; font-size: 0.9rem; color: var(--muted); }
+.themes label { display: flex; align-items: center; gap: 8px; min-height: 44px; }

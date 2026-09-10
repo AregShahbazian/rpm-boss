@@ -40,4 +40,9 @@ export const messages: Messages = {
   errorNoSignal: "Walang tuloy-tuloy na tunog ng makina dito. Subukan ang ibang bahagi.",
   errorWorkerFailed: "Hindi makapagsimula ang pagsusuri. I-reload ang page.",
   languageLabel: "Wika",
+  settings: "Mga setting",
+  theme: "Tema",
+  themeSystem: "Sistema",
+  themeLight: "Maliwanag",
+  themeDark: "Madilim",
 }

@@ -1,28 +1,25 @@
 import { useEffect, useRef } from 'react'
-import type { AudioClip } from '../audio/types'
 import { MIN_ANALYSIS_S } from '../dsp/types'
 import type { AnalysisState } from '../state/useAnalysis'
 import { duration, useI18n } from '../i18n'
 import { ANALYSIS_ERROR_KEYS } from './errorKeys'
 import { octaveKey } from './octave'
-import { ResultWaveform } from './ResultWaveform'
 
 interface Props {
   analysis: AnalysisState
-  /** The window that was analysed, for drawing the marks against. */
-  clip?: AudioClip
 }
 
 /**
- * The answer: one figure, and the evidence for it.
+ * The answer.
  *
- * The marked waveform is not decoration. This method fails by a factor of two
- * when it fails at all, and a comb of marks that skips every other beat, or
- * doubles up on each one, is obvious to a person and invisible in a number.
+ * The evidence for it used to live here too, as a second waveform. It now lives
+ * on the crop canvas, which zooms to the analysed window when a result arrives;
+ * see `WaveformBlock`. What is left is the figure, its unit, how many
+ * combustions were counted, and the note that says the expected range moved it.
  */
-export function ResultView({ analysis, clip }: Props) {
+export function ResultView({ analysis }: Props) {
   const box = useRef<HTMLDivElement>(null)
-  const { t, n, lang } = useI18n()
+  const { t, lang } = useI18n()
   const settled = analysis.status === 'done' || analysis.status === 'failed'
 
   useEffect(() => {
@@ -48,13 +45,12 @@ export function ResultView({ analysis, clip }: Props) {
 
   return (
     <div className="result" ref={box}>
-      <p className="rpm mono" data-testid="result">
+      <p className="rpm mono" data-testid="result" dir="ltr">
         <span className="rpm-value">{Math.round(rpm)}</span>
         <span className="rpm-unit">{t('rpm')}</span>
       </p>
-      {clip && <ResultWaveform clip={clip} pulseTimesS={pulseTimesS} />}
       <p className="readout muted" data-testid="result-caption">
-        {t('marked', { count: n(pulseTimesS.length) })}
+        {t('marked', { count: pulseTimesS.length })}
         {octaveAdjusted ? ` · ${t(octaveKey(rpm, pulsesPerS))}` : ''}
       </p>
     </div>

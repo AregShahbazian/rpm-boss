@@ -40,4 +40,9 @@ export const messages: Messages = {
   errorNoSignal: "Тут немає рівного звуку двигуна. Спробуйте іншу частину.",
   errorWorkerFailed: "Аналіз не запустився. Перезавантажте сторінку.",
   languageLabel: "Мова",
+  settings: "Налаштування",
+  theme: "Тема",
+  themeSystem: "Системна",
+  themeLight: "Світла",
+  themeDark: "Темна",
 }

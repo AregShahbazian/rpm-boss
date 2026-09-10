@@ -40,4 +40,9 @@ export const messages: Messages = {
   errorNoSignal: "Hakuna sauti thabiti ya injini hapa. Jaribu sehemu nyingine.",
   errorWorkerFailed: "Uchambuzi haukuanza. Pakia ukurasa upya.",
   languageLabel: "Lugha",
+  settings: "Mipangilio",
+  theme: "Mandhari",
+  themeSystem: "Mfumo",
+  themeLight: "Nuru",
+  themeDark: "Giza",
 }

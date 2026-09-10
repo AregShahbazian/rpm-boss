@@ -40,4 +40,9 @@ export const messages: Messages = {
   errorNoSignal: "ตรงนี้ไม่มีเสียงเครื่องยนต์ที่สม่ำเสมอ ลองส่วนอื่น",
   errorWorkerFailed: "เริ่มการวิเคราะห์ไม่ได้ โหลดหน้าใหม่",
   languageLabel: "ภาษา",
+  settings: "การตั้งค่า",
+  theme: "ธีม",
+  themeSystem: "ระบบ",
+  themeLight: "สว่าง",
+  themeDark: "มืด",
 }
