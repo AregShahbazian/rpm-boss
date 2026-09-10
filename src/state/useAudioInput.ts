@@ -33,7 +33,19 @@ export function useAudioInput() {
   }
 
   const fail = (e: unknown) => {
-    const message = e instanceof InputError ? e.message : 'Something went wrong. Try again.'
+    let message = e instanceof InputError ? e.message : 'Something went wrong. Try again.'
+    if (import.meta.env.DEV) {
+      // debug aid: show the underlying cause chain while diagnosing on the phone
+      const chain: string[] = []
+      let c: unknown = e
+      while (c && chain.length < 4) {
+        const err = c as { name?: string; message?: string; cause?: unknown }
+        chain.push(`${err.name ?? typeof c}: ${err.message ?? String(c)}`)
+        c = err.cause
+      }
+      message += ` [dev: ${chain.join(' <- ')}]`
+      console.error('audio input failed', e)
+    }
     setState((s) => ({ ...s, status: 'error', error: message, playing: false, positionS: 0 }))
   }
 
