@@ -26,8 +26,6 @@ export interface AudioInputState {
    * its own. The screen turns it into words.
    */
   error?: InputErrorCode | 'unknown'
-  /** Development only: the underlying cause chain, shown beside the message. */
-  errorDetail?: string
   playing: boolean
   positionS: number
 }
@@ -59,20 +57,8 @@ export function useAudioInput() {
     // Not 'record-failed': an upload that fails for its own reasons must not
     // tell a user who never touched the microphone that recording failed.
     const code: InputErrorCode | 'unknown' = e instanceof InputError ? e.code : 'unknown'
-    let detail: string | undefined
-    if (import.meta.env.DEV) {
-      // debug aid: the underlying cause chain, while diagnosing on the phone
-      const chain: string[] = []
-      let c: unknown = e
-      while (c && chain.length < 4) {
-        const err = c as { name?: string; message?: string; cause?: unknown }
-        chain.push(`${err.name ?? typeof c}: ${err.message ?? String(c)}`)
-        c = err.cause
-      }
-      detail = chain.join(' <- ')
-      console.error('audio input failed', e)
-    }
-    setState((s) => ({ ...s, status: 'error', error: code, errorDetail: detail, playing: false, positionS: 0 }))
+    if (import.meta.env.DEV) console.error('audio input failed', e)
+    setState((s) => ({ ...s, status: 'error', error: code, playing: false, positionS: 0 }))
   }
 
   const setClip = (clip: AudioClip) => {

@@ -117,13 +117,12 @@ describe('no bare strings left', () => {
   // is in a hurry, so it looks for a bare label as well as a bare sentence:
   // "Calculate" is far likelier to be pasted back than a full sentence is.
   const roots = ['src/ui', 'src/audio', 'src/dsp', 'src/state', 'src/waveform', 'src/analysis']
-  const skip = /MicCheck|ExportButton/
 
   function walk(dir: string): string[] {
     return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
       const path = join(dir, entry.name)
       if (entry.isDirectory()) return walk(path)
-      if (!/\.tsx?$/.test(entry.name) || skip.test(entry.name)) return []
+      if (!/\.tsx?$/.test(entry.name)) return []
       return [path]
     })
   }

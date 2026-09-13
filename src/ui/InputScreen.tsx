@@ -5,9 +5,7 @@ import { useAudioInput } from '../state/useAudioInput'
 import type { ExpectedRange } from '../dsp/types'
 import { useI18n } from '../i18n'
 import { SPLIT, TALL } from './breakpoints'
-import { ExportButton } from './ExportButton'
 import { Button } from './kit'
-import { MicCheck } from './MicCheck'
 import { Player } from './Player'
 import { RangeFields } from './RangeFields'
 import { ResultView } from './ResultView'
@@ -156,7 +154,6 @@ export function InputScreen() {
       </div>
       <div className="[grid-area:status]">
         <StatusLine state={state} onDismiss={dismissError} />
-        <MicCheck />
       </div>
       {state.clip && state.status !== 'recording' && (
         <>
@@ -176,7 +173,6 @@ export function InputScreen() {
               durationS={state.selection.endS - state.selection.startS}
               onToggle={togglePlay}
             />
-            <ExportButton clip={state.clip} selection={state.selection} />
           </div>
           <div className="[grid-area:range]">
             <RangeFields {...range} disabled={running} onChange={setRange} />

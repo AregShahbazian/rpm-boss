@@ -24,8 +24,7 @@ export function StatusLine({ state, onDismiss }: Props) {
         <StatusText tone="error" role="alert">
           {state.error
             ? t(INPUT_ERROR_KEYS[state.error], { duration: duration(MIN_CLIP_S, lang) })
-            : t('errorRecordFailed')}
-          {import.meta.env.DEV && state.errorDetail ? ` [dev: ${state.errorDetail}]` : ''}{' '}
+            : t('errorRecordFailed')}{' '}
           <LinkButton onClick={onDismiss}>
             {t('dismiss')}
           </LinkButton>
