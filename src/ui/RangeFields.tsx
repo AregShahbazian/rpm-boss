@@ -43,7 +43,7 @@ export function RangeFields({ minRpm, maxRpm, disabled, onChange }: Props) {
 
   return (
     <details
-      className="m-0 rounded-md border border-btn px-3 py-2"
+      className="m-0 rounded-md border border-btn px-3 py-2 split:py-1.5"
       css={css`
         summary {
           font-size: 0.9rem;

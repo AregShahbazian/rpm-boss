@@ -6,7 +6,9 @@
  * button's nine utilities at ten call sites would read as ten coincidences and
  * would take ten edits to change; here it is one of each.
  *
- * Neither takes a `className`. A caller that wants to override `bg-*` is
+ * Neither takes a `className`, and the type says so rather than the habit: a
+ * spread prop would be silently dropped, which is worse than an error. A caller
+ * that wants to override `bg-*` is
  * telling us the component is missing a prop, and adding the prop keeps the
  * decision here rather than scattering it. That is also why the app needs no
  * `tailwind-merge`: two conflicting utilities are never emitted together,
@@ -32,7 +34,8 @@ const SHAPE: Record<Shape, string> = {
   fit: 'flex-none justify-center px-5',
 }
 
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+/** `className` is omitted on purpose: see the note above. The compiler enforces it. */
+type ButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'className'> & {
   shape?: Shape
   /** `record` is the live-recording state: the one button that is not the default colour. */
   tone?: 'default' | 'record'
@@ -59,7 +62,7 @@ export function Button({ shape = 'fill', tone = 'default', ...rest }: ButtonProp
 }
 
 /** A button that reads as a link: the dev-only affordances, and Dismiss. */
-export function LinkButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+export function LinkButton(props: Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'className'>) {
   return (
     <button
       type="button"
@@ -134,5 +137,35 @@ export function Sheet({
       <h2 className="m-0 mb-4 text-[1.1rem]">{title}</h2>
       <div className="flex flex-col gap-4">{children}</div>
     </dialog>
+  )
+}
+
+/**
+ * The one-line status paragraph, used by the status line and by the answer.
+ *
+ * `min-h` reserves the line whether or not there is anything on it, so nothing
+ * below it moves as the text comes and goes. In the split layout the line is
+ * truncated: a landscape phone cannot spare the second line a long file name
+ * takes, and the name is the least of what the line says. Errors are exempt —
+ * they are longer, they matter more, and Dismiss sits at the end of them.
+ */
+export function StatusText({
+  tone = 'default',
+  children,
+  ...rest
+}: Omit<React.HTMLAttributes<HTMLParagraphElement>, 'className'> & {
+  tone?: 'default' | 'muted' | 'error'
+}) {
+  return (
+    <p
+      {...rest}
+      className={clsx(
+        'm-0 min-h-[1.5em]',
+        tone === 'error' ? 'text-error' : 'split:truncate',
+        tone === 'muted' && 'text-muted',
+      )}
+    >
+      {children}
+    </p>
   )
 }

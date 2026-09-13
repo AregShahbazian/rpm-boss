@@ -4,6 +4,7 @@ import { useAnalysis } from '../state/useAnalysis'
 import { useAudioInput } from '../state/useAudioInput'
 import type { ExpectedRange } from '../dsp/types'
 import { useI18n } from '../i18n'
+import { SPLIT, TALL } from './breakpoints'
 import { ExportButton } from './ExportButton'
 import { Button } from './kit'
 import { MicCheck } from './MicCheck'
@@ -43,7 +44,7 @@ const SCREEN = css`
    * and everything from width, so a tall screen wants the stacked column, not
    * a squashed split.
    */
-  @media (min-width: 600px) and (orientation: landscape) {
+  @media ${SPLIT} {
     max-inline-size: none;
     block-size: 100dvh;
     /* Tighter than the stacked layout: a phone on its side has 360 px of
@@ -75,7 +76,7 @@ const SCREEN = css`
      max-aspect-ratio: 1/1 both match a square viewport and the two blocks
      would fight over it; portrait and landscape are exclusive by definition,
      and a square screen counts as portrait. */
-  @media (min-width: 700px) and (orientation: portrait) {
+  @media ${TALL} {
     max-inline-size: 720px;
   }
 `
@@ -87,7 +88,7 @@ const SCREEN = css`
  * centred column, the same shape the stacked layout has.
  */
 const SCREEN_EMPTY = css`
-  @media (min-width: 600px) and (orientation: landscape) {
+  @media ${SPLIT} {
     max-inline-size: 480px;
     margin-inline: auto;
     align-content: center;

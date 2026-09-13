@@ -4,6 +4,7 @@ import type { AnalysisState } from '../state/useAnalysis'
 import { duration, useI18n } from '../i18n'
 import { ANALYSIS_ERROR_KEYS } from './errorKeys'
 import { octaveKey } from './octave'
+import { StatusText } from './kit'
 import { css } from '@emotion/react'
 
 interface Props {
@@ -23,16 +24,15 @@ interface Props {
  * what keeps the layout from reserving a gap before there is anything to show.
  */
 /*
- * Two rules in the split block of the old stylesheet never applied: a plain
- * `.range { padding: 8px 12px }` and `.result { gap: 12px }` sat *after* it at
- * equal specificity, so they won. Writing the overrides as `split:` variants
- * here would make them take effect for the first time and shift the landscape
- * layout by 4 px, which this refactor must not do. The rendered behaviour is
- * what is reproduced; see the review note.
+ * The split gap is 8 px, and the range panel's is likewise tighter — which the
+ * old stylesheet asked for and never got: plain `.result` and `.range` rules
+ * sat after the split block at equal specificity and won, so both overrides
+ * were dead. The refactor reproduced the dead behaviour first so the frame diff
+ * stayed clean; applying the evident intent was a separate, deliberate change.
  */
 function Box({ ref, children }: { ref: React.RefObject<HTMLDivElement | null>; children?: React.ReactNode }) {
   return (
-    <div ref={ref} className="flex flex-col gap-3 empty:hidden">
+    <div ref={ref} className="flex flex-col gap-3 empty:hidden split:gap-2">
       {children}
     </div>
   )
@@ -48,15 +48,15 @@ export function ResultView({ analysis }: Props) {
     if (settled) box.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [settled])
 
-  if (analysis.status === 'running') return <p className="m-0 min-h-[1.5em] text-muted">{t('analysing')}</p>
+  if (analysis.status === 'running') return <StatusText tone="muted">{t('analysing')}</StatusText>
   if (analysis.status === 'failed') {
     return (
       <Box ref={box}>
-        <p className="m-0 min-h-[1.5em] text-error">
+        <StatusText tone="error">
           {analysis.error
             ? t(ANALYSIS_ERROR_KEYS[analysis.error], { duration: duration(MIN_ANALYSIS_S, lang) })
             : t('errorWorkerFailed')}
-        </p>
+        </StatusText>
       </Box>
     )
   }
