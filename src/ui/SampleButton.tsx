@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useI18n } from '../i18n'
 import { SAMPLES, SAMPLES_ENABLED, sampleFile, sampleUrl } from '../samples'
-import { Button } from './kit'
+import { Button, Sheet } from './kit'
 
 interface Props {
   disabled?: boolean
@@ -39,13 +39,6 @@ export function SampleButton({ disabled, onFile }: Props) {
     onFile(new File(body, sampleFile(num), { type: 'audio/mp4' }))
   }
 
-  const closeOnBackdrop = (e: React.MouseEvent<HTMLDialogElement>) => {
-    const el = dialog.current
-    if (!el || e.target !== el) return
-    const r = el.getBoundingClientRect()
-    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) el.close()
-  }
-
   return (
     <>
       <Button
@@ -56,10 +49,9 @@ export function SampleButton({ disabled, onFile }: Props) {
       >
         <SamplesIcon />
       </Button>
-      <dialog className="sheet" ref={dialog} onClick={closeOnBackdrop}>
-        <h2>{t('pickSample')}</h2>
-        <div className="sheet-body">
-          <ul className="samples">
+      <Sheet ref={dialog} title={t('pickSample')}>
+        {/* The bundled recordings, one per row. */}
+        <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {SAMPLES.map((s) => (
               <li key={s.n}>
                 {/* The name is deliberately not translated: it is a number, and
@@ -72,10 +64,9 @@ export function SampleButton({ disabled, onFile }: Props) {
                 </Button>
               </li>
             ))}
-          </ul>
-          <Button onClick={() => dialog.current?.close()}>{t('dismiss')}</Button>
-        </div>
-      </dialog>
+        </ul>
+        <Button onClick={() => dialog.current?.close()}>{t('dismiss')}</Button>
+      </Sheet>
     </>
   )
 }

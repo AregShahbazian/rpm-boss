@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useI18n } from '../i18n'
+import { css } from '@emotion/react'
 
 interface Props {
   minRpm: string
@@ -42,7 +43,33 @@ export function RangeFields({ minRpm, maxRpm, disabled, onChange }: Props) {
 
   return (
     <details
-      className="range"
+      className="m-0 rounded-md border border-btn px-3 py-2"
+      css={css`
+        summary {
+          font-size: 0.9rem;
+          cursor: pointer;
+          padding: 4px 0;
+          list-style-position: inside;
+        }
+        &[open] summary {
+          margin-block-end: 8px;
+        }
+        label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.9rem;
+        }
+        input {
+          inline-size: 6em;
+          padding: 6px 8px;
+          border-radius: 6px;
+          border: 1px solid var(--color-btn);
+          background: var(--color-btn);
+          color: inherit;
+          font: inherit;
+        }
+      `}
       open={open}
       onToggle={(e) => {
         const next = e.currentTarget.open
@@ -50,8 +77,8 @@ export function RangeFields({ minRpm, maxRpm, disabled, onChange }: Props) {
         writeOpen(next)
       }}
     >
-      <summary className="muted">{t('rangeLegend')}</summary>
-      <div className="row">
+      <summary className="text-muted">{t('rangeLegend')}</summary>
+      <div className="flex flex-wrap gap-3">
         <label>
           {t('rangeMin')}
           <input

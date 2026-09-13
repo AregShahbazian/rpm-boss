@@ -14,6 +14,7 @@
  * does not decide a conflict — order in the generated stylesheet does — so a
  * component that emitted both would be relying on luck.
  */
+import { css } from '@emotion/react'
 import clsx from 'clsx'
 
 /**
@@ -63,7 +64,75 @@ export function LinkButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>)
     <button
       type="button"
       {...props}
-      className="cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-accent underline"
+      className="cursor-pointer border-0 bg-transparent p-0 text-accent underline"
+      css={css`
+        /* The shorthand, not just the family. A <button> otherwise keeps the
+           browser's own 13.3px, and preflight is deliberately not imported to
+           reset it. */
+        font: inherit;
+      `}
     />
+  )
+}
+
+/**
+ * A modal sheet. Two of them: the settings and the sample list.
+ *
+ * Shared for the same reason `Button` is — the styling said "these are the
+ * same thing" and nothing enforced it — but the close-on-backdrop handler was
+ * duplicated too, character for character, which is the sort of thing that
+ * stays in step right up until it does not.
+ *
+ * The caller keeps the ref and calls `showModal()` and `close()` on it, as
+ * both did before.
+ */
+export function Sheet({
+  ref,
+  title,
+  children,
+}: {
+  ref: React.RefObject<HTMLDialogElement | null>
+  title: string
+  children: React.ReactNode
+}) {
+  /**
+   * A press on the backdrop closes it.
+   *
+   * A backdrop press is reported against the dialog element itself, but so is
+   * a press on the dialog's own padding, so the target alone would close the
+   * sheet when someone taps the margin beside a control. The point has to be
+   * outside the box as well. Both conditions also keep a keyboard-driven
+   * click, which arrives at 0,0 from a control inside, from closing it.
+   */
+  const closeOnBackdrop = (e: React.MouseEvent<HTMLDialogElement>) => {
+    const el = ref.current
+    if (!el || e.target !== el) return
+    const r = el.getBoundingClientRect()
+    const outside = e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom
+    if (outside) el.close()
+  }
+
+  return (
+    <dialog
+      ref={ref}
+      onClick={closeOnBackdrop}
+      className="rounded-xl border-0 bg-bg p-5 text-fg"
+      css={css`
+        inline-size: min(320px, calc(100vw - 32px));
+        /* A landscape phone is 390 px tall and the sample list is seven rows
+           and a button. Scroll the sheet rather than letting it run off the
+           screen. */
+        max-block-size: calc(100dvh - 32px);
+        overflow: auto;
+
+        /* No utility reaches the backdrop pseudo-element. */
+        &::backdrop {
+          background: rgb(0 0 0 / 0.5);
+        }
+      `}
+    >
+      <h2 className="m-0 mb-4 text-[1.1rem]">{title}</h2>
+      <div className="flex flex-col gap-4">{children}</div>
+    </dialog>
   )
 }

@@ -12,11 +12,11 @@ interface Props {
 export function Player({ playing, positionS, durationS, onToggle }: Props) {
   const { t } = useI18n()
   return (
-    <div className="player">
+    <div className="flex items-center gap-3">
       <Button shape="fit" onClick={onToggle}>
         {playing ? `■ ${t('stopPlaying')}` : `▶ ${t('play')}`}
       </Button>
-      <span className="mono">
+      <span className="flex-auto tabular-nums">
         {formatTime(positionS)} / {formatTime(durationS)}
       </span>
     </div>

@@ -5,6 +5,7 @@ import type { TimeRange } from '../waveform/range'
 import { moveBy, setEnd, setStart, type Selection } from '../waveform/selection'
 import { usePalette } from './palette'
 import { tickPositionsInRange } from './tick'
+import { css } from '@emotion/react'
 
 /** The combustions found in a window, and where that window starts. */
 export interface Marks {
@@ -170,6 +171,13 @@ export function WaveformCanvas({ clip, range, selection, onChange, positionS, ha
   return (
     <canvas
       ref={canvas}
+      // Out of flow: the canvas is told its size by the box above it, so
+      // letting its intrinsic size feed back into that box is a loop, and a
+      // grid row a few pixels taller than it should be.
+      className="absolute inset-0 block h-full w-full touch-none rounded-md select-none"
+      css={css`
+        background: color-mix(in srgb, var(--color-btn) 60%, transparent);
+      `}
       width={Math.round(width * dpr)}
       height={Math.round(height * dpr)}
       onPointerDown={onPointerDown}
