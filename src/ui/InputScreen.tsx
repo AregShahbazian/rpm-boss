@@ -4,6 +4,7 @@ import { useAudioInput } from '../state/useAudioInput'
 import type { ExpectedRange } from '../dsp/types'
 import { useI18n } from '../i18n'
 import { ExportButton } from './ExportButton'
+import { LiveScreen } from './LiveScreen'
 import { MicCheck } from './MicCheck'
 import { Player } from './Player'
 import { RangeFields } from './RangeFields'
@@ -19,6 +20,9 @@ export function InputScreen() {
   const { state, getWindowClip, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection } =
     useAudioInput()
   const [range, setRange] = useState({ minRpm: '', maxRpm: '' })
+  // POC. The live screen takes over the whole screen rather than living inside
+  // this one: it shares nothing with the clip-and-crop flow above.
+  const [liveMode, setLiveMode] = useState(false)
   const { t } = useI18n()
   // Any change to the clip or the window clears the last result.
   const windowKey = `${state.clipId}:${state.selection.startS}:${state.selection.endS}`
@@ -51,6 +55,8 @@ export function InputScreen() {
   // Nothing to split until there is something to show in the second column.
   const loaded = state.clip !== undefined && state.status !== 'recording'
 
+  if (liveMode) return <LiveScreen onExit={() => setLiveMode(false)} />
+
   return (
     <main className={loaded ? 'screen' : 'screen screen-empty'}>
       {/* No title: the launcher, the tab and the app switcher all carry the
@@ -66,6 +72,10 @@ export function InputScreen() {
           onStop={stopRecording}
         />
         <SampleButton disabled={busy} onFile={upload} />
+        {/* POC, untranslated. */}
+        <button type="button" className="btn" disabled={busy} onClick={() => setLiveMode(true)}>
+          Live
+        </button>
         <Settings />
       </div>
       <div className="area-status">
