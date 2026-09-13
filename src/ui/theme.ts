@@ -1,3 +1,4 @@
+import { SystemBars, SystemBarsStyle } from '@capacitor/core'
 import { useCallback, useEffect, useState } from 'react'
 
 export type Theme = 'system' | 'light' | 'dark'
@@ -49,6 +50,26 @@ function writeTheme(theme: Theme): void {
 export function applyTheme(theme: Theme, root: HTMLElement): void {
   root.dataset.theme = theme
   root.style.colorScheme = theme === 'system' ? 'light dark' : theme
+  applyBars(theme)
+}
+
+/**
+ * The status bar and the navigation bar, on Android.
+ *
+ * The app's background reaches under both — see the safe-area note in
+ * `palette.css` — so the only thing left to say is what colour their icons
+ * should be, and that follows the app's theme rather than the device's.
+ * `DARK` means a dark bar and therefore light icons; `DEFAULT` hands the
+ * decision to the device, which is exactly what `system` asks for.
+ *
+ * A no-op in a browser: the web implementation resolves and does nothing.
+ */
+function applyBars(theme: Theme): void {
+  const style =
+    theme === 'light' ? SystemBarsStyle.Light : theme === 'dark' ? SystemBarsStyle.Dark : SystemBarsStyle.Default
+  // Nothing downstream waits on it, and a platform that cannot do it is not an
+  // error worth showing anyone.
+  void SystemBars.setStyle({ style }).catch(() => {})
 }
 
 export function useTheme(): [Theme, (next: Theme) => void] {

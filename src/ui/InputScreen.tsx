@@ -30,8 +30,8 @@ const SCREEN = css`
   gap: var(--gap);
   max-inline-size: 480px;
   margin-inline: auto;
-  padding-block: 24px;
-  padding-inline: 16px;
+  padding-block: calc(24px + var(--safe-t)) calc(24px + var(--safe-b));
+  padding-inline: calc(16px + var(--safe-l)) calc(16px + var(--safe-r));
   grid-template-areas: 'source' 'status' 'wave' 'transport' 'range' 'calc' 'result';
 
   /*
@@ -48,7 +48,8 @@ const SCREEN = css`
     /* Tighter than the stacked layout: a phone on its side has 360 px of
        height to hold everything the portrait screen holds in 640. */
     --gap: 8px;
-    padding: 10px;
+    padding-block: calc(10px + var(--safe-t)) calc(10px + var(--safe-b));
+    padding-inline: calc(10px + var(--safe-l)) calc(10px + var(--safe-r));
     /*
      * The leftover height goes to the result row, which means it goes to the
      * waveform too: the wave spans rows one to four, so its height is whatever
