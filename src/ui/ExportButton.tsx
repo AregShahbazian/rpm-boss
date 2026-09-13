@@ -1,6 +1,7 @@
 import type { AudioClip } from '../audio/types'
 import { encodeWav } from '../dsp/wav'
 import type { Selection } from '../waveform/selection'
+import { LinkButton } from './kit'
 
 interface Props {
   clip: AudioClip
@@ -38,8 +39,8 @@ export function ExportButton({ clip, selection }: Props) {
   }
 
   return (
-    <button type="button" className="link" onClick={save}>
+    <LinkButton onClick={save}>
       Export recording (dev)
-    </button>
+    </LinkButton>
   )
 }

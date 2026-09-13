@@ -82,9 +82,9 @@ export function WaveformBlock({ clip, selection, onChange, positionS, marks }: P
   }
 
   return (
-    <div className="wave-block" onPointerDownCapture={releaseSnap}>
+    <div className="flex h-full flex-col gap-2" onPointerDownCapture={releaseSnap}>
       {long && (
-        <div className="wave wave-overview" ref={overviewBox}>
+        <div className="relative shrink-0 grow-0 basis-12" ref={overviewBox}>
           <WaveformCanvas
             clip={clip}
             range={whole}
@@ -97,7 +97,14 @@ export function WaveformBlock({ clip, selection, onChange, positionS, marks }: P
           />
         </div>
       )}
-      <div className="wave wave-detail" ref={detailBox}>
+      <div
+        // Stacked, the detail view is inset so both crop handles have room to
+        // be grabbed clear of the edge of the screen. On a portrait tablet the
+        // 480 px column is a ribbon, so it gets more height; in the split
+        // layout it fills the column instead and the inset goes away.
+        className="relative mx-2 flex-auto h-[clamp(150px,26dvh,232px)] tall:h-[clamp(150px,24dvh,340px)] split:mx-0 split:h-auto split:max-h-[560px]"
+        ref={detailBox}
+      >
         <WaveformCanvas
           clip={clip}
           range={long ? range : whole}
@@ -110,7 +117,7 @@ export function WaveformBlock({ clip, selection, onChange, positionS, marks }: P
           marks={marks}
         />
       </div>
-      <p className="readout mono" dir="ltr">
+      <p className="m-0 text-[0.95rem] tabular-nums" dir="ltr">
         {formatTime(selection.startS, 1)} - {formatTime(selection.endS, 1)} · {selectionLength(selection).toFixed(1)} s
       </p>
     </div>

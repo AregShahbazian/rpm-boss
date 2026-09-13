@@ -41,10 +41,10 @@ export function usePalette(): Palette {
   return useMemo(() => {
     void epoch
     return {
-      muted: cssVar('--muted', '#888'),
-      bg: cssVar('--bg', '#fff'),
-      accent: cssVar('--accent', '#1f4e79'),
-      error: cssVar('--error', '#b3261e'),
+      muted: cssVar('--color-muted', '#888'),
+      bg: cssVar('--color-bg', '#fff'),
+      accent: cssVar('--color-accent', '#1f4e79'),
+      error: cssVar('--color-error', '#b3261e'),
       dim: Number(cssVar('--dim', '0.6')) || 0.6,
     }
   }, [epoch])

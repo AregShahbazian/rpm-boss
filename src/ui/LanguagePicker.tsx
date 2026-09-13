@@ -1,4 +1,5 @@
 import { sortedLanguages, useI18n } from '../i18n'
+import { css } from '@emotion/react'
 
 /**
  * A native `<select>`, deliberately. On a phone it opens the platform's own
@@ -10,8 +11,20 @@ import { sortedLanguages, useI18n } from '../i18n'
 export function LanguagePicker() {
   const { lang, setLang, t } = useI18n()
   return (
-    <label className="field">
-      <span className="muted">{t('languageLabel')}</span>
+    <label
+      className="flex flex-col gap-1.5 text-[0.9rem]"
+      css={css`
+        select {
+          padding: 8px;
+          border-radius: 6px;
+          border: 1px solid var(--color-btn);
+          background: var(--color-btn);
+          color: inherit;
+          font: inherit;
+        }
+      `}
+    >
+      <span className="text-muted">{t('languageLabel')}</span>
       <select id="language" value={lang} onChange={(e) => setLang(e.target.value)}>
         {sortedLanguages().map((l) => (
           <option key={l.code} value={l.code}>

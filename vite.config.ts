@@ -1,5 +1,6 @@
 import { createReadStream, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import tailwind from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vitest/config'
 
@@ -41,7 +42,11 @@ export default defineConfig(({ command }) => {
   const enabled = flag === '1' || (flag !== '0' && command === 'serve')
   return {
     base: './',
-    plugins: [react(), samples(enabled, command === 'build')],
+    // `jsxImportSource` is what gives every element the `css` prop. It is a
+    // compiler setting, not a runtime one: Emotion's JSX factory replaces
+    // React's, and nothing has to be imported per file except the `css` tag
+    // itself. No Babel — see the styling design note.
+    plugins: [react({ jsxImportSource: '@emotion/react' }), tailwind(), samples(enabled, command === 'build')],
     define: { __SAMPLES__: JSON.stringify(enabled) },
     test: { environment: 'node', include: ['test/**/*.test.ts', 'src/**/*.test.ts'] },
   }

@@ -2,6 +2,7 @@ import type { AudioInputState } from '../state/useAudioInput'
 import { duration, useI18n } from '../i18n'
 import { INPUT_ERROR_KEYS } from './errorKeys'
 import { MIN_CLIP_S } from '../audio/types'
+import { LinkButton, StatusText } from './kit'
 
 interface Props {
   state: AudioInputState
@@ -13,31 +14,31 @@ export function StatusLine({ state, onDismiss }: Props) {
 
   switch (state.status) {
     case 'idle':
-      return <p className="status muted">{t('statusIdle')}</p>
+      return <StatusText tone="muted">{t('statusIdle')}</StatusText>
     case 'decoding':
-      return <p className="status">{t('statusDecoding')}</p>
+      return <StatusText>{t('statusDecoding')}</StatusText>
     case 'recording':
-      return <p className="status">{t('statusRecording')}</p>
+      return <StatusText>{t('statusRecording')}</StatusText>
     case 'error':
       return (
-        <p className="status error" role="alert">
+        <StatusText tone="error" role="alert">
           {state.error
             ? t(INPUT_ERROR_KEYS[state.error], { duration: duration(MIN_CLIP_S, lang) })
             : t('errorRecordFailed')}
           {import.meta.env.DEV && state.errorDetail ? ` [dev: ${state.errorDetail}]` : ''}{' '}
-          <button type="button" className="link" onClick={onDismiss}>
+          <LinkButton onClick={onDismiss}>
             {t('dismiss')}
-          </button>
-        </p>
+          </LinkButton>
+        </StatusText>
       )
     case 'loaded':
       return (
-        <p className="status">
+        <StatusText>
           {t('statusLoaded', {
             name: state.clip?.source.name ?? '',
             duration: duration(Number((state.clip?.durationS ?? 0).toFixed(1)), lang),
           })}
-        </p>
+        </StatusText>
       )
   }
 }

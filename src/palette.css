@@ -1,0 +1,75 @@
+/*
+ * The palette. Every colour the app uses in more than one place, and the two
+ * numbers that go with them. A colour used once lives where it is used.
+ *
+ * `@theme` does two jobs from one declaration: it emits the custom properties
+ * on `:root`, so `var(--color-accent)` works in a `css` block and
+ * `getComputedStyle` can read them for the canvas, and it generates the
+ * matching utilities — `bg-accent`, `text-muted` — so there is one name for a
+ * colour rather than two. Not `@theme inline`: the utilities have to go on
+ * reading the variable, or the theme overrides below would never reach them.
+ *
+ * Dark first. The bare `:root` is the dark theme, because dark is what an app
+ * with no stored choice shows; `prefers-color-scheme` is consulted only when
+ * the user has explicitly asked for it, which `theme.ts` stamps as
+ * `data-theme="system"`. See the design note: a browser cannot report "no
+ * preference", so following the device by default would put most phones on the
+ * light theme.
+ */
+@theme {
+  --color-fg: #f0f0f0;
+  --color-bg: #121212;
+  --color-muted: #a0a0a0;
+  --color-accent: #8ab4f8;
+  --color-error: #f2b8b5;
+  --color-btn: #2a2f36;
+}
+
+/*
+ * Not colours, so not in the theme namespace — but they belong beside it.
+ * `--dim` changes with the theme and is read by the canvas; the other two set
+ * the shape of the layout.
+ */
+:root {
+  /* How much background is laid over the audio outside the crop window. */
+  --dim: 0.6;
+  --gap: 12px;
+  /*
+   * The control column. The floor is what the source row needs on one line —
+   * two labelled buttons and the settings icon — because wrapping that row
+   * costs 52 px of height, and a landscape phone has 360 px in total. The
+   * ceiling leaves the waveform more than 500 px on a 844 px screen, which is
+   * where the marks stop being a fence and start being countable.
+   */
+  --col: clamp(300px, 34vw, 460px);
+}
+
+/*
+ * The light tokens, twice: once for someone who asked to follow the device and
+ * whose device says light, once for someone who asked for light outright.
+ * `--color-error` is not an inversion — the pale pink that reads as a warning
+ * on black is barely visible on white — and neither is `--dim`, which has to
+ * be heavier to mute a waveform on a light ground by the same amount.
+ */
+@media (prefers-color-scheme: light) {
+  :root[data-theme='system'] {
+    color-scheme: light;
+    --color-fg: #1a1a1a;
+    --color-bg: #fafafa;
+    --color-muted: #6b6b6b;
+    --color-accent: #1f4e79;
+    --color-error: #b3261e;
+    --color-btn: #e9eef4;
+    --dim: 0.72;
+  }
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-fg: #1a1a1a;
+  --color-bg: #fafafa;
+  --color-muted: #6b6b6b;
+  --color-accent: #1f4e79;
+  --color-error: #b3261e;
+  --color-btn: #e9eef4;
+  --dim: 0.72;
+}

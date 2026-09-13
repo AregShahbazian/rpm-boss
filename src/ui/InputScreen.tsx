@@ -1,9 +1,12 @@
+import { css } from '@emotion/react'
 import { useMemo, useState } from 'react'
 import { useAnalysis } from '../state/useAnalysis'
 import { useAudioInput } from '../state/useAudioInput'
 import type { ExpectedRange } from '../dsp/types'
 import { useI18n } from '../i18n'
+import { SPLIT, TALL } from './breakpoints'
 import { ExportButton } from './ExportButton'
+import { Button } from './kit'
 import { MicCheck } from './MicCheck'
 import { Player } from './Player'
 import { RangeFields } from './RangeFields'
@@ -14,6 +17,89 @@ import { Settings } from './Settings'
 import { StatusLine } from './StatusLine'
 import { UploadButton } from './UploadButton'
 import { WaveformBlock, type Marks } from './WaveformBlock'
+
+/*
+ * One grid, one DOM order, two layouts. The DOM order is the stacked one, so
+ * it is also the reading order for a screen reader; the split layout only
+ * re-places the areas. Grid columns follow the inline direction, which is what
+ * makes Urdu put the controls on the right for free.
+ *
+ * Each child names its own `grid-area`, so this block owns the shape and
+ * nothing else owns a piece of it.
+ */
+const SCREEN = css`
+  display: grid;
+  gap: var(--gap);
+  max-inline-size: 480px;
+  margin-inline: auto;
+  padding-block: 24px;
+  padding-inline: 16px;
+  grid-template-areas: 'source' 'status' 'wave' 'transport' 'range' 'calc' 'result';
+
+  /*
+   * The split needs width *and* a landscape shape. Width alone put a portrait
+   * tablet — 1137 by 1707 — into the landscape layout, where the whole app
+   * collapsed into a 289 px band across the middle of the screen with 693 px
+   * of nothing above and below it. A waveform gains almost nothing from height
+   * and everything from width, so a tall screen wants the stacked column, not
+   * a squashed split.
+   */
+  @media ${SPLIT} {
+    max-inline-size: none;
+    block-size: 100dvh;
+    /* Tighter than the stacked layout: a phone on its side has 360 px of
+       height to hold everything the portrait screen holds in 640. */
+    --gap: 8px;
+    padding: 10px;
+    /*
+     * The leftover height goes to the result row, which means it goes to the
+     * waveform too: the wave spans rows one to four, so its height is whatever
+     * those rows come to. Centring a block of content-sized rows instead left
+     * 60 % of a tablet empty and the waveform a 185 px strip. The control
+     * column spreads out with it — buttons at the top, Calculate at the
+     * bottom, the number with air around it — and the detail view carries the
+     * cap that stops the waveform growing without limit.
+     */
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, var(--col)) minmax(0, 1fr);
+    grid-template-areas:
+      'source wave'
+      'status wave'
+      'result wave'
+      'range  wave'
+      'calc   transport';
+  }
+
+  /* Stacked on a big screen — a portrait tablet — the 480 px column is a
+     ribbon. Give it room, and the waveform with it. "orientation" rather than
+     a pair of aspect-ratio bounds, because min-aspect-ratio: 1/1 and
+     max-aspect-ratio: 1/1 both match a square viewport and the two blocks
+     would fight over it; portrait and landscape are exclusive by definition,
+     and a square screen counts as portrait. */
+  @media ${TALL} {
+    max-inline-size: 720px;
+  }
+`
+
+/*
+ * Before a recording is opened there is no second column to fill, and a split
+ * layout would leave two buttons pinned to the left edge of a laptop screen
+ * with the whole signal column empty beside them. The empty state is one
+ * centred column, the same shape the stacked layout has.
+ */
+const SCREEN_EMPTY = css`
+  @media ${SPLIT} {
+    max-inline-size: 480px;
+    margin-inline: auto;
+    align-content: center;
+    grid-template-columns: minmax(0, 1fr);
+    /* Two tracks, not five: the flexible row above belongs to a result that
+       does not exist yet, and left in place it would push the buttons off the
+       top of the screen. */
+    grid-template-rows: auto auto;
+    grid-template-areas: 'source' 'status';
+  }
+`
 
 export function InputScreen() {
   const { state, getWindowClip, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection } =
@@ -52,11 +138,11 @@ export function InputScreen() {
   const loaded = state.clip !== undefined && state.status !== 'recording'
 
   return (
-    <main className={loaded ? 'screen' : 'screen screen-empty'}>
+    <main css={loaded ? SCREEN : [SCREEN, SCREEN_EMPTY]}>
       {/* No title: the launcher, the tab and the app switcher all carry the
           name already, and on a phone the screen is short enough that a
           heading costs more than it says. */}
-      <div className="row area-source">
+      <div className="flex flex-wrap gap-3 [grid-area:source] split:gap-2">
         <UploadButton disabled={busy} onFile={upload} />
         <RecordButton
           recording={state.status === 'recording'}
@@ -68,13 +154,13 @@ export function InputScreen() {
         <SampleButton disabled={busy} onFile={upload} />
         <Settings />
       </div>
-      <div className="area-status">
+      <div className="[grid-area:status]">
         <StatusLine state={state} onDismiss={dismissError} />
         <MicCheck />
       </div>
       {state.clip && state.status !== 'recording' && (
         <>
-          <div className="area-wave">
+          <div className="min-w-0 [grid-area:wave]">
             <WaveformBlock
               clip={state.clip}
               selection={state.selection}
@@ -83,7 +169,7 @@ export function InputScreen() {
               marks={marks}
             />
           </div>
-          <div className="area-transport">
+          <div className="[grid-area:transport]">
             <Player
               playing={state.playing}
               positionS={state.playing ? state.positionS - state.selection.startS : 0}
@@ -92,13 +178,15 @@ export function InputScreen() {
             />
             <ExportButton clip={state.clip} selection={state.selection} />
           </div>
-          <div className="area-range">
+          <div className="[grid-area:range]">
             <RangeFields {...range} disabled={running} onChange={setRange} />
           </div>
-          <button type="button" className="btn area-calc" disabled={busy || running} onClick={onCalculate}>
-            {t('calculate')}
-          </button>
-          <div className="area-result">
+          <div className="flex [grid-area:calc]">
+            <Button disabled={busy || running} onClick={onCalculate}>
+              {t('calculate')}
+            </Button>
+          </div>
+          <div className="[grid-area:result] split:self-center">
             <ResultView analysis={analysis} />
           </div>
         </>

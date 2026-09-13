@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { LinkButton } from './kit'
+import { css } from '@emotion/react'
 
 /**
  * Development only. Answers one question the phone cannot otherwise be asked
@@ -133,12 +135,24 @@ export function MicCheck() {
   }
 
   return (
-    <div className="miccheck">
-      <button type="button" className="link" disabled={busy} onClick={() => void run()}>
+    <div>
+      <LinkButton disabled={busy} onClick={() => void run()}>
         Mic check (dev)
-      </button>
-      <span className="muted"> — play the engine sound while it runs (~9 s)</span>
-      {report && <pre className="mono">{report}</pre>}
+      </LinkButton>
+      <span className="text-muted"> — play the engine sound while it runs (~9 s)</span>
+      {report && (
+        <pre
+          className="mx-0 mt-1.5 mb-0 rounded-md bg-btn p-2 text-xs tabular-nums"
+          css={css`
+            white-space: pre-wrap;
+            /* Not \`overflow-wrap\`, which leaves a long unbroken token
+               overflowing; this report is full of them. */
+            word-break: break-word;
+          `}
+        >
+          {report}
+        </pre>
+      )}
     </div>
   )
 }

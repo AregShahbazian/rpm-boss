@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useI18n } from '../i18n'
 import { SAMPLES, SAMPLES_ENABLED, sampleFile, sampleUrl } from '../samples'
+import { Button, Sheet } from './kit'
 
 interface Props {
   disabled?: boolean
@@ -38,46 +39,34 @@ export function SampleButton({ disabled, onFile }: Props) {
     onFile(new File(body, sampleFile(num), { type: 'audio/mp4' }))
   }
 
-  const closeOnBackdrop = (e: React.MouseEvent<HTMLDialogElement>) => {
-    const el = dialog.current
-    if (!el || e.target !== el) return
-    const r = el.getBoundingClientRect()
-    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) el.close()
-  }
-
   return (
     <>
-      <button
-        type="button"
-        className="btn btn-icon"
+      <Button
+        shape="icon"
         disabled={disabled}
         aria-label={t('pickSample')}
         onClick={() => dialog.current?.showModal()}
       >
         <SamplesIcon />
-      </button>
-      <dialog className="sheet" ref={dialog} onClick={closeOnBackdrop}>
-        <h2>{t('pickSample')}</h2>
-        <div className="sheet-body">
-          <ul className="samples">
+      </Button>
+      <Sheet ref={dialog} title={t('pickSample')}>
+        {/* The bundled recordings, one per row. */}
+        <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {SAMPLES.map((s) => (
               <li key={s.n}>
                 {/* The name is deliberately not translated: it is a number, and
                     seven labels in seventeen languages would say nothing more. */}
-                <button type="button" className="btn" disabled={disabled} onClick={() => void pick(s.n)}>
+                <Button shape="wide" disabled={disabled} onClick={() => void pick(s.n)}>
                   Sample {s.n}{' '}
-                  <span className="muted mono">
+                  <span className="text-muted tabular-nums">
                     ≈{n(s.rpm)} {t('rpm')}
                   </span>
-                </button>
+                </Button>
               </li>
             ))}
-          </ul>
-          <button type="button" className="btn" onClick={() => dialog.current?.close()}>
-            {t('dismiss')}
-          </button>
-        </div>
-      </dialog>
+        </ul>
+        <Button onClick={() => dialog.current?.close()}>{t('dismiss')}</Button>
+      </Sheet>
     </>
   )
 }

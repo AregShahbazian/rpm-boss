@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { useI18n } from '../i18n'
+import { Button } from './kit'
 
 interface Props {
   disabled?: boolean
@@ -22,9 +23,9 @@ export function UploadButton({ disabled, onFile }: Props) {
           if (f) onFile(f)
         }}
       />
-      <button type="button" className="btn" disabled={disabled} onClick={() => input.current?.click()}>
+      <Button disabled={disabled} onClick={() => input.current?.click()}>
         {t('openAudio')}
-      </button>
+      </Button>
     </>
   )
 }
