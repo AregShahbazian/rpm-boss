@@ -6,22 +6,18 @@
 #   ./scripts/install.sh --samples  build with the demo recordings, then launch
 #
 # Needs a phone attached with USB debugging on. Installing over an existing copy
-# keeps its data and its granted permissions.
+# keeps its data and its granted permissions. With more than one phone attached
+# it takes the first; ANDROID_SERIAL picks another.
 set -e
-cd "$(dirname "$0")/.."
+HERE=$(dirname "$0")
+. "$HERE/device.sh"
+cd "$HERE/.."
 
 APK=android/app/build/outputs/apk/release/app-release.apk
 PACKAGE=com.mby4m.rpmboss
 
-if ! command -v adb >/dev/null 2>&1; then
-  echo "adb not found. Install the Android platform tools and try again." >&2
-  exit 1
-fi
-if [ -z "$(adb devices | awk 'NR>1 && $2=="device"')" ]; then
-  echo "No phone attached. Plug it in, allow USB debugging, and try again." >&2
-  adb devices
-  exit 1
-fi
+require_adb
+use_device
 
 if [ "$1" = "--samples" ]; then
   ./scripts/apk.sh --samples
@@ -30,7 +26,7 @@ else
 fi
 
 echo
-echo "Installing on $(adb shell getprop ro.product.model | tr -d '\r')…"
+echo "Installing on $DEVICE ($ANDROID_SERIAL)…"
 adb install -r "$APK"
 
 if [ "$1" != "--keep" ]; then

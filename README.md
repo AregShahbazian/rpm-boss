@@ -132,6 +132,14 @@ path is machine-specific, so it is not committed.
 After installing, `adb logcat -d -s RawAudio` says which microphone source the
 app actually opened.
 
+Anything that talks to a phone takes the first one attached, so no handset is
+named anywhere in the scripts. With two plugged in, name the other one:
+
+```bash
+adb devices                                  # the serials
+ANDROID_SERIAL=<serial> ./scripts/install.sh # that one instead of the first
+```
+
 Uninstalling drops the granted microphone permission, which is how to get the
 permission prompt back for testing. `./scripts/uninstall.sh --keep` leaves the
 app's stored data in place.
