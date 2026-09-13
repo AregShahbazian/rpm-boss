@@ -151,6 +151,14 @@ TypeScript, React, Vite, vitest. Hand-written DSP over `Float32Array`, no
 audio libraries. Web Audio for decoding, MediaRecorder for recording, canvas
 for the waveform. Capacitor for the Android build.
 
+Styling is Tailwind utilities in `className` for anything Tailwind already
+names, and an Emotion `css` prop holding real CSS for what it does not — a
+nested selector, a two-condition media query, `::backdrop`. The two never mix,
+which is what keeps a `css` block readable as CSS. `src/palette.css` is the
+only place a shared colour is written down; a one-off colour lives where it is
+used. Tailwind's preflight is deliberately not imported, because the app
+already has its own small reset.
+
 ## Workflow
 
 Built feature by feature with a written PRD, design, task list and review per
