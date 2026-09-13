@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n'
 import { formatTime } from './format'
+import { Button } from './kit'
 
 interface Props {
   playing: boolean
@@ -12,9 +13,9 @@ export function Player({ playing, positionS, durationS, onToggle }: Props) {
   const { t } = useI18n()
   return (
     <div className="player">
-      <button type="button" className="btn" onClick={onToggle}>
+      <Button shape="fit" onClick={onToggle}>
         {playing ? `■ ${t('stopPlaying')}` : `▶ ${t('play')}`}
-      </button>
+      </Button>
       <span className="mono">
         {formatTime(positionS)} / {formatTime(durationS)}
       </span>

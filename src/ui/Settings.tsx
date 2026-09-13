@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { useI18n, type MessageKey } from '../i18n'
+import { Button } from './kit'
 import { LanguagePicker } from './LanguagePicker'
 import { THEMES, useTheme, type Theme } from './theme'
 
@@ -45,14 +46,9 @@ export function Settings() {
 
   return (
     <>
-      <button
-        type="button"
-        className="btn btn-icon"
-        aria-label={t('settings')}
-        onClick={() => dialog.current?.showModal()}
-      >
+      <Button shape="icon" aria-label={t('settings')} onClick={() => dialog.current?.showModal()}>
         <GearIcon />
-      </button>
+      </Button>
       <dialog className="sheet" ref={dialog} onClick={closeOnBackdrop}>
         <h2>{t('settings')}</h2>
         <div className="sheet-body">
@@ -72,9 +68,7 @@ export function Settings() {
               </label>
             ))}
           </fieldset>
-          <button type="button" className="btn" onClick={() => dialog.current?.close()}>
-            {t('dismiss')}
-          </button>
+          <Button onClick={() => dialog.current?.close()}>{t('dismiss')}</Button>
         </div>
       </dialog>
     </>

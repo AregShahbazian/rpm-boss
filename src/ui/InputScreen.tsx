@@ -4,6 +4,7 @@ import { useAudioInput } from '../state/useAudioInput'
 import type { ExpectedRange } from '../dsp/types'
 import { useI18n } from '../i18n'
 import { ExportButton } from './ExportButton'
+import { Button } from './kit'
 import { MicCheck } from './MicCheck'
 import { Player } from './Player'
 import { RangeFields } from './RangeFields'
@@ -95,9 +96,11 @@ export function InputScreen() {
           <div className="area-range">
             <RangeFields {...range} disabled={running} onChange={setRange} />
           </div>
-          <button type="button" className="btn area-calc" disabled={busy || running} onClick={onCalculate}>
-            {t('calculate')}
-          </button>
+          <div className="area-calc flex">
+            <Button disabled={busy || running} onClick={onCalculate}>
+              {t('calculate')}
+            </Button>
+          </div>
           <div className="area-result">
             <ResultView analysis={analysis} />
           </div>

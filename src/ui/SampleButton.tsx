@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useI18n } from '../i18n'
 import { SAMPLES, SAMPLES_ENABLED, sampleFile, sampleUrl } from '../samples'
+import { Button } from './kit'
 
 interface Props {
   disabled?: boolean
@@ -47,15 +48,14 @@ export function SampleButton({ disabled, onFile }: Props) {
 
   return (
     <>
-      <button
-        type="button"
-        className="btn btn-icon"
+      <Button
+        shape="icon"
         disabled={disabled}
         aria-label={t('pickSample')}
         onClick={() => dialog.current?.showModal()}
       >
         <SamplesIcon />
-      </button>
+      </Button>
       <dialog className="sheet" ref={dialog} onClick={closeOnBackdrop}>
         <h2>{t('pickSample')}</h2>
         <div className="sheet-body">
@@ -64,18 +64,16 @@ export function SampleButton({ disabled, onFile }: Props) {
               <li key={s.n}>
                 {/* The name is deliberately not translated: it is a number, and
                     seven labels in seventeen languages would say nothing more. */}
-                <button type="button" className="btn" disabled={disabled} onClick={() => void pick(s.n)}>
+                <Button shape="wide" disabled={disabled} onClick={() => void pick(s.n)}>
                   Sample {s.n}{' '}
-                  <span className="muted mono">
+                  <span className="text-muted tabular-nums">
                     ≈{n(s.rpm)} {t('rpm')}
                   </span>
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
-          <button type="button" className="btn" onClick={() => dialog.current?.close()}>
-            {t('dismiss')}
-          </button>
+          <Button onClick={() => dialog.current?.close()}>{t('dismiss')}</Button>
         </div>
       </dialog>
     </>

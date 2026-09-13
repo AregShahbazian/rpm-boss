@@ -125,23 +125,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
 }
 
 .row { display: flex; gap: 12px; flex-wrap: wrap; }
-.btn {
-  min-height: 48px; padding: 0 20px; font-size: 1rem; border: 0; border-radius: 10px;
-  background: var(--color-btn); color: var(--color-fg); cursor: pointer; flex: 1 1 auto;
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-}
-.btn:disabled { opacity: 0.5; cursor: default; }
-.btn-rec { background: var(--color-error); color: #fff; }
-/* A square target for an icon with no label. Still 48 px, still a hit target. */
-.btn-icon { flex: 0 0 auto; inline-size: 48px; padding: 0; }
-.dot { color: var(--color-error); }
 .mono { font-variant-numeric: tabular-nums; }
 .status { margin: 0; min-height: 1.5em; }
 .muted { color: var(--color-muted); }
 .error { color: var(--color-error); }
 .link { background: none; border: 0; padding: 0; color: var(--color-accent); text-decoration: underline; cursor: pointer; font: inherit; }
 .player { display: flex; align-items: center; gap: 12px; }
-.player .btn { flex: 0 0 auto; }
 .player .mono { flex: 1 1 auto; }
 
 /* No explicit width: as a flex child it already stretches, and 100% plus the
@@ -211,4 +200,3 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
 .themes label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
 /* The bundled recordings, one per row inside their own sheet. */
 .samples { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.samples .btn { inline-size: 100%; justify-content: space-between; }
