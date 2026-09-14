@@ -58,4 +58,7 @@ export const messages: Messages = {
   liveMotionLabel: 'سوئی کی حرکت',
   liveMotionSmooth: 'ہموار',
   liveMotionStep: 'قدم بہ قدم',
+  dialMaxLabel: 'ڈائل کی زیادہ سے زیادہ حد',
+  dialRedlineLabel: 'ریڈ لائن یہاں سے',
+  tachoReset: 'ابتدائی حالت پر لائیں',
 }

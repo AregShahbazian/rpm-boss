@@ -27,6 +27,22 @@ export function readChoice<T extends string>(key: string, values: readonly T[], 
   }
 }
 
+/**
+ * Forget a preference, so the next read gives the default.
+ *
+ * Removing the key rather than writing the default into it: a default that is
+ * stored is frozen, and would not follow the app if a later version decided
+ * the dial should start somewhere else. An unanswered question stays
+ * unanswered.
+ */
+export function clearChoice(key: string): void {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    // nothing was persisted in the first place
+  }
+}
+
 export function writeChoice(key: string, value: string): void {
   try {
     localStorage.setItem(key, value)
@@ -51,6 +67,58 @@ function subscribe(listener: () => void): () => void {
   return () => void listeners.delete(listener)
 }
 
+/** Tells every reader of every preference to look again. */
+export function notify(): void {
+  for (const listener of [...listeners]) listener()
+}
+
+/** A number preference's bounds, and what it is when nothing is stored. */
+export interface NumberBounds {
+  min: number
+  max: number
+  fallback: number
+}
+
+/**
+ * The stored number, held inside its bounds.
+ *
+ * Clamped on the way out rather than only on the way in: the bounds move. The
+ * redline's ceiling is whatever the dial's top is set to, so a redline stored
+ * legitimately at 9,000 is out of range the moment the dial is set to 9,000
+ * or below, and the reader is the only place that can know.
+ */
+export function readNumber(key: string, bounds: NumberBounds): number {
+  try {
+    const stored = localStorage.getItem(key)
+    // Not `Number(stored)` alone: `Number(null)` and `Number('')` are both 0,
+    // which is finite, so nothing stored at all would read as zero and clamp
+    // to the minimum — a fresh install with the smallest dial the app allows.
+    if (stored === null || stored.trim() === '') return bounds.fallback
+    const parsed = Number(stored)
+    if (!Number.isFinite(parsed)) return bounds.fallback
+    return Math.min(bounds.max, Math.max(bounds.min, parsed))
+  } catch {
+    return bounds.fallback
+  }
+}
+
+/** The same pair, for a number. `bounds` is read on every render, so it may move. */
+export function useNumber(key: string, bounds: NumberBounds): [number, (next: number) => void] {
+  const value = useSyncExternalStore(
+    subscribe,
+    () => readNumber(key, bounds),
+    () => bounds.fallback,
+  )
+  const set = useCallback(
+    (next: number) => {
+      writeChoice(key, String(next))
+      notify()
+    },
+    [key],
+  )
+  return [value, set]
+}
+
 /** The pair a settings control wants: what is chosen, and how to change it. */
 export function useChoice<T extends string>(
   key: string,
@@ -65,7 +133,7 @@ export function useChoice<T extends string>(
   const set = useCallback(
     (next: T) => {
       writeChoice(key, next)
-      for (const listener of [...listeners]) listener()
+      notify()
     },
     [key],
   )

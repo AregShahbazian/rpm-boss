@@ -58,4 +58,7 @@ export const messages: Messages = {
   liveMotionLabel: 'Движение стрелки',
   liveMotionSmooth: 'Плавное',
   liveMotionStep: 'Шагами',
+  dialMaxLabel: 'Максимум шкалы',
+  dialRedlineLabel: 'Красная зона от',
+  tachoReset: 'Сбросить настройки',
 }

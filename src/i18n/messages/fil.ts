@@ -58,4 +58,7 @@ export const messages: Messages = {
   liveMotionLabel: 'Paggalaw ng karayom',
   liveMotionSmooth: 'Maayos',
   liveMotionStep: 'Patalon',
+  dialMaxLabel: 'Maximum ng dial',
+  dialRedlineLabel: 'Pulang bahagi mula sa',
+  tachoReset: 'Ibalik sa dati',
 }

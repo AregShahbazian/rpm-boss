@@ -58,4 +58,7 @@ export const messages: Messages = {
   liveMotionLabel: 'Chuyển động của kim',
   liveMotionSmooth: 'Mượt',
   liveMotionStep: 'Theo bước',
+  dialMaxLabel: 'Tối đa của đồng hồ',
+  dialRedlineLabel: 'Vạch đỏ từ',
+  tachoReset: 'Đặt lại mặc định',
 }

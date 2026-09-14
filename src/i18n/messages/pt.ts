@@ -58,4 +58,7 @@ export const messages: Messages = {
   liveMotionLabel: 'Movimento do ponteiro',
   liveMotionSmooth: 'Suave',
   liveMotionStep: 'Em passos',
+  dialMaxLabel: 'Máximo do mostrador',
+  dialRedlineLabel: 'Zona vermelha a partir de',
+  tachoReset: 'Repor predefinições',
 }

@@ -25,7 +25,7 @@
   --color-btn: #2a2f36;
   /* The one button that starts something. Muted on purpose: a saturated green
      beside a red stop would make the screen a traffic light. */
-  --color-go: #2f7a4f;
+  --color-go: #2f7a4f33;
 }
 
 /*

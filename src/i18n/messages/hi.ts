@@ -58,4 +58,7 @@ export const messages: Messages = {
   liveMotionLabel: 'सुई की चाल',
   liveMotionSmooth: 'सहज',
   liveMotionStep: 'चरणों में',
+  dialMaxLabel: 'डायल अधिकतम',
+  dialRedlineLabel: 'रेडलाइन शुरू',
+  tachoReset: 'डिफ़ॉल्ट पर लौटें',
 }

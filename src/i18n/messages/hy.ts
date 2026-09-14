@@ -58,4 +58,7 @@ export const messages: Messages = {
   liveMotionLabel: 'Սլաքի շարժումը',
   liveMotionSmooth: 'Սահուն',
   liveMotionStep: 'Քայլերով',
+  dialMaxLabel: 'Սանդղակի առավելագույնը',
+  dialRedlineLabel: 'Կարմիր գոտին սկսած',
+  tachoReset: 'Վերականգնել սկզբնականը',
 }

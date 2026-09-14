@@ -10,7 +10,7 @@ import {saveClip} from '../audio/save'
 import {SPLIT, TALL} from './breakpoints'
 import {revsPerPulse, useStroke} from './engineSettings'
 import {Button} from './kit'
-import {useMotion} from './liveSettings'
+import {useMaxRpm, useMotion, useRedline} from './liveSettings'
 import {LiveScope} from './LiveScope'
 import {LiveStage} from './LiveStage'
 import {Player} from './Player'
@@ -160,6 +160,9 @@ export function InputScreen() {
   // never both underway: the source row is disabled while this runs, and this
   // can only be started from the resting screen.
   const [motion] = useMotion()
+  // The face, which is the rider's and not the detector's: see `liveSettings`.
+  const [maxRpm] = useMaxRpm()
+  const [redlineRpm] = useRedline(maxRpm)
   // Two-stroke or four-. It decides what a detected rhythm means in rpm, so it
   // reaches both the batch analysis and the live loop.
   const [stroke] = useStroke()
@@ -239,7 +242,15 @@ export function InputScreen() {
       {listening && <StopButton placement="own-row" onStop={stopLive}/>}
       {stage && (
         <div className="min-h-0 [grid-area:stage]">
-          <LiveStage live={live} ring={ring} rpm={rpm} motion={motion} onStart={start}/>
+          <LiveStage
+              live={live}
+              ring={ring}
+              rpm={rpm}
+              motion={motion}
+              maxRpm={maxRpm}
+              redlineRpm={redlineRpm}
+              onStart={start}
+            />
         </div>
       )}
       {/* A take draws itself. The stage is the tachometer's at rest, and for
