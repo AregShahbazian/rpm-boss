@@ -45,14 +45,19 @@ export function StatusLine({state, onDismiss, onClear, onSave}: Props) {
   return (
     <>
       {state.status === 'error' && (
-        <StatusText tone="error" role="alert">
-          {state.error
-            ? t(INPUT_ERROR_KEYS[state.error], {duration: duration(MIN_CLIP_S, lang)})
-            : t('errorRecordFailed')}{' '}
-          <LinkButton onClick={onDismiss}>
-            {t('dismiss')}
-          </LinkButton>
-        </StatusText>
+        // The gap belongs to the error, not to the pair: it exists only while
+        // the error does, so the status line does not shift down a little and
+        // stay there once Dismiss has been pressed.
+        <div className="mb-2">
+          <StatusText tone="error" role="alert">
+            {state.error
+              ? t(INPUT_ERROR_KEYS[state.error], {duration: duration(MIN_CLIP_S, lang)})
+              : t('errorRecordFailed')}{' '}
+            <LinkButton onClick={onDismiss}>
+              {t('dismiss')}
+            </LinkButton>
+          </StatusText>
+        </div>
       )}
       {settledLine()}
     </>
