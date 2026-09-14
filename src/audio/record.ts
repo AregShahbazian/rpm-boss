@@ -1,7 +1,7 @@
-import { Capacitor } from '@capacitor/core'
-import { assertMinLength, decodeToClip, trimClip } from './decode'
-import { recordNative } from './native'
-import { InputError, MAX_RECORD_S, SAMPLE_RATE, type AudioClip } from './types'
+import {Capacitor} from '@capacitor/core'
+import {assertMinLength, decodeToClip, trimClip} from './decode'
+import {recordNative} from './native'
+import {type AudioClip, InputError, MAX_RECORD_S, SAMPLE_RATE} from './types'
 
 export interface RecordOptions {
   maxS?: number
@@ -26,7 +26,7 @@ export interface Recording {
  * whatever arrives.
  */
 const MIC_CONSTRAINTS: MediaStreamConstraints = {
-  audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 },
+  audio: {echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1},
 }
 
 /** Under this the microphone delivered nothing worth decoding. */
@@ -80,7 +80,7 @@ export function record(options: RecordOptions): Recording {
   return Capacitor.isNativePlatform() ? recordNative(options) : recordWorklet(options)
 }
 
-export function recordWorklet({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordOptions): Recording {
+export function recordWorklet({maxS = MAX_RECORD_S, onTick, onDone, onError}: RecordOptions): Recording {
   let stream: MediaStream | undefined
   let context: AudioContext | undefined
   let stopped = false
@@ -110,7 +110,7 @@ export function recordWorklet({ maxS = MAX_RECORD_S, onTick, onDone, onError }: 
         console.info('[rec] frames', samples.length, 'at', rate, 'Hz, peak', peak.toFixed(5))
       }
       if (samples.length < MIN_FRAMES || !samples.some((v) => v !== 0)) throw new InputError('no-audio')
-      const clip = decodeToClip([samples], rate, { kind: 'mic', name: timeLabel() })
+      const clip = decodeToClip([samples], rate, {kind: 'mic', name: timeLabel()})
       onDone(assertMinLength(trimClip(clip, maxS)))
     } catch (e) {
       onError(e instanceof InputError ? e : new InputError('record-failed', e))
@@ -197,5 +197,5 @@ export function recordWorklet({ maxS = MAX_RECORD_S, onTick, onDone, onError }: 
     hardStop = setTimeout(stop, maxS * 1000)
   })()
 
-  return { stop }
+  return {stop}
 }

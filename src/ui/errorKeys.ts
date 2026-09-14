@@ -1,6 +1,6 @@
-import type { InputErrorCode } from '../audio/types'
-import type { AnalysisErrorCode } from '../dsp/types'
-import type { MessageKey } from '../i18n'
+import type {InputErrorCode} from '../audio/types'
+import type {AnalysisErrorCode} from '../dsp/types'
+import type {MessageKey} from '../i18n'
 
 /**
  * Errors travel as codes and are turned into words here, at the edge. The

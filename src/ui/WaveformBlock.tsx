@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import type { AudioClip } from '../audio/types'
-import { detailSpanS, nextDetailRange, type TimeRange } from '../waveform/range'
-import { selectionLength, type Selection } from '../waveform/selection'
-import { formatTime } from './format'
-import { useElementSize } from './useElementSize'
-import { WaveformCanvas } from './WaveformCanvas'
+import {useState} from 'react'
+import type {AudioClip} from '../audio/types'
+import {detailSpanS, nextDetailRange, type TimeRange} from '../waveform/range'
+import {type Selection, selectionLength} from '../waveform/selection'
+import {formatTime} from './format'
+import {useElementSize} from './useElementSize'
+import {WaveformCanvas} from './WaveformCanvas'
 
 /** A finished analysis, drawn onto the crop canvas. */
 export interface Marks {
@@ -34,13 +34,13 @@ interface Props {
  * again — before the drag moves anything, so the view widens once rather than
  * sliding out from under the finger.
  */
-export function WaveformBlock({ clip, selection, onChange, positionS, marks }: Props) {
+export function WaveformBlock({clip, selection, onChange, positionS, marks}: Props) {
   const [overviewBox, overview] = useElementSize()
   const [detailBox, detail] = useElementSize()
 
   const spanS = detailSpanS(detail.width)
   const long = clip.durationS > spanS
-  const whole: TimeRange = { fromS: 0, toS: clip.durationS }
+  const whole: TimeRange = {fromS: 0, toS: clip.durationS}
 
   // The detail range is derived from the selection, but remembers where it was:
   // it scrolls only when the window is dragged out of view. `nextDetailRange`
@@ -49,13 +49,13 @@ export function WaveformBlock({ clip, selection, onChange, positionS, marks }: P
   // effect) keeps it to a single commit.
   const [range, setRange] = useState<TimeRange>(() => nextDetailRange(undefined, selection, clip.durationS, spanS))
   const [snapped, setSnapped] = useState(false)
-  const [seen, setSeen] = useState({ selection, spanS, marks })
+  const [seen, setSeen] = useState({selection, spanS, marks})
 
   if (seen.selection !== selection || seen.spanS !== spanS || seen.marks !== marks) {
-    setSeen({ selection, spanS, marks })
+    setSeen({selection, spanS, marks})
     if (marks && marks !== seen.marks) {
       setSnapped(true)
-      setRange({ fromS: marks.offsetS, toS: marks.offsetS + marks.windowS })
+      setRange({fromS: marks.offsetS, toS: marks.offsetS + marks.windowS})
     } else if (!marks && seen.marks) {
       setSnapped(false)
       setRange(nextDetailRange(undefined, selection, clip.durationS, spanS))

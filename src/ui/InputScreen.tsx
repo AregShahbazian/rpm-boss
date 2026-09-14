@@ -1,20 +1,20 @@
-import { css } from '@emotion/react'
-import { useMemo, useState } from 'react'
-import { useAnalysis } from '../state/useAnalysis'
-import { useAudioInput } from '../state/useAudioInput'
-import type { ExpectedRange } from '../dsp/types'
-import { useI18n } from '../i18n'
-import { SPLIT, TALL } from './breakpoints'
-import { Button } from './kit'
-import { Player } from './Player'
-import { RangeFields } from './RangeFields'
-import { ResultView } from './ResultView'
-import { RecordButton } from './RecordButton'
-import { SampleButton } from './SampleButton'
-import { Settings } from './Settings'
-import { StatusLine } from './StatusLine'
-import { UploadButton } from './UploadButton'
-import { WaveformBlock, type Marks } from './WaveformBlock'
+import {css} from '@emotion/react'
+import {useMemo, useState} from 'react'
+import {useAnalysis} from '../state/useAnalysis'
+import {useAudioInput} from '../state/useAudioInput'
+import type {ExpectedRange} from '../dsp/types'
+import {useI18n} from '../i18n'
+import {SPLIT, TALL} from './breakpoints'
+import {Button} from './kit'
+import {Player} from './Player'
+import {RangeFields} from './RangeFields'
+import {ResultView} from './ResultView'
+import {RecordButton} from './RecordButton'
+import {SampleButton} from './SampleButton'
+import {Settings} from './Settings'
+import {StatusLine} from './StatusLine'
+import {UploadButton} from './UploadButton'
+import {type Marks, WaveformBlock} from './WaveformBlock'
 
 /*
  * One grid, one DOM order, two layouts. The DOM order is the stacked one, so
@@ -101,13 +101,13 @@ const SCREEN_EMPTY = css`
 `
 
 export function InputScreen() {
-  const { state, getWindowClip, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection } =
+  const {state, getWindowClip, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection} =
     useAudioInput()
-  const [range, setRange] = useState({ minRpm: '', maxRpm: '' })
-  const { t } = useI18n()
+  const [range, setRange] = useState({minRpm: '', maxRpm: ''})
+  const {t} = useI18n()
   // Any change to the clip or the window clears the last result.
   const windowKey = `${state.clipId}:${state.selection.startS}:${state.selection.endS}`
-  const { analysis, analyse } = useAnalysis(windowKey)
+  const {analysis, analyse} = useAnalysis(windowKey)
 
   const busy = state.status === 'decoding' || state.status === 'recording'
   const running = analysis.status === 'running'
@@ -121,7 +121,7 @@ export function InputScreen() {
   const marks = useMemo<Marks | undefined>(
     () =>
       analysis.status === 'done' && analysis.result && analysedWindow
-        ? { timesS: analysis.result.pulseTimesS, offsetS: analysedWindow.offsetS, windowS: analysedWindow.windowS }
+        ? {timesS: analysis.result.pulseTimesS, offsetS: analysedWindow.offsetS, windowS: analysedWindow.windowS}
         : undefined,
     [analysis, analysedWindow],
   )
@@ -129,7 +129,7 @@ export function InputScreen() {
   const onCalculate = () => {
     const clip = getWindowClip()
     if (!clip) return
-    setAnalysedWindow({ offsetS: state.selection.startS, windowS: clip.durationS })
+    setAnalysedWindow({offsetS: state.selection.startS, windowS: clip.durationS})
     void analyse(clip, windowKey, parseRange(range))
   }
 
@@ -142,7 +142,7 @@ export function InputScreen() {
           name already, and on a phone the screen is short enough that a
           heading costs more than it says. */}
       <div className="flex flex-wrap gap-3 [grid-area:source] split:gap-2">
-        <UploadButton disabled={busy} onFile={upload} />
+        <UploadButton disabled={busy} onFile={upload}/>
         <RecordButton
           recording={state.status === 'recording'}
           elapsedS={state.elapsedS}
@@ -150,11 +150,11 @@ export function InputScreen() {
           onStart={startRecording}
           onStop={stopRecording}
         />
-        <SampleButton disabled={busy} onFile={upload} />
-        <Settings />
+        <SampleButton disabled={busy} onFile={upload}/>
+        <Settings/>
       </div>
       <div className="[grid-area:status]">
-        <StatusLine state={state} onDismiss={dismissError} />
+        <StatusLine state={state} onDismiss={dismissError}/>
       </div>
       {state.clip && state.status !== 'recording' && (
         <>
@@ -176,7 +176,7 @@ export function InputScreen() {
             />
           </div>
           <div className="[grid-area:range]">
-            <RangeFields {...range} disabled={running} onChange={setRange} />
+            <RangeFields {...range} disabled={running} onChange={setRange}/>
           </div>
           <div className="flex [grid-area:calc]">
             <Button disabled={busy || running} onClick={onCalculate}>
@@ -184,7 +184,7 @@ export function InputScreen() {
             </Button>
           </div>
           <div className="[grid-area:result] split:self-center">
-            <ResultView analysis={analysis} />
+            <ResultView analysis={analysis}/>
           </div>
         </>
       )}
@@ -197,5 +197,5 @@ function parseRange(fields: { minRpm: string; maxRpm: string }): ExpectedRange |
   const minRpm = Number(fields.minRpm)
   const maxRpm = Number(fields.maxRpm)
   if (!fields.minRpm || !fields.maxRpm || !(minRpm > 0) || !(maxRpm > minRpm)) return undefined
-  return { minRpm, maxRpm }
+  return {minRpm, maxRpm}
 }

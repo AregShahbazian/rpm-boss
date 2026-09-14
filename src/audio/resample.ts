@@ -1,4 +1,4 @@
-import { SAMPLE_RATE } from './types'
+import {SAMPLE_RATE} from './types'
 
 /** Arithmetic mean of the channels, sample by sample. One channel is copied. */
 export function toMono(channels: Float32Array[]): Float32Array {

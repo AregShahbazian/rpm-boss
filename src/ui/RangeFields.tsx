@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { useI18n } from '../i18n'
-import { css } from '@emotion/react'
+import {useState} from 'react'
+import {useI18n} from '../i18n'
+import {css} from '@emotion/react'
 
 interface Props {
   minRpm: string
@@ -37,9 +37,9 @@ function writeOpen(open: boolean): void {
  * Values are kept as strings so both fields can be empty, which is the normal
  * case; `analyse` ignores anything that is not a usable range.
  */
-export function RangeFields({ minRpm, maxRpm, disabled, onChange }: Props) {
+export function RangeFields({minRpm, maxRpm, disabled, onChange}: Props) {
   const [open, setOpen] = useState(readOpen)
-  const { t } = useI18n()
+  const {t} = useI18n()
 
   return (
     <details
@@ -51,15 +51,18 @@ export function RangeFields({ minRpm, maxRpm, disabled, onChange }: Props) {
           padding: 4px 0;
           list-style-position: inside;
         }
+
         &[open] summary {
           margin-block-end: 8px;
         }
+
         label {
           display: flex;
           align-items: center;
           gap: 6px;
           font-size: 0.9rem;
         }
+
         input {
           inline-size: 6em;
           padding: 6px 8px;
@@ -88,7 +91,7 @@ export function RangeFields({ minRpm, maxRpm, disabled, onChange }: Props) {
             step={100}
             value={minRpm}
             disabled={disabled}
-            onChange={(e) => onChange({ minRpm: e.target.value, maxRpm })}
+            onChange={(e) => onChange({minRpm: e.target.value, maxRpm})}
           />
         </label>
         <label>
@@ -100,7 +103,7 @@ export function RangeFields({ minRpm, maxRpm, disabled, onChange }: Props) {
             step={100}
             value={maxRpm}
             disabled={disabled}
-            onChange={(e) => onChange({ minRpm, maxRpm: e.target.value })}
+            onChange={(e) => onChange({minRpm, maxRpm: e.target.value})}
           />
         </label>
       </div>

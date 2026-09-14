@@ -1,5 +1,5 @@
-import { InputScreen } from './ui/InputScreen'
+import {InputScreen} from './ui/InputScreen'
 
 export default function App() {
-  return <InputScreen />
+  return <InputScreen/>
 }

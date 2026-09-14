@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import {useEffect, useMemo, useState} from 'react'
 
 export interface Palette {
   muted: string
@@ -31,7 +31,7 @@ export function usePalette(): Palette {
     const mq = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : undefined
     mq?.addEventListener('change', bump)
     const observer = new MutationObserver(bump)
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    observer.observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme']})
     return () => {
       mq?.removeEventListener('change', bump)
       observer.disconnect()

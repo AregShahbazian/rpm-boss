@@ -1,4 +1,4 @@
-import { MIN_ANALYSIS_S } from '../dsp/types'
+import {MIN_ANALYSIS_S} from '../dsp/types'
 
 /** The one input shape every later feature consumes. Fixed 16 kHz mono. */
 export const SAMPLE_RATE = 16000 as const
@@ -46,8 +46,9 @@ export const MIN_CLIP_S = MIN_ANALYSIS_S
  */
 export class InputError extends Error {
   readonly code: InputErrorCode
+
   constructor(code: InputErrorCode, cause?: unknown) {
-    super(code, cause === undefined ? undefined : { cause })
+    super(code, cause === undefined ? undefined : {cause})
     this.name = 'InputError'
     this.code = code
   }

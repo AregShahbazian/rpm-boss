@@ -1,5 +1,5 @@
 /** The messages that cross the worker boundary. */
-import type { Analysis, ExpectedRange } from '../dsp/types'
+import type {Analysis, ExpectedRange} from '../dsp/types'
 
 export interface AnalyseRequest {
   id: number

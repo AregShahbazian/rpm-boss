@@ -10,7 +10,7 @@ export function computePeaks(samples: Float32Array, fromSample: number, toSample
   const from = Math.max(0, Math.floor(fromSample))
   const to = Math.min(samples.length, Math.ceil(toSample))
   const span = Math.max(0, to - from)
-  if (columns === 0 || span === 0) return { min, max }
+  if (columns === 0 || span === 0) return {min, max}
   for (let c = 0; c < columns; c++) {
     let a = from + Math.floor((c * span) / columns)
     let b = from + Math.floor(((c + 1) * span) / columns)
@@ -27,5 +27,5 @@ export function computePeaks(samples: Float32Array, fromSample: number, toSample
     min[c] = lo
     max[c] = hi
   }
-  return { min, max }
+  return {min, max}
 }

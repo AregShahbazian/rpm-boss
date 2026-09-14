@@ -1,4 +1,4 @@
-import type { AudioClip } from './types'
+import type {AudioClip} from './types'
 
 export interface Player {
   /** Play [startS, endS) of the clip; defaults to the whole clip. */

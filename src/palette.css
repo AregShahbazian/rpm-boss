@@ -79,6 +79,7 @@
     --dim: 0.72;
   }
 }
+
 :root[data-theme='light'] {
   color-scheme: light;
   --color-fg: #1a1a1a;

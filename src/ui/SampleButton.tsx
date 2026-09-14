@@ -1,8 +1,8 @@
-import { useRef } from 'react'
-import { useI18n } from '../i18n'
-import { SAMPLES, SAMPLES_ENABLED, sampleFile, sampleUrl } from '../samples'
-import { Icon } from './Icon'
-import { Button, Sheet } from './kit'
+import {useRef} from 'react'
+import {useI18n} from '../i18n'
+import {sampleFile, SAMPLES, SAMPLES_ENABLED, sampleUrl} from '../samples'
+import {Icon} from './Icon'
+import {Button, Sheet} from './kit'
 
 interface Props {
   disabled?: boolean
@@ -23,9 +23,9 @@ interface Props {
  *
  * None of this ships by default: `SAMPLES_ENABLED` is off in a release build.
  */
-export function SampleButton({ disabled, onFile }: Props) {
+export function SampleButton({disabled, onFile}: Props) {
   const dialog = useRef<HTMLDialogElement>(null)
-  const { t, n } = useI18n()
+  const {t, n} = useI18n()
   if (!SAMPLES_ENABLED) return null
 
   const pick = async (num: number) => {
@@ -37,7 +37,7 @@ export function SampleButton({ disabled, onFile }: Props) {
       // Offline, or the file is not in this build. An empty file fails to
       // decode, which the status line already knows how to say.
     }
-    onFile(new File(body, sampleFile(num), { type: 'audio/mp4' }))
+    onFile(new File(body, sampleFile(num), {type: 'audio/mp4'}))
   }
 
   return (
@@ -48,23 +48,23 @@ export function SampleButton({ disabled, onFile }: Props) {
         aria-label={t('pickSample')}
         onClick={() => dialog.current?.showModal()}
       >
-        <Icon icon="lucide:list-music" />
+        <Icon icon="lucide:list-music"/>
       </Button>
       <Sheet ref={dialog} title={t('pickSample')}>
         {/* The bundled recordings, one per row. */}
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
-            {SAMPLES.map((s) => (
-              <li key={s.n}>
-                {/* The name is deliberately not translated: it is a number, and
+          {SAMPLES.map((s) => (
+            <li key={s.n}>
+              {/* The name is deliberately not translated: it is a number, and
                     seven labels in seventeen languages would say nothing more. */}
-                <Button shape="wide" disabled={disabled} onClick={() => void pick(s.n)}>
-                  Sample {s.n}{' '}
-                  <span className="text-muted tabular-nums">
+              <Button shape="wide" disabled={disabled} onClick={() => void pick(s.n)}>
+                Sample {s.n}{' '}
+                <span className="text-muted tabular-nums">
                     ≈{n(s.rpm)} {t('rpm')}
                   </span>
-                </Button>
-              </li>
-            ))}
+              </Button>
+            </li>
+          ))}
         </ul>
         <Button onClick={() => dialog.current?.close()}>{t('dismiss')}</Button>
       </Sheet>

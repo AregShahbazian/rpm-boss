@@ -1,5 +1,5 @@
-import { sortedLanguages, useI18n } from '../i18n'
-import { css } from '@emotion/react'
+import {sortedLanguages, useI18n} from '../i18n'
+import {css} from '@emotion/react'
 
 /**
  * A native `<select>`, deliberately. On a phone it opens the platform's own
@@ -9,7 +9,7 @@ import { css } from '@emotion/react'
  * It lives in the settings dialog; see `Settings`.
  */
 export function LanguagePicker() {
-  const { lang, setLang, t } = useI18n()
+  const {lang, setLang, t} = useI18n()
   return (
     <label
       className="flex flex-col gap-1.5 text-[0.9rem]"

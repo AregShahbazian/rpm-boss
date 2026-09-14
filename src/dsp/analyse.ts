@@ -4,17 +4,10 @@
  * Mirrors `analyse()` in `scripts/reference/analyse.py`, which is what the
  * fixture suite checks this against.
  */
-import { rateFromEnvelope } from './autocorr'
-import { envelope } from './envelope'
-import { findPulses, rateFromPulses } from './pulses'
-import {
-  failure,
-  MIN_ANALYSIS_S,
-  MIN_CONFIDENCE,
-  REVS_PER_PULSE,
-  type Analysis,
-  type ExpectedRange,
-} from './types'
+import {rateFromEnvelope} from './autocorr'
+import {envelope} from './envelope'
+import {findPulses, rateFromPulses} from './pulses'
+import {type Analysis, type ExpectedRange, failure, MIN_ANALYSIS_S, MIN_CONFIDENCE, REVS_PER_PULSE,} from './types'
 
 export const toRpm = (pulsesPerS: number): number => pulsesPerS * 60 * REVS_PER_PULSE
 

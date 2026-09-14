@@ -16,7 +16,7 @@
  * does not decide a conflict — order in the generated stylesheet does — so a
  * component that emitted both would be relying on luck.
  */
-import { css } from '@emotion/react'
+import {css} from '@emotion/react'
 import clsx from 'clsx'
 
 /**
@@ -41,7 +41,7 @@ type ButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'classNam
   tone?: 'default' | 'record'
 }
 
-export function Button({ shape = 'fill', tone = 'default', ...rest }: ButtonProps) {
+export function Button({shape = 'fill', tone = 'default', ...rest}: ButtonProps) {
   return (
     <button
       type="button"
@@ -129,6 +129,7 @@ export function Sheet({
         overflow: auto;
 
         /* No utility reaches the backdrop pseudo-element. */
+
         &::backdrop {
           background: rgb(0 0 0 / 0.5);
         }

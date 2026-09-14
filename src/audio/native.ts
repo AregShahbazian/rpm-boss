@@ -6,10 +6,10 @@
  * discussion note). The Kotlin-free Java plugin behind this opens `AudioRecord`
  * on `UNPROCESSED` and hands back raw PCM.
  */
-import { registerPlugin } from '@capacitor/core'
-import { assertMinLength, decodeToClip, trimClip } from './decode'
-import { InputError, MAX_RECORD_S, type AudioClip } from './types'
-import type { RecordOptions, Recording } from './record'
+import {registerPlugin} from '@capacitor/core'
+import {assertMinLength, decodeToClip, trimClip} from './decode'
+import {type AudioClip, InputError, MAX_RECORD_S} from './types'
+import type {Recording, RecordOptions} from './record'
 
 export interface StartResult {
   /** Which source actually opened: UNPROCESSED, VOICE_RECOGNITION or MIC. */
@@ -28,6 +28,7 @@ export interface StopResult {
 
 interface RawAudioPlugin {
   start(options: { maxS: number }): Promise<StartResult>
+
   stop(): Promise<StopResult>
 }
 
@@ -73,7 +74,7 @@ function timeLabel(d = new Date()): string {
  * countdown, and an `AudioClip` through the same `decodeToClip`. Nothing above
  * this ever learns which recorder ran.
  */
-export function recordNative({ maxS = MAX_RECORD_S, onTick, onDone, onError }: RecordOptions): Recording {
+export function recordNative({maxS = MAX_RECORD_S, onTick, onDone, onError}: RecordOptions): Recording {
   let stopped = false
   let finished = false
   let ticker: ReturnType<typeof setInterval> | undefined
@@ -89,11 +90,11 @@ export function recordNative({ maxS = MAX_RECORD_S, onTick, onDone, onError }: R
     finished = true
     clearTimers()
     try {
-      const { pcm16, sampleRate, source } = await RawAudio.stop()
+      const {pcm16, sampleRate, source} = await RawAudio.stop()
       lastSource = source
       const samples = pcm16ToFloat(decodeBase64(pcm16))
       if (!samples.length || !samples.some((v) => v !== 0)) throw new InputError('no-audio')
-      const clip: AudioClip = decodeToClip([samples], sampleRate, { kind: 'mic', name: timeLabel() })
+      const clip: AudioClip = decodeToClip([samples], sampleRate, {kind: 'mic', name: timeLabel()})
       onDone(assertMinLength(trimClip(clip, maxS)))
     } catch (e) {
       onError(e instanceof InputError ? e : toError(e))
@@ -108,7 +109,7 @@ export function recordNative({ maxS = MAX_RECORD_S, onTick, onDone, onError }: R
 
   void (async () => {
     try {
-      const started = await RawAudio.start({ maxS })
+      const started = await RawAudio.start({maxS})
       lastSource = started.source
       if (import.meta.env.DEV) console.info('[rec] native source', started)
     } catch (e) {
@@ -132,5 +133,5 @@ export function recordNative({ maxS = MAX_RECORD_S, onTick, onDone, onError }: R
     hardStop = setTimeout(stop, maxS * 1000)
   })()
 
-  return { stop }
+  return {stop}
 }

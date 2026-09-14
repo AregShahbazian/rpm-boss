@@ -22,13 +22,13 @@ export interface Sample {
 }
 
 export const SAMPLES: readonly Sample[] = [
-  { n: 1, rpm: 1598 },
-  { n: 2, rpm: 1589 },
-  { n: 3, rpm: 1783 },
-  { n: 4, rpm: 1427 },
-  { n: 5, rpm: 1409 },
-  { n: 6, rpm: 1603 },
-  { n: 7, rpm: 1430 },
+  {n: 1, rpm: 1598},
+  {n: 2, rpm: 1589},
+  {n: 3, rpm: 1783},
+  {n: 4, rpm: 1427},
+  {n: 5, rpm: 1409},
+  {n: 6, rpm: 1603},
+  {n: 7, rpm: 1430},
 ]
 
 export function sampleFile(n: number): string {

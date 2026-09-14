@@ -1,9 +1,9 @@
-import { useRef } from 'react'
-import { useI18n, type MessageKey } from '../i18n'
-import { Icon } from './Icon'
-import { Button, Sheet } from './kit'
-import { LanguagePicker } from './LanguagePicker'
-import { THEMES, useTheme, type Theme } from './theme'
+import {useRef} from 'react'
+import {type MessageKey, useI18n} from '../i18n'
+import {Icon} from './Icon'
+import {Button, Sheet} from './kit'
+import {LanguagePicker} from './LanguagePicker'
+import {type Theme, THEMES, useTheme} from './theme'
 
 const THEME_KEYS: Record<Theme, MessageKey> = {
   system: 'themeSystem',
@@ -25,16 +25,16 @@ const THEME_KEYS: Record<Theme, MessageKey> = {
  */
 export function Settings() {
   const dialog = useRef<HTMLDialogElement>(null)
-  const { t } = useI18n()
+  const {t} = useI18n()
   const [theme, setTheme] = useTheme()
 
   return (
     <>
       <Button shape="icon" aria-label={t('settings')} onClick={() => dialog.current?.showModal()}>
-        <Icon icon="lucide:settings" />
+        <Icon icon="lucide:settings"/>
       </Button>
       <Sheet ref={dialog} title={t('settings')}>
-        <LanguagePicker />
+        <LanguagePicker/>
         <fieldset className="m-0 flex flex-col gap-1.5 border-0 p-0">
           <legend className="mb-1.5 p-0 text-[0.9rem] text-muted">{t('theme')}</legend>
           {THEMES.map((value) => (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import {useEffect, useState} from 'react'
 
 export interface Size {
   width: number
@@ -28,12 +28,12 @@ export interface Size {
  */
 export function useElementSize(): [(el: HTMLElement | null) => void, Size] {
   const [el, setEl] = useState<HTMLElement | null>(null)
-  const [size, setSize] = useState<Size>({ width: 0, height: 0 })
+  const [size, setSize] = useState<Size>({width: 0, height: 0})
 
   useEffect(() => {
     if (!el) return
     const read = (width: number, height: number) => {
-      const next = { width: Math.round(width), height: Math.round(height) }
+      const next = {width: Math.round(width), height: Math.round(height)}
       setSize((prev) => (prev.width === next.width && prev.height === next.height ? prev : next))
     }
     // `observe` delivers a first entry of its own, so there is no separate

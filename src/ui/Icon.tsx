@@ -35,7 +35,7 @@ interface Props {
   label?: string
 }
 
-export function Icon({ icon, size = 20, spin, label }: Props) {
+export function Icon({icon, size = 20, spin, label}: Props) {
   const drawing = ICONS[icon]
   if (!drawing) {
     // Only three things get here: a typo, a set that is not installed, or a
@@ -59,7 +59,7 @@ export function Icon({ icon, size = 20, spin, label }: Props) {
       aria-hidden={label ? undefined : true}
       // The markup is the set's own, read from `node_modules` at build time and
       // baked into the bundle. Nothing user-supplied can reach it.
-      dangerouslySetInnerHTML={{ __html: drawing.body }}
+      dangerouslySetInnerHTML={{__html: drawing.body}}
     />
   )
 }

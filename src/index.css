@@ -37,5 +37,12 @@
   font-family: system-ui, sans-serif;
 }
 
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+}

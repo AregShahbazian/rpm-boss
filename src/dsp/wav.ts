@@ -35,7 +35,7 @@ export function parseWav(bytes: ArrayBuffer): WavData {
 
   const samples = new Float32Array(data.length)
   for (let i = 0; i < data.length; i++) samples[i] = data[i] / 32768
-  return { sampleRate, samples }
+  return {sampleRate, samples}
 }
 
 /**

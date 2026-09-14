@@ -50,4 +50,4 @@ export interface AnalysisFailure {
 
 export type Analysis = AnalysisResult | AnalysisFailure
 
-export const failure = (code: AnalysisErrorCode): AnalysisFailure => ({ ok: false, code })
+export const failure = (code: AnalysisErrorCode): AnalysisFailure => ({ok: false, code})

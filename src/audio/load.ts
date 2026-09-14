@@ -1,5 +1,5 @@
-import { assertMinLength, decodeToClip } from './decode'
-import { InputError, MAX_FILE_BYTES, SAMPLE_RATE, type AudioClip, type AudioSource } from './types'
+import {assertMinLength, decodeToClip} from './decode'
+import {type AudioClip, type AudioSource, InputError, MAX_FILE_BYTES, SAMPLE_RATE} from './types'
 
 /**
  * Decode any browser-decodable audio container to the app clip. Browser only.
@@ -8,7 +8,7 @@ import { InputError, MAX_FILE_BYTES, SAMPLE_RATE, type AudioClip, type AudioSour
  * WebView ignore the requested rate, `decodeToClip` still resamples.
  */
 export async function decodeBuffer(buf: ArrayBuffer, source: AudioSource): Promise<AudioClip> {
-  const ctx = new AudioContext({ sampleRate: SAMPLE_RATE })
+  const ctx = new AudioContext({sampleRate: SAMPLE_RATE})
   try {
     let decoded: AudioBuffer
     try {
@@ -28,5 +28,5 @@ export async function decodeBuffer(buf: ArrayBuffer, source: AudioSource): Promi
 export async function loadFile(file: File): Promise<AudioClip> {
   if (file.size > MAX_FILE_BYTES) throw new InputError('too-large')
   const buf = await file.arrayBuffer()
-  return decodeBuffer(buf, { kind: 'file', name: file.name })
+  return decodeBuffer(buf, {kind: 'file', name: file.name})
 }

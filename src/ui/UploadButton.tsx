@@ -1,15 +1,15 @@
-import { useRef } from 'react'
-import { useI18n } from '../i18n'
-import { Button } from './kit'
+import {useRef} from 'react'
+import {useI18n} from '../i18n'
+import {Button} from './kit'
 
 interface Props {
   disabled?: boolean
   onFile: (file: File) => void
 }
 
-export function UploadButton({ disabled, onFile }: Props) {
+export function UploadButton({disabled, onFile}: Props) {
   const input = useRef<HTMLInputElement>(null)
-  const { t } = useI18n()
+  const {t} = useI18n()
   return (
     <>
       <input

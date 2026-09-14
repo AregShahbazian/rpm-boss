@@ -1,4 +1,4 @@
-import { MAX_WINDOW_S, type Selection } from './selection'
+import {MAX_WINDOW_S, type Selection} from './selection'
 
 export interface TimeRange {
   fromS: number
@@ -37,7 +37,7 @@ export function detailSpanS(width: number): number {
 
 const spanFrom = (fromS: number, durationS: number, spanS: number): TimeRange => {
   const clamped = Math.max(0, Math.min(fromS, durationS - spanS))
-  return { fromS: clamped, toS: clamped + spanS }
+  return {fromS: clamped, toS: clamped + spanS}
 }
 
 const centred = (sel: Selection, durationS: number, spanS: number): TimeRange =>
@@ -62,7 +62,7 @@ export function nextDetailRange(
   durationS: number,
   spanS: number,
 ): TimeRange {
-  if (durationS <= spanS) return { fromS: 0, toS: durationS }
+  if (durationS <= spanS) return {fromS: 0, toS: durationS}
   if (!prev || Math.abs(prev.toS - prev.fromS - spanS) > 1e-6) return centred(sel, durationS, spanS)
   if (sel.startS >= prev.fromS && sel.endS <= prev.toS) return prev
   if (sel.startS < prev.fromS) return spanFrom(sel.startS, durationS, spanS)

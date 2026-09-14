@@ -4,7 +4,7 @@
  * Mirrors `window_rate()` and `autocorr_rate()` in
  * `scripts/reference/analyse.py`.
  */
-import { autocorrelate } from './fft'
+import {autocorrelate} from './fft'
 
 /** Each window is estimated on its own and the results are pooled. */
 export const WINDOW_S = 1
@@ -74,7 +74,7 @@ export function windowEstimate(window: Float64Array, sampleRate: number): Estima
     }
   }
 
-  return { pulsesPerS: sampleRate / lag, confidence: ac[peak] - trough }
+  return {pulsesPerS: sampleRate / lag, confidence: ac[peak] - trough}
 }
 
 /**
@@ -95,5 +95,5 @@ export function rateFromEnvelope(env: Float64Array, sampleRate: number): Estimat
   }
 
   if (!rates.length) return undefined
-  return { pulsesPerS: median(rates), confidence: median(confidences) }
+  return {pulsesPerS: median(rates), confidence: median(confidences)}
 }

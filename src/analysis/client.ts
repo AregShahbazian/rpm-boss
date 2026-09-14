@@ -10,12 +10,13 @@
  * reload, so failures resolve as an `AnalysisFailure` rather than hanging or
  * rejecting.
  */
-import type { AudioClip } from '../audio/types'
-import { failure, type Analysis, type ExpectedRange } from '../dsp/types'
-import type { AnalyseRequest, AnalyseResponse } from './protocol'
+import type {AudioClip} from '../audio/types'
+import {type Analysis, type ExpectedRange, failure} from '../dsp/types'
+import type {AnalyseRequest, AnalyseResponse} from './protocol'
 
 export interface AnalysisClient {
   run(clip: AudioClip, range?: ExpectedRange): Promise<Analysis>
+
   dispose(): void
 }
 
@@ -31,7 +32,7 @@ export function createAnalysisClient(): AnalysisClient {
   }
 
   try {
-    worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })
+    worker = new Worker(new URL('./worker.ts', import.meta.url), {type: 'module'})
   } catch {
     worker = undefined
   }
@@ -58,7 +59,7 @@ export function createAnalysisClient(): AnalysisClient {
       // clip can be the loaded clip itself, and handing its buffer away would
       // empty the waveform behind the user. A copy of at most 640 kB, once per
       // press, is not worth the risk.
-      const request: AnalyseRequest = { id, samples: clip.samples, sampleRate: clip.sampleRate, range }
+      const request: AnalyseRequest = {id, samples: clip.samples, sampleRate: clip.sampleRate, range}
       return new Promise<Analysis>((resolve) => {
         pending.set(id, resolve)
         try {

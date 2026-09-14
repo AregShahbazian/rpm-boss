@@ -8,7 +8,7 @@
  * baseline in `scripts/reference/analyse.py` was changed to match, so the
  * fixture check grades this chain rather than a near neighbour of it.
  */
-import { filtfilt, highpass, lowpass } from './biquad'
+import {filtfilt, highpass, lowpass} from './biquad'
 
 /** Combustion energy sits inside this band; below is handling noise, above is tone. */
 export const BAND_LOW_HZ = 60

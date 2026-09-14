@@ -1,5 +1,5 @@
-import { REVS_PER_PULSE } from '../dsp/types'
-import type { MessageKey } from '../i18n'
+import {REVS_PER_PULSE} from '../dsp/types'
+import type {MessageKey} from '../i18n'
 
 /**
  * The marks are always the raw detection, never the corrected figure: when the

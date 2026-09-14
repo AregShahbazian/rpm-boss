@@ -1,10 +1,10 @@
-import { resampleTo16k, toMono } from './resample'
-import { InputError, MIN_CLIP_S, SAMPLE_RATE, type AudioClip, type AudioSource } from './types'
+import {resampleTo16k, toMono} from './resample'
+import {type AudioClip, type AudioSource, InputError, MIN_CLIP_S, SAMPLE_RATE} from './types'
 
 /** Pure: raw decoded channels at any rate -> the app's 16 kHz mono clip. */
 export function decodeToClip(channels: Float32Array[], sampleRate: number, source: AudioSource): AudioClip {
   const samples = resampleTo16k(toMono(channels), sampleRate)
-  return { sampleRate: SAMPLE_RATE, samples, durationS: samples.length / SAMPLE_RATE, source }
+  return {sampleRate: SAMPLE_RATE, samples, durationS: samples.length / SAMPLE_RATE, source}
 }
 
 /**
@@ -17,7 +17,7 @@ export function sliceClip(clip: AudioClip, startS: number, endS: number): AudioC
   const start = Math.min(Math.max(0, Math.round(startS * clip.sampleRate)), total)
   const count = Math.max(0, Math.round((endS - startS) * clip.sampleRate))
   const samples = clip.samples.slice(start, Math.min(total, start + count))
-  return { ...clip, samples, durationS: samples.length / clip.sampleRate }
+  return {...clip, samples, durationS: samples.length / clip.sampleRate}
 }
 
 /** Keep at most `maxS` seconds from the start. */

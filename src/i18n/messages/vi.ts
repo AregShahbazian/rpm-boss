@@ -4,7 +4,7 @@
  * Translated by Claude, not yet reviewed by a native speaker. "RPM Boss" and
  * "rpm" are left as they are: one is a name, the other is what the gauge says.
  */
-import type { Messages } from '../en'
+import type {Messages} from '../en'
 
 export const messages: Messages = {
   statusIdle: "Mở một bản ghi, hoặc ghi âm động cơ.",

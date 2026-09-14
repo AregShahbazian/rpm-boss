@@ -1,0 +1,57 @@
+# The formatting both WebStorm and Claude follow, so neither reformats the
+# other's code. WebStorm reads this natively — Settings > Editor > Code Style
+# shows the values as "Set from .editorconfig" once the file is here.
+#
+# The `ij_*` keys below are WebStorm's own; everything above them is standard
+# EditorConfig and is what any other editor will honour.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 160
+
+# The translation tables are one long line per language and are not wrapped.
+[src/i18n/messages/*.ts]
+max_line_length = off
+
+[*.md]
+trim_trailing_whitespace = false
+
+# ---------------------------------------------------------------------------
+# WebStorm-specific. These are the differences Ctrl+Alt+L applied against the
+# code as it stood, written down so they are the project's choice rather than
+# whatever scheme happens to be set up on a given machine.
+# ---------------------------------------------------------------------------
+
+[*.{js,jsx,ts,tsx,mjs,cjs}]
+# `{useMemo, useState}`, not `{ useMemo, useState }`.
+ij_typescript_spaces_within_imports = false
+ij_typescript_spaces_within_object_literal_braces = false
+ij_javascript_spaces_within_imports = false
+ij_javascript_spaces_within_object_literal_braces = false
+# Members of an interface stand apart.
+ij_typescript_blank_lines_around_method_in_interface = 1
+# Sorted, and case is not part of the order: `Recording` before `RecordOptions`.
+ij_typescript_sort_imports = true
+ij_typescript_sort_module_type_imports = auto
+# A destructured parameter list that wraps indents; it does not line up under
+# the opening brace. The alignment is what turned `Sheet` and `StatusText` into
+# a 24-column hang in the reformat.
+ij_typescript_align_multiline_parameters = false
+ij_typescript_align_multiline_parameters_in_calls = false
+ij_javascript_align_multiline_parameters = false
+ij_javascript_align_multiline_parameters_in_calls = false
+
+# CSS, including the `css` blocks injected into .tsx, stays at the two spaces
+# the rest of the file uses. WebStorm's own default here is four, which is what
+# re-indented every template literal in the reformat.
+[*.css]
+indent_size = 2
+ij_css_keep_blank_lines_in_code = 1
+ij_css_keep_single_line_blocks = true

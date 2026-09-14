@@ -20,23 +20,23 @@ export interface Language {
  * seen before.
  */
 export const LANGUAGES: readonly Language[] = [
-  { code: 'en', name: 'English' },
-  { code: 'es', name: 'Español' },
-  { code: 'fr', name: 'Français' },
-  { code: 'pt', name: 'Português' },
-  { code: 'id', name: 'Indonesia' },
-  { code: 'ms', name: 'Melayu' },
-  { code: 'fil', name: 'Filipino' },
-  { code: 'ceb', name: 'Cebuano' },
-  { code: 'sw', name: 'Kiswahili' },
-  { code: 'vi', name: 'Tiếng Việt' },
-  { code: 'th', name: 'ไทย' },
-  { code: 'hi', name: 'हिन्दी' },
-  { code: 'bn', name: 'বাংলা' },
-  { code: 'ur', name: 'اردو', rtl: true },
-  { code: 'ru', name: 'Русский' },
-  { code: 'uk', name: 'Українська' },
-  { code: 'hy', name: 'Հայերեն' },
+  {code: 'en', name: 'English'},
+  {code: 'es', name: 'Español'},
+  {code: 'fr', name: 'Français'},
+  {code: 'pt', name: 'Português'},
+  {code: 'id', name: 'Indonesia'},
+  {code: 'ms', name: 'Melayu'},
+  {code: 'fil', name: 'Filipino'},
+  {code: 'ceb', name: 'Cebuano'},
+  {code: 'sw', name: 'Kiswahili'},
+  {code: 'vi', name: 'Tiếng Việt'},
+  {code: 'th', name: 'ไทย'},
+  {code: 'hi', name: 'हिन्दी'},
+  {code: 'bn', name: 'বাংলা'},
+  {code: 'ur', name: 'اردو', rtl: true},
+  {code: 'ru', name: 'Русский'},
+  {code: 'uk', name: 'Українська'},
+  {code: 'hy', name: 'Հայերեն'},
 ]
 
 /**
@@ -50,7 +50,7 @@ export function sortedLanguages(): Language[] {
 }
 
 /** Android reports Tagalog; our file is Filipino. */
-const ALIASES: Record<string, string> = { tl: 'fil' }
+const ALIASES: Record<string, string> = {tl: 'fil'}
 
 const KNOWN = new Set(LANGUAGES.map((l) => l.code))
 

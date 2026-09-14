@@ -1,19 +1,9 @@
-import {
-  createContext,
-  createElement,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
-import { en, type MessageKey, type Messages } from './en'
-import { detectLanguage, LANGUAGES } from './languages'
+import {createContext, createElement, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState,} from 'react'
+import {en, type MessageKey, type Messages} from './en'
+import {detectLanguage, LANGUAGES} from './languages'
 
-export { LANGUAGES, sortedLanguages, type Language } from './languages'
-export type { MessageKey } from './en'
+export {LANGUAGES, sortedLanguages, type Language} from './languages'
+export type {MessageKey} from './en'
 
 /** Values a message can be given. Numbers are formatted by the caller. */
 export type Args = Record<string, string | number>
@@ -81,7 +71,7 @@ export function format(template: string, args?: Args): string {
  * something the messages should have to know.
  */
 export function duration(seconds: number, lang: string): string {
-  return new Intl.NumberFormat(lang, { style: 'unit', unit: 'second', unitDisplay: 'long' }).format(seconds)
+  return new Intl.NumberFormat(lang, {style: 'unit', unit: 'second', unitDisplay: 'long'}).format(seconds)
 }
 
 interface I18n {
@@ -94,7 +84,7 @@ interface I18n {
 
 const Context = createContext<I18n | undefined>(undefined)
 
-export function I18nProvider({ children }: { children: ReactNode }) {
+export function I18nProvider({children}: { children: ReactNode }) {
   const [lang, setLangState] = useState(initialLanguage)
   const [messages, setMessages] = useState<Messages>(en)
   /**
@@ -181,7 +171,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [lang, setLang, messages, rtl],
   )
 
-  return createElement(Context.Provider, { value }, children)
+  return createElement(Context.Provider, {value}, children)
 }
 
 export function useI18n(): I18n {

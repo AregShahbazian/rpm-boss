@@ -1,5 +1,5 @@
-import { SystemBars, SystemBarsStyle } from '@capacitor/core'
-import { useCallback, useEffect, useState } from 'react'
+import {SystemBars, SystemBarsStyle} from '@capacitor/core'
+import {useCallback, useEffect, useState} from 'react'
 
 export type Theme = 'system' | 'light' | 'dark'
 
@@ -69,7 +69,8 @@ function applyBars(theme: Theme): void {
     theme === 'light' ? SystemBarsStyle.Light : theme === 'dark' ? SystemBarsStyle.Dark : SystemBarsStyle.Default
   // Nothing downstream waits on it, and a platform that cannot do it is not an
   // error worth showing anyone.
-  void SystemBars.setStyle({ style }).catch(() => {})
+  void SystemBars.setStyle({style}).catch(() => {
+  })
 }
 
 export function useTheme(): [Theme, (next: Theme) => void] {

@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
-import type { AudioClip } from '../audio/types'
-import { computePeaks } from '../waveform/peaks'
-import type { TimeRange } from '../waveform/range'
-import { moveBy, setEnd, setStart, type Selection } from '../waveform/selection'
-import { usePalette } from './palette'
-import { tickPositionsInRange } from './tick'
-import { css } from '@emotion/react'
+import {useCallback, useEffect, useMemo, useRef} from 'react'
+import type {AudioClip} from '../audio/types'
+import {computePeaks} from '../waveform/peaks'
+import type {TimeRange} from '../waveform/range'
+import {moveBy, type Selection, setEnd, setStart} from '../waveform/selection'
+import {usePalette} from './palette'
+import {tickPositionsInRange} from './tick'
+import {css} from '@emotion/react'
 
 /** The combustions found in a window, and where that window starts. */
 export interface Marks {
@@ -38,7 +38,7 @@ const EDGE_HIT_INSIDE_PX = 8
 const TICK_PX = 10
 type Drag = { kind: 'start' | 'end' } | { kind: 'body'; x0: number; sel0: Selection }
 
-export function WaveformCanvas({ clip, range, selection, onChange, positionS, handles, width, height, marks }: Props) {
+export function WaveformCanvas({clip, range, selection, onChange, positionS, handles, width, height, marks}: Props) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const drag = useRef<Drag | undefined>(undefined)
   const dpr = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1
@@ -140,13 +140,13 @@ export function WaveformCanvas({ clip, range, selection, onChange, positionS, ha
     const dEnd = Math.abs(x - ex)
     const inside = x > sx && x < ex
     const slack = inside ? EDGE_HIT_INSIDE_PX : EDGE_HIT_PX
-    if (handles && Math.min(dStart, dEnd) <= slack) d = { kind: dStart <= dEnd ? 'start' : 'end' }
-    else if (inside) d = { kind: 'body', x0: x, sel0: selection }
+    if (handles && Math.min(dStart, dEnd) <= slack) d = {kind: dStart <= dEnd ? 'start' : 'end'}
+    else if (inside) d = {kind: 'body', x0: x, sel0: selection}
     else if (!handles) {
       const len = selection.endS - selection.startS
       const centred = moveBy(selection, xToS(x) - len / 2 - selection.startS, clip.durationS)
       onChange(centred)
-      d = { kind: 'body', x0: x, sel0: centred }
+      d = {kind: 'body', x0: x, sel0: centred}
     }
     if (!d) return
     drag.current = d
