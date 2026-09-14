@@ -52,13 +52,17 @@ export function LiveStage({live, ring, rpm, motion, onStart}: Props) {
             Preflight the other three would then draw themselves at the
             initial `medium` width — a box, not a line. */}
         <div className="flex items-center justify-center border-0 border-t border-solid border-muted/40">
+          {/* The unit under the figure, not beside it. Beside it, the two
+              compete for the same line in a strip that is a fifth of the
+              stage; under it, the figure gets the whole width and the unit
+              stays a caption. */}
           <p
-            className="m-0 flex items-baseline gap-2 tabular-nums text-[clamp(1.5rem,8vmin,3rem)]/[1.1]"
+            className="m-0 flex flex-col items-center tabular-nums text-[clamp(1.5rem,8vmin,3rem)]/[1.1]"
             data-testid="live-reading"
             dir="ltr"
           >
             <span>{rpm === undefined ? NOTHING : Math.round(rpm)}</span>
-            <span className="text-[0.8rem] text-muted">{t('rpm')}</span>
+            <span className="text-[0.8rem]/[1.4] text-muted">{t('rpm')}</span>
           </p>
         </div>
       </div>
