@@ -25,6 +25,8 @@ export type InputErrorCode =
   | 'too-short'
   | 'insecure-origin'
   | 'record-failed'
+  /** The same, in live mode, where nothing is being recorded. */
+  | 'listen-failed'
   | 'capture-blocked'
 
 export const MAX_FILE_BYTES = 50 * 1024 * 1024

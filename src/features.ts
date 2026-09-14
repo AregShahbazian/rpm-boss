@@ -21,8 +21,17 @@ export interface Features {
    * app — which is the question the flag exists to answer.
    */
   expectedRange: boolean
+  /**
+   * The Mock button beside Start, which drives live mode from a bundled
+   * recording instead of the microphone, and the performance readout under the
+   * scope. A developer's affordance: live mode is otherwise only testable next
+   * to a running engine. Off in anything that ships, and dead anyway in a
+   * build without the samples it plays.
+   */
+  mockLive: boolean
 }
 
 export const FEATURES: Features = {
   expectedRange: false,
+  mockLive: false,
 }
