@@ -6,7 +6,7 @@
  * discussion note). The Kotlin-free Java plugin behind this opens `AudioRecord`
  * on `UNPROCESSED` and hands back raw PCM.
  */
-import {registerPlugin} from '@capacitor/core'
+import {type PluginListenerHandle, registerPlugin} from '@capacitor/core'
 import {assertMinLength, decodeToClip, trimClip} from './decode'
 import {type AudioClip, InputError, MAX_RECORD_S} from './types'
 import type {Recording, RecordOptions} from './record'
@@ -26,10 +26,24 @@ export interface StopResult {
   source: string
 }
 
+/** One slice of a live capture. See `startLiveCapture`. */
+export interface FramesEvent {
+  /** The slice, 16-bit little-endian PCM, base64. */
+  pcm16: string
+  sampleRate: number
+}
+
 interface RawAudioPlugin {
-  start(options: { maxS: number }): Promise<StartResult>
+  /**
+   * `stream` turns the take into a live one: frames are emitted as `frames`
+   * events and nothing is kept, so `stop` returns an empty take. Without it
+   * the whole recording is buffered natively and returned by `stop`.
+   */
+  start(options: { maxS: number; stream?: boolean }): Promise<StartResult>
 
   stop(): Promise<StopResult>
+
+  addListener(event: 'frames', handler: (event: FramesEvent) => void): Promise<PluginListenerHandle>
 }
 
 export const RawAudio = registerPlugin<RawAudioPlugin>('RawAudio')
@@ -37,7 +51,7 @@ export const RawAudio = registerPlugin<RawAudioPlugin>('RawAudio')
 /** The source the last recording actually used, for the review and for bug reports. */
 export let lastSource: string | undefined
 
-function decodeBase64(base64: string): Uint8Array {
+export function decodeBase64(base64: string): Uint8Array {
   const binary = atob(base64)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
