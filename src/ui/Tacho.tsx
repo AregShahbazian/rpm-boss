@@ -21,6 +21,9 @@ interface Props {
   /** Where to point, or undefined for "nothing to say", which is zero. */
   rpm?: number
   motion: Motion
+  /** Where the face ends, and where it turns red. Both the rider's; see `liveSettings`. */
+  maxRpm?: number
+  redlineRpm?: number
 }
 
 /** How fast the needle closes the gap to a new reading, in milliseconds. */
@@ -28,7 +31,7 @@ const TAU = 120
 /** Near enough that another frame would not be visible. */
 const SETTLED_RPM = 0.1
 
-export function Tacho({rpm, motion}: Props) {
+export function Tacho({rpm, motion, maxRpm = MAX_RPM, redlineRpm = REDLINE_RPM}: Props) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const [measure, size] = useElementSize()
   const palette = usePalette()
@@ -52,7 +55,7 @@ export function Tacho({rpm, motion}: Props) {
       ctx.strokeStyle = colour
       ctx.lineWidth = line
       ctx.beginPath()
-      ctx.arc(cx, cy, r, rad(rpmToAngle(fromRpm)), rad(rpmToAngle(toRpm)))
+      ctx.arc(cx, cy, r, rad(rpmToAngle(fromRpm, maxRpm)), rad(rpmToAngle(toRpm, maxRpm)))
       ctx.stroke()
       ctx.globalAlpha = 1
     }
@@ -60,16 +63,16 @@ export function Tacho({rpm, motion}: Props) {
     const draw = (value: number) => {
       ctx.clearRect(0, 0, w, h)
 
-      arc(0, MAX_RPM, palette.muted)
+      arc(0, maxRpm, palette.muted)
       // The part of the sweep the estimator cannot reach. Dimmed rather than
       // hidden, so it reads as "not measurable here" and not as "stopped".
       arc(0, FLOOR_RPM, palette.muted, 0.25)
-      arc(REDLINE_RPM, MAX_RPM, palette.error)
+      arc(redlineRpm, maxRpm, palette.error)
 
       ctx.lineCap = 'butt'
-      for (let at = 0; at <= MAX_RPM; at += MINOR_STEP) {
+      for (let at = 0; at <= maxRpm; at += MINOR_STEP) {
         const major = at % MAJOR_STEP === 0
-        const a = rad(rpmToAngle(at))
+        const a = rad(rpmToAngle(at, maxRpm))
         const inner = r - (major ? line * 2.4 : line * 1.3)
         ctx.strokeStyle = palette.muted
         ctx.lineWidth = major ? Math.max(1, line * 0.35) : Math.max(1, line * 0.2)
@@ -87,12 +90,12 @@ export function Tacho({rpm, motion}: Props) {
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       const labelR = r - line * 4.2
-      for (let at = 0; at <= MAX_RPM; at += MAJOR_STEP) {
-        const a = rad(rpmToAngle(at))
+      for (let at = 0; at <= maxRpm; at += MAJOR_STEP) {
+        const a = rad(rpmToAngle(at, maxRpm))
         ctx.fillText(String(at / MAJOR_STEP), cx + Math.cos(a) * labelR, cy + Math.sin(a) * labelR)
       }
 
-      const a = rad(rpmToAngle(value))
+      const a = rad(rpmToAngle(value, maxRpm))
       ctx.strokeStyle = palette.accent
       ctx.lineWidth = Math.max(2, line * 0.6)
       ctx.lineCap = 'round'
@@ -106,7 +109,7 @@ export function Tacho({rpm, motion}: Props) {
       ctx.fill()
     }
 
-    const target = clamp(rpm ?? 0, 0, MAX_RPM)
+    const target = clamp(rpm ?? 0, 0, maxRpm)
 
     if (motion === 'step') {
       drawn.current = target
@@ -130,7 +133,7 @@ export function Tacho({rpm, motion}: Props) {
     }
     frame = requestAnimationFrame(step)
     return () => cancelAnimationFrame(frame)
-  }, [rpm, motion, size, palette, dpr])
+  }, [rpm, motion, maxRpm, redlineRpm, size, palette, dpr])
 
   return (
     <div ref={measure} className="relative size-full">

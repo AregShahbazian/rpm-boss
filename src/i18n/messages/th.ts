@@ -58,4 +58,6 @@ export const messages: Messages = {
   liveMotionLabel: 'การขยับของเข็ม',
   liveMotionSmooth: 'ลื่นไหล',
   liveMotionStep: 'เป็นขั้น',
+  dialMaxLabel: 'ค่าสูงสุดของหน้าปัด',
+  dialRedlineLabel: 'เขตแดงตั้งแต่',
 }

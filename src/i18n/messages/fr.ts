@@ -58,4 +58,6 @@ export const messages: Messages = {
   liveMotionLabel: 'Mouvement de l\'aiguille',
   liveMotionSmooth: 'Fluide',
   liveMotionStep: 'Par paliers',
+  dialMaxLabel: 'Maximum du cadran',
+  dialRedlineLabel: 'Zone rouge dès',
 }

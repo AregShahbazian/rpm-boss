@@ -58,4 +58,6 @@ export const messages: Messages = {
   liveMotionLabel: 'Рух стрілки',
   liveMotionSmooth: 'Плавний',
   liveMotionStep: 'Кроками',
+  dialMaxLabel: 'Максимум шкали',
+  dialRedlineLabel: 'Червона зона від',
 }

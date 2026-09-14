@@ -58,4 +58,6 @@ export const messages: Messages = {
   liveMotionLabel: 'Paglihok sa dagom',
   liveMotionSmooth: 'Hamis',
   liveMotionStep: 'Tinagsa ka lakang',
+  dialMaxLabel: 'Maximum sa dial',
+  dialRedlineLabel: 'Pula nga bahin gikan sa',
 }

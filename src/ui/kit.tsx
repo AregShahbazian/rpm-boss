@@ -18,7 +18,7 @@
  */
 import {css} from '@emotion/react'
 import clsx from 'clsx'
-import {useId} from 'react'
+import {useId, useState} from 'react'
 
 /**
  * How the button sits in its parent. Every value has a caller: `fill` is the
@@ -308,5 +308,75 @@ export function Segmented<T extends string>({
         ))}
       </div>
     </div>
+  )
+}
+
+/**
+ * A number the rider types, held to its bounds.
+ *
+ * The draft is a string while it is being edited, because every useful way
+ * through a number field passes through one that is not a number: clearing it
+ * to retype, or the "1" on the way to "10000". Committing on each keystroke
+ * would clamp "1" to the minimum and fight the person typing. So the value
+ * leaves here only when the field is left or Enter is pressed, and is clamped
+ * then — silently, with the field corrected to what was taken, so nobody is
+ * left looking at a number the app did not accept.
+ *
+ * `min` and `max` are on the input too. That is for the stepper arrows and the
+ * phone keypad; it is not enforcement, since a typed value ignores both.
+ */
+export function NumberField({
+  label,
+  value,
+  min,
+  max,
+  step = 500,
+  onChange,
+}: {
+  label: string
+  value: number
+  min: number
+  max: number
+  step?: number
+  onChange: (next: number) => void
+}) {
+  const [draft, setDraft] = useState(String(value))
+  const [seen, setSeen] = useState(value)
+
+  // The bounds move — the redline's ceiling is the dial's top — so a value
+  // corrected underneath us has to show through into the field. Adjusted
+  // during render rather than in an effect, the same shape `useAnalysis`
+  // uses: one commit, and no frame showing the stale figure.
+  if (seen !== value) {
+    setSeen(value)
+    setDraft(String(value))
+  }
+
+  const commit = () => {
+    const parsed = Number(draft)
+    const next = Number.isFinite(parsed) ? Math.min(max, Math.max(min, Math.round(parsed))) : value
+    setDraft(String(next))
+    if (next !== value) onChange(next)
+  }
+
+  return (
+    <label className="flex items-center justify-between gap-3 text-[0.9rem]">
+      <span className="text-muted">{label}</span>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={min}
+        max={max}
+        step={step}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+        className="min-h-11 w-24 rounded-md border border-solid border-btn bg-btn px-2 text-fg"
+        css={css`
+          font: inherit;
+        `}
+      />
+    </label>
   )
 }

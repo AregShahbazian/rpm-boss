@@ -35,6 +35,36 @@ export function writeChoice(key: string, value: string): void {
   }
 }
 
+/** A number preference's bounds, and what it is when nothing is stored. */
+export interface NumberBounds {
+  min: number
+  max: number
+  fallback: number
+}
+
+/**
+ * The stored number, held inside its bounds.
+ *
+ * Clamped on the way out rather than only on the way in: the bounds move. The
+ * redline's ceiling is whatever the dial's top is set to, so a redline stored
+ * legitimately at 9,000 is out of range the moment the dial is set to 9,000
+ * or below, and the reader is the only place that can know.
+ */
+export function readNumber(key: string, bounds: NumberBounds): number {
+  try {
+    const stored = localStorage.getItem(key)
+    // Not `Number(stored)` alone: `Number(null)` and `Number('')` are both 0,
+    // which is finite, so nothing stored at all would read as zero and clamp
+    // to the minimum — a fresh install with the smallest dial the app allows.
+    if (stored === null || stored.trim() === '') return bounds.fallback
+    const parsed = Number(stored)
+    if (!Number.isFinite(parsed)) return bounds.fallback
+    return Math.min(bounds.max, Math.max(bounds.min, parsed))
+  } catch {
+    return bounds.fallback
+  }
+}
+
 /**
  * Everyone who asks for a preference reads the same one.
  *
@@ -49,6 +79,23 @@ const listeners = new Set<() => void>()
 function subscribe(listener: () => void): () => void {
   listeners.add(listener)
   return () => void listeners.delete(listener)
+}
+
+/** The same pair, for a number. `bounds` is read on every render, so it may move. */
+export function useNumber(key: string, bounds: NumberBounds): [number, (next: number) => void] {
+  const value = useSyncExternalStore(
+    subscribe,
+    () => readNumber(key, bounds),
+    () => bounds.fallback,
+  )
+  const set = useCallback(
+    (next: number) => {
+      writeChoice(key, String(next))
+      for (const listener of [...listeners]) listener()
+    },
+    [key],
+  )
+  return [value, set]
 }
 
 /** The pair a settings control wants: what is chosen, and how to change it. */

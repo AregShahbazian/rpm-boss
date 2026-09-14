@@ -2,9 +2,17 @@ import {useRef} from 'react'
 import {type MessageKey, useI18n} from '../i18n'
 import {CYLINDER_COUNTS, CYLINDERS, type Stroke, STROKES, useStroke} from './engineSettings'
 import {Icon} from './Icon'
-import {Button, Segmented, Sheet} from './kit'
+import {Button, NumberField, Segmented, Sheet} from './kit'
 import {LanguagePicker} from './LanguagePicker'
-import {type Motion, MOTIONS, useMotion} from './liveSettings'
+import {
+  MAX_RPM_BOUNDS,
+  type Motion,
+  MOTIONS,
+  redlineBounds,
+  useMaxRpm,
+  useMotion,
+  useRedline,
+} from './liveSettings'
 import {type Theme, THEMES, useTheme} from './theme'
 
 const THEME_KEYS: Record<Theme, MessageKey> = {
@@ -44,6 +52,8 @@ export function SettingsButton() {
   const [theme, setTheme] = useTheme()
   const [motion, setMotion] = useMotion()
   const [stroke, setStroke] = useStroke()
+  const [maxRpm, setMaxRpm] = useMaxRpm()
+  const [redlineRpm, setRedline] = useRedline(maxRpm)
 
   return (
     <>
@@ -104,6 +114,28 @@ export function SettingsButton() {
               value={motion}
               options={MOTIONS.map((v) => ({value: v, label: t(MOTION_KEYS[v])}))}
               onChange={setMotion}
+            />
+            {/*
+              * The face, in the order it is read: where the numbers stop, then
+              * where they turn red. The redline's ceiling is whatever the top
+              * is set to, so lowering the top brings the redline down with it
+              * rather than leaving a red arc past the end of the dial.
+              */}
+            <NumberField
+              label={t('dialMaxLabel')}
+              value={maxRpm}
+              min={MAX_RPM_BOUNDS.min}
+              max={MAX_RPM_BOUNDS.max}
+              step={500}
+              onChange={setMaxRpm}
+            />
+            <NumberField
+              label={t('dialRedlineLabel')}
+              value={redlineRpm}
+              min={redlineBounds(maxRpm).min}
+              max={redlineBounds(maxRpm).max}
+              step={500}
+              onChange={setRedline}
             />
           </div>
         </details>

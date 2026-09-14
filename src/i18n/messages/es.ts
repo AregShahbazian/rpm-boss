@@ -58,4 +58,6 @@ export const messages: Messages = {
   liveMotionLabel: 'Movimiento de la aguja',
   liveMotionSmooth: 'Suave',
   liveMotionStep: 'A saltos',
+  dialMaxLabel: 'Máximo del dial',
+  dialRedlineLabel: 'Zona roja desde',
 }

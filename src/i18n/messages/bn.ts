@@ -58,4 +58,6 @@ export const messages: Messages = {
   liveMotionLabel: 'কাঁটার চলন',
   liveMotionSmooth: 'মসৃণ',
   liveMotionStep: 'ধাপে ধাপে',
+  dialMaxLabel: 'ডায়ালের সর্বোচ্চ',
+  dialRedlineLabel: 'রেডলাইন শুরু',
 }

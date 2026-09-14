@@ -21,9 +21,16 @@ export const MINOR_STEP = 500
 
 export const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
 
-/** Degrees, clockwise from three o'clock. */
-export function rpmToAngle(rpm: number): number {
-  return START_ANGLE + (clamp(rpm, 0, MAX_RPM) / MAX_RPM) * SWEEP
+/**
+ * Degrees, clockwise from three o'clock, across a face that ends at `maxRpm`.
+ *
+ * Clamped, which is the whole of what a reading past the end of the face does:
+ * the needle sits on the stop. The figure under the dial is not clamped, so a
+ * rider with a 9,000 face who revs to 10,200 sees the needle pinned and the
+ * number telling them by how much.
+ */
+export function rpmToAngle(rpm: number, maxRpm: number = MAX_RPM): number {
+  return START_ANGLE + (clamp(rpm, 0, maxRpm) / maxRpm) * SWEEP
 }
 
 export const rad = (deg: number) => (deg * Math.PI) / 180

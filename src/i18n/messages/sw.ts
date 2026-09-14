@@ -58,4 +58,6 @@ export const messages: Messages = {
   liveMotionLabel: 'Mwendo wa mshale',
   liveMotionSmooth: 'Laini',
   liveMotionStep: 'Kwa hatua',
+  dialMaxLabel: 'Kiwango cha juu cha saa',
+  dialRedlineLabel: 'Eneo jekundu kuanzia',
 }

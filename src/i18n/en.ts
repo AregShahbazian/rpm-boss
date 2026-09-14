@@ -143,6 +143,12 @@ export const en = {
   liveMotionSmooth: 'Smooth',
   // Jump, once per reading.
   liveMotionStep: 'Step',
+  // Labels the field setting where the dial's numbers stop. Not what the app
+  // can measure — a reading past it pins the needle and still prints the
+  // figure — only how much dial a rider wants for the bike they have.
+  dialMaxLabel: 'Dial maximum',
+  // Labels the field setting where the dial turns red.
+  dialRedlineLabel: 'Redline from',
 } as const
 
 export type MessageKey = keyof typeof en

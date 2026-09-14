@@ -27,6 +27,9 @@ interface Props {
   /** What the dial should point at, or undefined for nothing; see `displayRpm`. */
   rpm?: number
   motion: Motion
+  /** The face the dial is drawn on; the rider's, see `liveSettings`. */
+  maxRpm: number
+  redlineRpm: number
   onStart: (source: LiveSource) => void
 }
 
@@ -36,7 +39,7 @@ const NOTHING = '---'
 /** The mock is a developer's affordance, and dead in a build with no samples to play. */
 const MOCK_AVAILABLE = FEATURES.mockLive && SAMPLES_ENABLED
 
-export function LiveStage({live, ring, rpm, motion, onStart}: Props) {
+export function LiveStage({live, ring, rpm, motion, maxRpm, redlineRpm, onStart}: Props) {
   const {t} = useI18n()
   const listening = live.status !== 'off'
 
@@ -44,7 +47,7 @@ export function LiveStage({live, ring, rpm, motion, onStart}: Props) {
     <div className="grid size-full grid-rows-[4fr_1fr] gap-[var(--gap)]">
       <div className="grid min-h-0 grid-rows-[4fr_1fr]">
         <div className="min-h-0">
-          <Tacho rpm={rpm} motion={motion}/>
+          <Tacho rpm={rpm} motion={motion} maxRpm={maxRpm} redlineRpm={redlineRpm}/>
         </div>
         {/* No rule between the dial and its figure. The gap says it, and a
             line across a screen this sparse reads as a box that lost three
