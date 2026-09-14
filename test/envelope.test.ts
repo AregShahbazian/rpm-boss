@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { envelope } from '../src/dsp/envelope'
+import { ENVELOPE_HZ, envelope, envelopeHzFor } from '../src/dsp/envelope'
 
 const SR = 16000
 
@@ -26,6 +26,25 @@ function peakIndices(env: Float64Array, minSpacing: number): number[] {
   }
   return out
 }
+
+describe('the smoothing', () => {
+  it('is twice as fast for a two-stroke, which fires twice as fast', () => {
+    expect(envelopeHzFor(2)).toBe(ENVELOPE_HZ)
+    expect(envelopeHzFor(1)).toBe(ENVELOPE_HZ * 2)
+  })
+
+  it('keeps a two-stroke at the top of its dial as a ripple, where the four-stroke smoothing would not', () => {
+    // 200 pulses a second. The four-stroke's 150 Hz smoothing leaves a
+    // quarter of that ripple; the two-stroke's leaves most of it.
+    const x = pulseTrain(2, 200)
+    const swing = (env: Float64Array) => {
+      let lo = Infinity, hi = -Infinity
+      for (let i = SR / 2; i < env.length - SR / 2; i++) { lo = Math.min(lo, env[i]); hi = Math.max(hi, env[i]) }
+      return hi - lo
+    }
+    expect(swing(envelope(x, SR, envelopeHzFor(1)))).toBeGreaterThan(2 * swing(envelope(x, SR, envelopeHzFor(2))))
+  })
+})
 
 describe('envelope', () => {
   it('peaks once per pulse, at the pulse', () => {

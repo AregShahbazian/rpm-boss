@@ -8,7 +8,7 @@ import {analyse} from '../dsp/analyse'
 import type {AnalyseRequest, AnalyseResponse} from './protocol'
 
 self.onmessage = (event: MessageEvent<AnalyseRequest>) => {
-  const {id, samples, sampleRate, range} = event.data
-  const response: AnalyseResponse = {id, result: analyse(samples, sampleRate, range)}
+  const {id, samples, sampleRate, range, revsPerPulse} = event.data
+  const response: AnalyseResponse = {id, result: analyse(samples, sampleRate, range, revsPerPulse)}
   self.postMessage(response)
 }

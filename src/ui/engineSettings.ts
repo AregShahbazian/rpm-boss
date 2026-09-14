@@ -1,16 +1,15 @@
 /**
  * What the rider says about the engine itself, as opposed to the gauge.
  *
- * One thing so far, and it does nothing yet: the analysis counts combustions,
- * and how many of those make one revolution is the difference between a
- * two-stroke and a four-stroke. Asking now, and remembering the answer, is the
- * half of that which is worth having before the arithmetic exists — the reading
- * is unchanged either way until it lands.
- *
- * It sits outside the tachometer section in the settings for that reason: it
- * describes the motorcycle, not the needle, and it is the one thing here a
- * rider with a two-stroke must change before the app is right for them.
+ * The stroke is the one that matters: the analysis counts combustions, and
+ * how many of those make one revolution is the difference between a
+ * two-stroke and a four-stroke — the same sound is half the rpm on one of
+ * them, and it arrives twice as fast. It sits outside the tachometer section
+ * in the settings for that reason: it describes the motorcycle, not the
+ * needle, and it is the one thing here a rider with a two-stroke must change
+ * before the app is right for them.
  */
+import {REVS_PER_PULSE, type RevsPerPulse} from '../dsp/types'
 import {readChoice, useChoice} from './prefs'
 
 /** Combustions per revolution: two-stroke fires once, four-stroke every other turn. */
@@ -26,6 +25,13 @@ const STROKE_KEY = 'rpm-boss.engine.stroke'
 export const readStroke = (): Stroke => readChoice(STROKE_KEY, STROKES, DEFAULT_STROKE)
 
 export const useStroke = (): [Stroke, (next: Stroke) => void] => useChoice(STROKE_KEY, STROKES, DEFAULT_STROKE)
+
+/**
+ * The stroke as the analysis wants it: revolutions per combustion. The only
+ * place the two vocabularies meet — the dialog counts strokes, the DSP counts
+ * turns per firing, and neither needs the other's word for it.
+ */
+export const revsPerPulse = (stroke: Stroke): RevsPerPulse => (stroke === '2' ? 1 : REVS_PER_PULSE)
 
 /**
  * How many cylinders the engine has. One, and nothing else, for now.

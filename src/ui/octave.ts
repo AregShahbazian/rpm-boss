@@ -1,4 +1,4 @@
-import {REVS_PER_PULSE} from '../dsp/types'
+import {REVS_PER_PULSE, type RevsPerPulse} from '../dsp/types'
 import type {MessageKey} from '../i18n'
 
 /**
@@ -8,7 +8,7 @@ import type {MessageKey} from '../i18n'
  * quietly disagree with the number by the very factor it exists to expose,
  * say what the range decided the marks mean.
  */
-export function octaveKey(rpm: number, pulsesPerS: number): MessageKey {
-  const raw = pulsesPerS * 60 * REVS_PER_PULSE
+export function octaveKey(rpm: number, pulsesPerS: number, revsPerPulse: RevsPerPulse = REVS_PER_PULSE): MessageKey {
+  const raw = pulsesPerS * 60 * revsPerPulse
   return rpm > raw ? 'octaveUp' : 'octaveDown'
 }

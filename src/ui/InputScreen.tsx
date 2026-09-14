@@ -8,6 +8,7 @@ import {FEATURES} from '../features'
 import {useI18n} from '../i18n'
 import {saveClip} from '../audio/save'
 import {SPLIT, TALL} from './breakpoints'
+import {revsPerPulse, useStroke} from './engineSettings'
 import {Button} from './kit'
 import {useMotion} from './liveSettings'
 import {LiveScope} from './LiveScope'
@@ -159,7 +160,11 @@ export function InputScreen() {
   // never both underway: the source row is disabled while this runs, and this
   // can only be started from the resting screen.
   const [motion] = useMotion()
-  const {live, ring, start, stop: stopLive} = useLive(reportError)
+  // Two-stroke or four-. It decides what a detected rhythm means in rpm, so it
+  // reaches both the batch analysis and the live loop.
+  const [stroke] = useStroke()
+  const revs = revsPerPulse(stroke)
+  const {live, ring, start, stop: stopLive} = useLive(reportError, revs)
   const listening = live.status !== 'off'
   const rpm = displayRpm(live)
 
@@ -189,7 +194,7 @@ export function InputScreen() {
     const clip = getWindowClip()
     if (!clip) return
     setAnalysedWindow({offsetS: state.selection.startS, windowS: clip.durationS})
-    void analyse(clip, windowKey, parseRange(range))
+    void analyse(clip, windowKey, parseRange(range), revs)
   }
 
   // Nothing to split until there is something to show in the second column.

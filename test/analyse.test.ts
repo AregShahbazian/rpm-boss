@@ -4,12 +4,19 @@ import { MIN_ANALYSIS_S } from '../src/dsp/types'
 
 const SR = 16000
 
-function engineLike(durationS: number, rate: number): Float32Array {
+/**
+ * `carrierHz` is the exhaust note. At 200 pulses a second the default 350 Hz
+ * would put 1.75 cycles in each pulse, so consecutive pulses start in opposite
+ * polarity and the bandpass's tail from one meets the next as a different
+ * shape: an engine that alternates, which no real one does. A whole number of
+ * cycles per pulse keeps every pulse the same.
+ */
+function engineLike(durationS: number, rate: number, carrierHz = 350): Float32Array {
   const n = Math.round(durationS * SR)
   const period = SR / rate
   return Float32Array.from({ length: n }, (_, i) => {
     const phase = (i % period) / period
-    return Math.exp(-phase * 20) * Math.sin((2 * Math.PI * 350 * i) / SR)
+    return Math.exp(-phase * 20) * Math.sin((2 * Math.PI * carrierHz * i) / SR)
   })
 }
 
@@ -26,6 +33,11 @@ function random(seed: number): () => number {
 describe('toRpm', () => {
   it('counts two revolutions per combustion', () => {
     expect(toRpm(13.4)).toBeCloseTo(1608, 0)
+  })
+
+  it('counts one on a two-stroke, which is half the rpm', () => {
+    expect(toRpm(13.4, 1)).toBeCloseTo(804, 0)
+    expect(toRpm(13.4, 1)).toBe(toRpm(13.4) / 2)
   })
 })
 
@@ -94,6 +106,29 @@ describe('analyse', () => {
     expect(got.peakPulsesPerS).toBeCloseTo(13.5, 0)
     expect(got.pulseTimesS.length).toBe(54)
     expect(got.octaveAdjusted).toBe(false)
+  })
+
+  it('halves the reading for a two-stroke, and says which engine it read', () => {
+    const four = analyse(engineLike(4, 13.5), SR)
+    const two = analyse(engineLike(4, 13.5), SR, undefined, 1)
+    if (!four.ok || !two.ok) throw new Error('both should read')
+
+    // Not to the digit: the two-stroke chain smooths at twice the rate, so the
+    // refined lag differs in its fourth figure. The reading is the same.
+    expect(two.rpm).toBeCloseTo(four.rpm / 2, -1)
+    expect(two.revsPerPulse).toBe(1)
+    expect(four.revsPerPulse).toBe(2)
+    // The same sound; only what it means moved.
+    expect(Math.abs(two.pulsesPerS - four.pulsesPerS) / four.pulsesPerS).toBeLessThan(0.001)
+  })
+
+  it('reads a two-stroke at the top of its dial', () => {
+    // 200 combustions a second: 12,000 rpm on a two-stroke, and twice the
+    // fastest rhythm the four-stroke chain ever looks for.
+    const got = analyse(engineLike(4, 200, 400), SR, undefined, 1)
+    if (!got.ok) throw new Error(got.code)
+    expect(got.rpm).toBeCloseTo(12_000, -2)
+    expect(got.pulsesPerS).toBeCloseTo(200, 0)
   })
 
   it('marks the result when the range moved it an octave', () => {

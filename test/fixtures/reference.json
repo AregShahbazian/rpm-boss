@@ -9,9 +9,11 @@
     "envelopeHz": 150,
     "windowS": 1.0,
     "rateRange": [
-      8.0,
-      100.0
-    ]
+      4.545454545454545,
+      110.00000000000001
+    ],
+    "searchHeadroom": 1.1,
+    "fundamentalMin": 0.65
   },
   "fixtures": {
     "standard-recording-1.wav": {

@@ -63,7 +63,7 @@ export function ResultView({analysis}: Props) {
   }
   if (analysis.status !== 'done' || !analysis.result) return <Box ref={box}/>
 
-  const {rpm, pulsesPerS, pulseTimesS, octaveAdjusted} = analysis.result
+  const {rpm, pulsesPerS, pulseTimesS, octaveAdjusted, revsPerPulse} = analysis.result
 
   return (
     <Box ref={box}>
@@ -87,7 +87,7 @@ export function ResultView({analysis}: Props) {
       </p>
       <p className="m-0 text-[0.95rem] text-muted" data-testid="result-caption">
         {t('marked', {count: n(pulseTimesS.length)})}
-        {octaveAdjusted ? ` - ${t(octaveKey(rpm, pulsesPerS))}` : ''}
+        {octaveAdjusted ? ` - ${t(octaveKey(rpm, pulsesPerS, revsPerPulse))}` : ''}
       </p>
     </Box>
   )

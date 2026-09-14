@@ -4,12 +4,22 @@
  * Mirrors `analyse()` in `scripts/reference/analyse.py`, which is what the
  * fixture suite checks this against.
  */
-import {rateFromEnvelope} from './autocorr'
-import {envelope} from './envelope'
+import {rateFromEnvelope, rateRangeFor} from './autocorr'
+import {envelope, envelopeHzFor} from './envelope'
 import {findPulses, rateFromPulses} from './pulses'
-import {type Analysis, type ExpectedRange, failure, MIN_ANALYSIS_S, MIN_CONFIDENCE, REVS_PER_PULSE,} from './types'
+import {
+  type Analysis,
+  type ExpectedRange,
+  failure,
+  MIN_ANALYSIS_S,
+  MIN_CONFIDENCE,
+  REVS_PER_PULSE,
+  type RevsPerPulse,
+} from './types'
 
-export const toRpm = (pulsesPerS: number): number => pulsesPerS * 60 * REVS_PER_PULSE
+/** Combustions per second into rpm. The engine is the only thing in it. */
+export const toRpm = (pulsesPerS: number, revsPerPulse: RevsPerPulse = REVS_PER_PULSE): number =>
+  pulsesPerS * 60 * revsPerPulse
 
 /**
  * When the method is wrong it is wrong by a factor of two: a missed pulse
@@ -31,24 +41,32 @@ export function resolveOctave(rpm: number, range?: ExpectedRange): number {
   return [rpm / 2, rpm * 2].find(fits) ?? rpm
 }
 
+/**
+ * `revsPerPulse` is the engine. It is not only the last multiplication: the
+ * same chain runs, with everything stated in combustions per second — the
+ * smoothing, the rates searched — scaled to how fast this engine fires. A
+ * two-stroke is a four-stroke heard at double speed, and it is analysed as one.
+ */
 export function analyse(
   samples: Float32Array | Float64Array,
   sampleRate: number,
   range?: ExpectedRange,
+  revsPerPulse: RevsPerPulse = REVS_PER_PULSE,
 ): Analysis {
   if (samples.length < MIN_ANALYSIS_S * sampleRate) return failure('too-short')
 
-  const env = envelope(samples, sampleRate)
-  const estimate = rateFromEnvelope(env, sampleRate)
+  const env = envelope(samples, sampleRate, envelopeHzFor(revsPerPulse))
+  const estimate = rateFromEnvelope(env, sampleRate, rateRangeFor(revsPerPulse))
   if (!estimate || estimate.confidence < MIN_CONFIDENCE) return failure('no-signal')
 
   const pulses = findPulses(env, estimate.pulsesPerS, sampleRate)
-  const rpm = toRpm(estimate.pulsesPerS)
+  const rpm = toRpm(estimate.pulsesPerS, revsPerPulse)
   const resolved = resolveOctave(rpm, range)
 
   return {
     ok: true,
     rpm: resolved,
+    revsPerPulse,
     pulsesPerS: estimate.pulsesPerS,
     peakPulsesPerS: rateFromPulses(pulses.length, samples.length, sampleRate),
     confidence: estimate.confidence,
