@@ -8,7 +8,7 @@ import type {Messages} from '../en'
 
 export const messages: Messages = {
   statusDecoding: 'Memproses…',
-  statusRecording: 'Merekam. Dekatkan ponsel ke mesin.',
+  statusRecording: 'Merekam',
   statusRecorded: 'Direkam - {duration}',
   dismiss: 'Tutup',
   cancel: 'Batal',

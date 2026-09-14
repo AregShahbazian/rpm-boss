@@ -8,7 +8,7 @@ import type {Messages} from '../en'
 
 export const messages: Messages = {
   statusDecoding: 'प्रोसेस हो रहा है…',
-  statusRecording: 'रिकॉर्ड हो रहा है। फ़ोन इंजन के पास रखें।',
+  statusRecording: 'रिकॉर्ड हो रहा है',
   statusRecorded: 'रिकॉर्ड किया गया - {duration}',
   dismiss: 'बंद करें',
   cancel: 'रद्द करें',

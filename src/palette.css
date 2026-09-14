@@ -27,21 +27,13 @@
 
 /*
  * Not colours, so not in the theme namespace — but they belong beside it.
- * `--dim` changes with the theme and is read by the canvas; the other two set
- * the shape of the layout.
+ * `--dim` changes with the theme and is read by the canvas; `--gap` sets the
+ * shape of the layout.
  */
 :root {
   /* How much background is laid over the audio outside the crop window. */
   --dim: 0.6;
   --gap: 12px;
-  /*
-   * The control column. The floor is what the source row needs on one line —
-   * two labelled buttons and the settings icon — because wrapping that row
-   * costs 52 px of height, and a landscape phone has 360 px in total. The
-   * ceiling leaves the waveform more than 500 px on a 844 px screen, which is
-   * where the marks stop being a fence and start being countable.
-   */
-  --col: clamp(300px, 34vw, 460px);
 
   /*
    * What the device keeps for itself: the status bar, the navigation bar and

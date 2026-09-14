@@ -14,7 +14,7 @@ export const en = {
   // A file or a recording is being decoded. Lasts under a second.
   statusDecoding: 'Decoding…',
   // The microphone is live and the countdown is running.
-  statusRecording: 'Recording. Hold the phone near the engine.',
+  statusRecording: 'Recording',
   // The recording is finished and loaded. Only its length is worth saying: the
   // name is a timestamp the app made up, which tells the user nothing they did
   // not just watch happen. {duration} is already in the reader's language.

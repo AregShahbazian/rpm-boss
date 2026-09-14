@@ -8,6 +8,7 @@ import {useI18n} from '../i18n'
 import {saveClip} from '../audio/save'
 import {SPLIT, TALL} from './breakpoints'
 import {Button} from './kit'
+import {LiveStage} from './LiveStage'
 import {Player} from './Player'
 import {RangeFields} from './RangeFields'
 import {ResultView} from './ResultView'
@@ -73,7 +74,14 @@ const SCREEN = css`
      * cap that stops the waveform growing without limit.
      */
     grid-template-rows: auto auto minmax(0, 1fr) ${withRange('auto')} auto;
-    grid-template-columns: minmax(0, var(--col)) minmax(0, 1fr);
+    /*
+     * The control column is as wide as its widest control and no wider: four
+     * icon buttons, or the rpm figure once there is one. It used to be a
+     * clamp, sized for two labelled buttons on one line; the labels are gone,
+     * and holding that width would have left a third of a landscape phone
+     * empty beside the waveform.
+     */
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
       'source wave'
       'status wave'
@@ -94,22 +102,29 @@ const SCREEN = css`
 `
 
 /*
- * Before a recording is opened there is no second column to fill, and a split
- * layout would leave two buttons pinned to the left edge of a laptop screen
- * with the whole signal column empty beside them. The empty state is one
- * centred column, the same shape the stacked layout has.
+ * The empty screen is the same two columns as the loaded one: the source row
+ * on the left, the stage where the waveform goes. Nothing about it is a
+ * special shape — only the right-hand column has different contents.
+ *
+ * The split rules are written out in full rather than inherited from the block
+ * above, because every declaration outside a nested block is emitted in one
+ * rule *before* the media rules, whatever the source order. A bare
+ * `grid-template-areas` here would lose to the split layout's own instead of
+ * overriding it, the `stage` area would not exist in landscape, and the
+ * placeholder would land in an implicit row with no height.
  */
 const SCREEN_EMPTY = css`
+  min-block-size: 100dvh;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-areas: 'source' 'status' 'stage';
+
   @media ${SPLIT} {
-    max-inline-size: 480px;
-    margin-inline: auto;
-    align-content: center;
-    grid-template-columns: minmax(0, 1fr);
-    /* Two tracks, not five: the flexible row above belongs to a result that
-       does not exist yet, and left in place it would push the buttons off the
-       top of the screen. */
-    grid-template-rows: auto auto;
-    grid-template-areas: 'source' 'status';
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'source stage'
+      'status stage';
   }
 `
 
@@ -157,6 +172,12 @@ export function InputScreen() {
   // Nothing to split until there is something to show in the second column.
   const loaded = state.clip !== undefined && state.status !== 'recording'
 
+  // The stage belongs to the resting screen only. It keeps its room while a
+  // recording runs, a file decodes or an error stands — the layout does not
+  // move under the counter or the message — but shows nothing: a tachometer
+  // reading zero next to "recording too short" would look like its answer.
+  const stage = state.status === 'idle'
+
   return (
     <main css={loaded ? SCREEN : [SCREEN, SCREEN_EMPTY]}>
       {/* No title: the launcher, the tab and the app switcher all carry the
@@ -165,7 +186,6 @@ export function InputScreen() {
       <div className="flex flex-wrap gap-3 [grid-area:source] split:gap-2">
         <RecordButton
           recording={state.status === 'recording'}
-          elapsedS={state.elapsedS}
           disabled={state.status === 'decoding'}
           onStart={startRecording}
           onStop={stopRecording}
@@ -174,9 +194,19 @@ export function InputScreen() {
         <SampleButton disabled={busy} onFile={upload}/>
         <SettingsButton/>
       </div>
-      <div className="[grid-area:status]">
+      {/* Zero wide, then at least as wide as its area. The column beside the
+          stage is sized to the buttons, and an `auto` track takes the widest
+          thing in it — so a sentence-long error would push the stage across
+          the screen. A width of zero is what the track sees; the minimum is
+          what the text gets, and it wraps inside it. */}
+      <div className="w-0 min-w-full [grid-area:status]">
         <StatusLine state={state} onDismiss={dismissError} onClear={clear} onSave={onSave}/>
       </div>
+      {stage && (
+        <div className="min-h-0 [grid-area:stage]">
+          <LiveStage/>
+        </div>
+      )}
       {state.clip && state.status !== 'recording' && (
         <>
           <div className="min-w-0 [grid-area:wave]">

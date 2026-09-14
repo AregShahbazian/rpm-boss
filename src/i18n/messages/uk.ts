@@ -8,7 +8,7 @@ import type {Messages} from '../en'
 
 export const messages: Messages = {
   statusDecoding: 'Обробка…',
-  statusRecording: 'Триває запис. Тримайте телефон біля двигуна.',
+  statusRecording: 'Триває запис',
   statusRecorded: 'Записано - {duration}',
   dismiss: 'Закрити',
   cancel: 'Скасувати',
