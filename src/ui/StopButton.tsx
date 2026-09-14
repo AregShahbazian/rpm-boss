@@ -11,17 +11,19 @@ import {Button} from './kit'
  * The wrapper is what puts it on the line below in landscape. Width on the
  * button itself cannot do it: a flex line breaks on the item's basis *after*
  * its own max-width has clamped it, so anything narrow enough to look right
- * is narrow enough to fit on the line above. A full-width wrapper breaks the
- * line and the button keeps its size inside it.
+ * is narrow enough to fit on the line above.
  *
- * And the line has to break, or the control column — which is as wide as its
- * widest row — grows by this button the moment live mode starts, with the
- * stage shrinking under it.
+ * Zero wide, then at least as wide as the row. The control column is sized to
+ * its widest row, and a plain full-width wrapper is still measured at the
+ * button's 104 px while that happens — so the column came out as the icons
+ * *plus* this button, and the tachometer beside it shrank by exactly that when
+ * live mode started. A width of zero is what the measurement sees; the minimum
+ * is what the layout gets, and it is what breaks the line.
  */
 export function StopButton({onStop}: { onStop: () => void }) {
   const {t} = useI18n()
   return (
-    <div className="split:w-full">
+    <div className="split:w-0 split:min-w-full">
       <Button shape="stop" tone="record" aria-label={t('stopListening')} onClick={onStop}>
         <Icon icon="mdi:stop"/>
       </Button>
