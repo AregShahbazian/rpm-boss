@@ -10,7 +10,7 @@ export const messages: Messages = {
   statusIdle: 'Abre una grabación o graba el motor.',
   statusDecoding: 'Procesando…',
   statusRecording: 'Grabando. Acerca el teléfono al motor.',
-  statusLoaded: 'Cargado: {name} · {duration}',
+  statusRecorded: 'Grabado - {duration}',
   dismiss: 'Cerrar',
   openAudio: 'Abrir audio',
   pickSample: 'Probar un ejemplo',

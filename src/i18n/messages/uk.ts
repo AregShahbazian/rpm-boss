@@ -10,7 +10,7 @@ export const messages: Messages = {
   statusIdle: 'Відкрийте запис або запишіть двигун.',
   statusDecoding: 'Обробка…',
   statusRecording: 'Триває запис. Тримайте телефон біля двигуна.',
-  statusLoaded: 'Завантажено: {name} · {duration}',
+  statusRecorded: 'Записано - {duration}',
   dismiss: 'Закрити',
   openAudio: 'Відкрити аудіо',
   pickSample: 'Спробувати приклад',

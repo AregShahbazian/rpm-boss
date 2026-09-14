@@ -10,7 +10,7 @@ export const messages: Messages = {
   statusIdle: 'Ouvre un enregistrement, ou enregistre le moteur.',
   statusDecoding: 'Traitement…',
   statusRecording: 'Enregistrement. Approche le téléphone du moteur.',
-  statusLoaded: 'Chargé : {name} · {duration}',
+  statusRecorded: 'Enregistré - {duration}',
   dismiss: 'Fermer',
   openAudio: 'Ouvrir un audio',
   pickSample: 'Essayer un exemple',

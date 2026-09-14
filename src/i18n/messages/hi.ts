@@ -10,7 +10,7 @@ export const messages: Messages = {
   statusIdle: 'रिकॉर्डिंग खोलें, या इंजन रिकॉर्ड करें।',
   statusDecoding: 'प्रोसेस हो रहा है…',
   statusRecording: 'रिकॉर्ड हो रहा है। फ़ोन इंजन के पास रखें।',
-  statusLoaded: 'लोड हुआ: {name} · {duration}',
+  statusRecorded: 'रिकॉर्ड किया गया - {duration}',
   dismiss: 'बंद करें',
   openAudio: 'ऑडियो खोलें',
   pickSample: 'नमूना आज़माएँ',

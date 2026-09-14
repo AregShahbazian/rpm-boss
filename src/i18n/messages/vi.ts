@@ -10,7 +10,7 @@ export const messages: Messages = {
   statusIdle: 'Mở một bản ghi, hoặc ghi âm động cơ.',
   statusDecoding: 'Đang xử lý…',
   statusRecording: 'Đang ghi. Đưa điện thoại lại gần động cơ.',
-  statusLoaded: 'Đã tải: {name} · {duration}',
+  statusRecorded: 'Đã ghi - {duration}',
   dismiss: 'Đóng',
   openAudio: 'Mở âm thanh',
   pickSample: 'Thử một mẫu',

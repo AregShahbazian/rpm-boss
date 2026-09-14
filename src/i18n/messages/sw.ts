@@ -10,7 +10,7 @@ export const messages: Messages = {
   statusIdle: 'Fungua rekodi, au rekodi injini.',
   statusDecoding: 'Inachakata…',
   statusRecording: 'Inarekodi. Sogeza simu karibu na injini.',
-  statusLoaded: 'Imepakiwa: {name} · {duration}',
+  statusRecorded: 'Imerekodiwa - {duration}',
   dismiss: 'Funga',
   openAudio: 'Fungua sauti',
   pickSample: 'Jaribu sampuli',

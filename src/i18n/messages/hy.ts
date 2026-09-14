@@ -10,7 +10,7 @@ export const messages: Messages = {
   statusIdle: 'Բացեք ձայնագրություն կամ ձայնագրեք շարժիչը։',
   statusDecoding: 'Մշակվում է…',
   statusRecording: 'Ձայնագրվում է։ Հեռախոսը մոտ պահեք շարժիչին։',
-  statusLoaded: 'Բեռնված է՝ {name} · {duration}',
+  statusRecorded: 'Ձայնագրված է - {duration}',
   dismiss: 'Փակել',
   openAudio: 'Բացել ձայնագրություն',
   pickSample: 'Փորձել նմուշը',

@@ -10,7 +10,7 @@ export const messages: Messages = {
   statusIdle: 'Ablihi ang rekording, o irekord ang makina.',
   statusDecoding: 'Giproseso…',
   statusRecording: 'Nagrekord. Iduol ang telepono sa makina.',
-  statusLoaded: 'Na-load: {name} · {duration}',
+  statusRecorded: 'Na-record - {duration}',
   dismiss: 'Sirad-i',
   openAudio: 'Ablihi ang audio',
   pickSample: 'Sulayi ang sample',

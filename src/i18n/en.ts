@@ -16,8 +16,10 @@ export const en = {
   statusDecoding: 'Decoding…',
   // The microphone is live and the countdown is running.
   statusRecording: 'Recording. Hold the phone near the engine.',
-  // A recording is loaded. {name} is the file name, {duration} its length.
-  statusLoaded: 'Loaded: {name} · {duration}',
+  // The recording is finished and loaded. Only its length is worth saying: the
+  // name is a timestamp the app made up, which tells the user nothing they did
+  // not just watch happen. {duration} is already in the reader's language.
+  statusRecorded: 'Recorded - {duration}',
   // Clears an error message so the user can try again.
   dismiss: 'Dismiss',
 

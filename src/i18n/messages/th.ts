@@ -10,7 +10,7 @@ export const messages: Messages = {
   statusIdle: 'เปิดไฟล์เสียง หรืออัดเสียงเครื่องยนต์',
   statusDecoding: 'กำลังประมวลผล…',
   statusRecording: 'กำลังอัด ถือโทรศัพท์ใกล้เครื่องยนต์',
-  statusLoaded: 'โหลดแล้ว: {name} · {duration}',
+  statusRecorded: 'บันทึกแล้ว - {duration}',
   dismiss: 'ปิด',
   openAudio: 'เปิดไฟล์เสียง',
   pickSample: 'ลองตัวอย่างเสียง',

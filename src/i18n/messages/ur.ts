@@ -10,7 +10,7 @@ export const messages: Messages = {
   statusIdle: 'ریکارڈنگ کھولیں، یا انجن ریکارڈ کریں۔',
   statusDecoding: 'کارروائی جاری…',
   statusRecording: 'ریکارڈ ہو رہا ہے۔ فون انجن کے قریب رکھیں۔',
-  statusLoaded: 'لوڈ ہو گیا: {name} · {duration}',
+  statusRecorded: 'ریکارڈ ہو گیا - {duration}',
   dismiss: 'بند کریں',
   openAudio: 'آڈیو کھولیں',
   pickSample: 'نمونہ آزمائیں',

@@ -30,14 +30,20 @@ export function StatusLine({state, onDismiss}: Props) {
           </LinkButton>
         </StatusText>
       )
-    case 'loaded':
+    case 'loaded': {
+      // A file says its own name; a recording's name is a timestamp the app
+      // invented, and repeating it back says nothing the user did not just
+      // watch happen. So a file gets name and length, and a recording gets the
+      // length under a word — the one word here that is not already data, and
+      // the only part of either line that needs translating.
+      const length = duration(Number((state.clip?.durationS ?? 0).toFixed(1)), lang)
       return (
         <StatusText>
-          {t('statusLoaded', {
-            name: state.clip?.source.name ?? '',
-            duration: duration(Number((state.clip?.durationS ?? 0).toFixed(1)), lang),
-          })}
+          {state.clip?.source.kind === 'mic'
+            ? t('statusRecorded', {duration: length})
+            : `${state.clip?.source.name ?? ''} - ${length}`}
         </StatusText>
       )
+    }
   }
 }

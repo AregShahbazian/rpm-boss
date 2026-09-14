@@ -10,7 +10,7 @@ export const messages: Messages = {
   statusIdle: 'Buka rakaman, atau rakam enjin.',
   statusDecoding: 'Memproses…',
   statusRecording: 'Merakam. Dekatkan telefon ke enjin.',
-  statusLoaded: 'Dimuatkan: {name} · {duration}',
+  statusRecorded: 'Dirakam - {duration}',
   dismiss: 'Tutup',
   openAudio: 'Buka audio',
   pickSample: 'Cuba sampel',
