@@ -33,11 +33,12 @@ const SHAPE: Record<Shape, string> = {
   wide: 'w-full justify-between px-5',
   fit: 'flex-none justify-center px-5',
   /*
-   * Twice an icon button and never more: 96 px against a 48 px height, which
-   * is the odd one out in a row of squares without becoming a slab. Where it
-   * sits is `StopButton`'s business, not this one's.
+   * Two icon buttons and the gap between them: 48 + 8 + 48. It spans exactly
+   * what the first two buttons of the row span, from the left edge of one to
+   * the right edge of the other, which is why it is not simply twice a button.
+   * Where it sits is `StopButton`'s business, not this one's.
    */
-  stop: 'w-24 flex-none justify-center p-0',
+  stop: 'w-26 flex-none justify-center p-0',
 }
 
 /** `className` is omitted on purpose: see the note above. The compiler enforces it. */
