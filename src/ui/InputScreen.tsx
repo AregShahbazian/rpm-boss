@@ -2,12 +2,14 @@ import {css} from '@emotion/react'
 import {useMemo, useState} from 'react'
 import {useAnalysis} from '../state/useAnalysis'
 import {useAudioInput} from '../state/useAudioInput'
+import {displayRpm, useLive} from '../state/useLive'
 import type {ExpectedRange} from '../dsp/types'
 import {FEATURES} from '../features'
 import {useI18n} from '../i18n'
 import {saveClip} from '../audio/save'
 import {SPLIT, TALL} from './breakpoints'
 import {Button} from './kit'
+import {useFallback, useMotion} from './liveSettings'
 import {LiveStage} from './LiveStage'
 import {Player} from './Player'
 import {RangeFields} from './RangeFields'
@@ -15,6 +17,7 @@ import {ResultView} from './ResultView'
 import {RecordButton} from './RecordButton'
 import {SampleButton} from './SampleButton'
 import {SettingsButton} from './SettingsButton.tsx'
+import {StopButton} from './StopButton'
 import {StatusLine} from './StatusLine'
 import {UploadButton} from './UploadButton'
 import {type Marks, WaveformBlock} from './WaveformBlock'
@@ -129,8 +132,18 @@ const SCREEN_EMPTY = css`
 `
 
 export function InputScreen() {
-  const {state, getWindowClip, upload, startRecording, stopRecording, clear, dismissError, togglePlay, setSelection} =
-    useAudioInput()
+  const {
+    state,
+    getWindowClip,
+    upload,
+    startRecording,
+    stopRecording,
+    clear,
+    dismissError,
+    togglePlay,
+    setSelection,
+    reportError,
+  } = useAudioInput()
   const [range, setRange] = useState({minRpm: '', maxRpm: ''})
   const {t} = useI18n()
   // Any change to the clip or the window clears the last result.
@@ -139,6 +152,15 @@ export function InputScreen() {
 
   const busy = state.status === 'decoding' || state.status === 'recording'
   const running = analysis.status === 'running'
+
+  // Live mode and the batch path share a microphone and a screen, so they are
+  // never both underway: the source row is disabled while this runs, and this
+  // can only be started from the resting screen.
+  const [fallback] = useFallback()
+  const [motion] = useMotion()
+  const {live, ring, start, stop: stopLive} = useLive(reportError)
+  const listening = live.status !== 'off'
+  const rpm = displayRpm(live, fallback)
 
   // The window the marks belong to, held so they are drawn against what was
   // analysed rather than whatever the crop is now. It is replaced on each
@@ -186,13 +208,14 @@ export function InputScreen() {
       <div className="flex flex-wrap gap-3 [grid-area:source] split:gap-2">
         <RecordButton
           recording={state.status === 'recording'}
-          disabled={state.status === 'decoding'}
+          disabled={state.status === 'decoding' || listening}
           onStart={startRecording}
           onStop={stopRecording}
         />
-        <UploadButton disabled={busy} onFile={upload}/>
-        <SampleButton disabled={busy} onFile={upload}/>
+        <UploadButton disabled={busy || listening} onFile={upload}/>
+        <SampleButton disabled={busy || listening} onFile={upload}/>
         <SettingsButton/>
+        {listening && <StopButton onStop={stopLive}/>}
       </div>
       {/* Zero wide, then at least as wide as its area. The column beside the
           stage is sized to the buttons, and an `auto` track takes the widest
@@ -204,7 +227,7 @@ export function InputScreen() {
       </div>
       {stage && (
         <div className="min-h-0 [grid-area:stage]">
-          <LiveStage/>
+          <LiveStage live={live} ring={ring} rpm={rpm} motion={motion} onStart={start}/>
         </div>
       )}
       {state.clip && state.status !== 'recording' && (

@@ -1,14 +1,25 @@
 import {useRef} from 'react'
 import {type MessageKey, useI18n} from '../i18n'
 import {Icon} from './Icon'
-import {Button, Sheet} from './kit'
+import {Button, Picker, Sheet} from './kit'
 import {LanguagePicker} from './LanguagePicker'
+import {type Fallback, FALLBACKS, type Motion, MOTIONS, useFallback, useMotion} from './liveSettings'
 import {type Theme, THEMES, useTheme} from './theme'
 
 const THEME_KEYS: Record<Theme, MessageKey> = {
   system: 'themeSystem',
   light: 'themeLight',
   dark: 'themeDark',
+}
+
+const FALLBACK_KEYS: Record<Fallback, MessageKey> = {
+  zero: 'liveFallbackZero',
+  hold: 'liveFallbackHold',
+}
+
+const MOTION_KEYS: Record<Motion, MessageKey> = {
+  smooth: 'liveMotionSmooth',
+  step: 'liveMotionStep',
 }
 
 /**
@@ -27,6 +38,8 @@ export function SettingsButton() {
   const dialog = useRef<HTMLDialogElement>(null)
   const {t} = useI18n()
   const [theme, setTheme] = useTheme()
+  const [fallback, setFallback] = useFallback()
+  const [motion, setMotion] = useMotion()
 
   return (
     <>
@@ -50,6 +63,36 @@ export function SettingsButton() {
             </label>
           ))}
         </fieldset>
+        {/*
+          * Closed until asked for, and closed by a `<details>` rather than by
+          * a piece of state: it brings its own disclosure semantics, its own
+          * keyboard handling and its own marker, which is the same argument
+          * that made the dialog a `<dialog>` and the language a `<select>`.
+          *
+          * The theme above it stays a plain section. Two settings a rider will
+          * open once and never again do not deserve the same standing as the
+          * one that decides whether the screen is readable in daylight.
+          */}
+        <hr className="m-0 w-full border-0 border-t border-solid border-btn"/>
+        <details className="[&>summary]:cursor-pointer">
+          <summary className="text-[0.9rem] text-muted">{t('tachoSettings')}</summary>
+          <div className="mt-3 flex flex-col gap-3">
+            <Picker
+              label={t('liveFallbackLabel')}
+              value={fallback}
+              options={FALLBACKS.map((v) => ({value: v, label: t(FALLBACK_KEYS[v])}))}
+              onChange={setFallback}
+              layout="row"
+            />
+            <Picker
+              label={t('liveMotionLabel')}
+              value={motion}
+              options={MOTIONS.map((v) => ({value: v, label: t(MOTION_KEYS[v])}))}
+              onChange={setMotion}
+              layout="row"
+            />
+          </div>
+        </details>
         <Button onClick={() => dialog.current?.close()}>{t('dismiss')}</Button>
       </Sheet>
     </>

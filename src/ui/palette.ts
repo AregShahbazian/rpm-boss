@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
 
 export interface Palette {
+  fg: string
   muted: string
   bg: string
   accent: string
@@ -41,6 +42,7 @@ export function usePalette(): Palette {
   return useMemo(() => {
     void epoch
     return {
+      fg: cssVar('--color-fg', '#111'),
       muted: cssVar('--color-muted', '#888'),
       bg: cssVar('--color-bg', '#fff'),
       accent: cssVar('--color-accent', '#1f4e79'),

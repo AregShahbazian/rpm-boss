@@ -22,9 +22,9 @@ import clsx from 'clsx'
 /**
  * How the button sits in its parent. Every value has a caller: `fill` is the
  * source row and Calculate, `icon` the two sheet triggers, `wide` the sample
- * list, `fit` the player's transport.
+ * list, `fit` the player's transport, `stop` the one that ends live mode.
  */
-type Shape = 'fill' | 'icon' | 'wide' | 'fit'
+type Shape = 'fill' | 'icon' | 'wide' | 'fit' | 'stop'
 
 const SHAPE: Record<Shape, string> = {
   fill: 'flex-auto justify-center px-5',
@@ -32,6 +32,12 @@ const SHAPE: Record<Shape, string> = {
   icon: 'w-12 flex-none justify-center p-0',
   wide: 'w-full justify-between px-5',
   fit: 'flex-none justify-center px-5',
+  /*
+   * Twice an icon button, so it is unmistakably the odd one out in a row of
+   * them — and the full width of that row in landscape, where the row wraps
+   * and this lands on a line of its own under the others.
+   */
+  stop: 'w-24 flex-none justify-center p-0 split:w-full',
 }
 
 /** `className` is omitted on purpose: see the note above. The compiler enforces it. */
@@ -119,7 +125,7 @@ export function Sheet({
     <dialog
       ref={ref}
       onClick={closeOnBackdrop}
-      className="rounded-xl border-0 bg-bg p-5 text-fg"
+      className="rounded-xl border border-solid border-btn bg-bg p-5 text-fg"
       css={css`
         inline-size: min(320px, calc(100vw - 32px));
         /* A landscape phone is 390 px tall and the sample list is seven rows
@@ -138,6 +144,60 @@ export function Sheet({
       <h2 className="m-0 mb-4 text-[1.1rem]">{title}</h2>
       <div className="flex flex-col gap-4">{children}</div>
     </dialog>
+  )
+}
+
+/**
+ * A labelled `<select>`.
+ *
+ * A native one, deliberately: on a phone it opens the platform's own list,
+ * scrollable, searchable on Android, and already drawn in the user's language.
+ * A custom dropdown would be a worse version of all three.
+ *
+ * Two layouts, because the settings dialog wants both. The language sits above
+ * its select — its label is long in some languages and the list is the point of
+ * the row. The tachometer's two sit beside theirs, which is what a row of
+ * small either/or choices should look like.
+ */
+export function Picker<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  layout = 'column',
+}: {
+  label: string
+  value: T
+  options: readonly { value: T; label: string }[]
+  onChange: (next: T) => void
+  layout?: 'column' | 'row'
+}) {
+  return (
+    <label
+      className={clsx(
+        'flex gap-1.5 text-[0.9rem]',
+        layout === 'row' ? 'items-center justify-between gap-3' : 'flex-col',
+      )}
+      css={css`
+        select {
+          padding: 8px;
+          border-radius: 6px;
+          border: 1px solid var(--color-btn);
+          background: var(--color-btn);
+          color: inherit;
+          font: inherit;
+        }
+      `}
+    >
+      <span className="text-muted">{label}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value as T)}>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }
 
