@@ -60,4 +60,5 @@ export const messages: Messages = {
   liveMotionStep: 'เป็นขั้น',
   dialMaxLabel: 'ค่าสูงสุดของหน้าปัด',
   dialRedlineLabel: 'เขตแดงตั้งแต่',
+  tachoReset: 'คืนค่าเริ่มต้น',
 }

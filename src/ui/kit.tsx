@@ -81,7 +81,12 @@ export function LinkButton(props: Omit<React.ButtonHTMLAttributes<HTMLButtonElem
     <button
       type="button"
       {...props}
-      className="cursor-pointer border-0 bg-transparent p-0 text-accent underline"
+      className={clsx(
+        'border-0 bg-transparent p-0 text-accent underline',
+        // A link with nothing to do has to say so: the reset in the tachometer
+        // settings is dead while those settings are the defaults.
+        props.disabled ? 'cursor-default text-muted no-underline' : 'cursor-pointer',
+      )}
       css={css`
         /* The shorthand, not just the family. A <button> otherwise keeps the
            browser's own 13.3px, and preflight is deliberately not imported to

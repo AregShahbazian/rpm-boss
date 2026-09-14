@@ -60,4 +60,5 @@ export const messages: Messages = {
   liveMotionStep: 'Kwa hatua',
   dialMaxLabel: 'Kiwango cha juu cha saa',
   dialRedlineLabel: 'Eneo jekundu kuanzia',
+  tachoReset: 'Rejesha chaguo-msingi',
 }

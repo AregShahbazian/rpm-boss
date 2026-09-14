@@ -149,6 +149,9 @@ export const en = {
   dialMaxLabel: 'Dial maximum',
   // Labels the field setting where the dial turns red.
   dialRedlineLabel: 'Redline from',
+  // Puts the three tachometer settings above it back to what the app shipped
+  // with. Only those three: the language, theme and engine are left alone.
+  tachoReset: 'Reset to defaults',
 } as const
 
 export type MessageKey = keyof typeof en

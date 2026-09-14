@@ -60,4 +60,5 @@ export const messages: Messages = {
   liveMotionStep: 'Patalon',
   dialMaxLabel: 'Maximum ng dial',
   dialRedlineLabel: 'Pulang bahagi mula sa',
+  tachoReset: 'Ibalik sa dati',
 }

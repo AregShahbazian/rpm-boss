@@ -17,7 +17,7 @@
  * The storage is `prefs.ts`, which this file used to hold its own copy of.
  */
 import {MAX_RPM, REDLINE_RPM} from '../dsp/types'
-import {type NumberBounds, readChoice, readNumber, useChoice, useNumber} from './prefs'
+import {clearChoice, type NumberBounds, notify, readChoice, readNumber, useChoice, useNumber} from './prefs'
 
 /** How the needle travels between two readings. */
 export type Motion = 'smooth' | 'step'
@@ -73,3 +73,28 @@ export const useMaxRpm = (): [number, (next: number) => void] => useNumber(MAX_R
 
 export const useRedline = (maxRpm: number): [number, (next: number) => void] =>
   useNumber(REDLINE_KEY, redlineBounds(maxRpm))
+
+/**
+ * Whether the section is as it shipped.
+ *
+ * Takes the three values rather than reading them, so the dialog asks about
+ * exactly what it is showing — and so the answer cannot disagree with the
+ * controls above the button. The redline's default follows the dial, which is
+ * why it is derived from `maxRpm` rather than compared against a constant.
+ */
+export function tachoIsDefault(motion: Motion, maxRpm: number, redlineRpm: number): boolean {
+  return (
+    motion === DEFAULT_MOTION &&
+    maxRpm === MAX_RPM_BOUNDS.fallback &&
+    redlineRpm === redlineBounds(maxRpm).fallback
+  )
+}
+
+/**
+ * Forget all three at once, in one notification, so the dial is redrawn from
+ * the finished state rather than from each key in turn.
+ */
+export function resetTachoSettings(): void {
+  for (const key of [MOTION_KEY, MAX_RPM_KEY, REDLINE_KEY]) clearChoice(key)
+  notify()
+}

@@ -60,4 +60,5 @@ export const messages: Messages = {
   liveMotionStep: 'Theo bước',
   dialMaxLabel: 'Tối đa của đồng hồ',
   dialRedlineLabel: 'Vạch đỏ từ',
+  tachoReset: 'Đặt lại mặc định',
 }

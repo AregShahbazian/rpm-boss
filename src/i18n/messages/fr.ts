@@ -60,4 +60,5 @@ export const messages: Messages = {
   liveMotionStep: 'Par paliers',
   dialMaxLabel: 'Maximum du cadran',
   dialRedlineLabel: 'Zone rouge dès',
+  tachoReset: 'Rétablir les valeurs',
 }

@@ -60,4 +60,5 @@ export const messages: Messages = {
   liveMotionStep: 'A saltos',
   dialMaxLabel: 'Máximo del dial',
   dialRedlineLabel: 'Zona roja desde',
+  tachoReset: 'Restablecer valores',
 }

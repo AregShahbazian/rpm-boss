@@ -60,4 +60,5 @@ export const messages: Messages = {
   liveMotionStep: 'चरणों में',
   dialMaxLabel: 'डायल अधिकतम',
   dialRedlineLabel: 'रेडलाइन शुरू',
+  tachoReset: 'डिफ़ॉल्ट पर लौटें',
 }

@@ -27,12 +27,49 @@ export function readChoice<T extends string>(key: string, values: readonly T[], 
   }
 }
 
+/**
+ * Forget a preference, so the next read gives the default.
+ *
+ * Removing the key rather than writing the default into it: a default that is
+ * stored is frozen, and would not follow the app if a later version decided
+ * the dial should start somewhere else. An unanswered question stays
+ * unanswered.
+ */
+export function clearChoice(key: string): void {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    // nothing was persisted in the first place
+  }
+}
+
 export function writeChoice(key: string, value: string): void {
   try {
     localStorage.setItem(key, value)
   } catch {
     // no persistence available; the choice still holds for this session
   }
+}
+
+/**
+ * Everyone who asks for a preference reads the same one.
+ *
+ * With `useState` each caller held a private copy: the settings dialog would
+ * change its own and the screen, holding another, would never hear. Storage is
+ * the value and the components are views of it, so the state lives where all
+ * of them can see it. One listener set for every key — a change re-reads them
+ * all, and React drops the renders where nothing moved.
+ */
+const listeners = new Set<() => void>()
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => void listeners.delete(listener)
+}
+
+/** Tells every reader of every preference to look again. */
+export function notify(): void {
+  for (const listener of [...listeners]) listener()
 }
 
 /** A number preference's bounds, and what it is when nothing is stored. */
@@ -65,22 +102,6 @@ export function readNumber(key: string, bounds: NumberBounds): number {
   }
 }
 
-/**
- * Everyone who asks for a preference reads the same one.
- *
- * With `useState` each caller held a private copy: the settings dialog would
- * change its own and the screen, holding another, would never hear. Storage is
- * the value and the components are views of it, so the state lives where all
- * of them can see it. One listener set for every key — a change re-reads them
- * all, and React drops the renders where nothing moved.
- */
-const listeners = new Set<() => void>()
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener)
-  return () => void listeners.delete(listener)
-}
-
 /** The same pair, for a number. `bounds` is read on every render, so it may move. */
 export function useNumber(key: string, bounds: NumberBounds): [number, (next: number) => void] {
   const value = useSyncExternalStore(
@@ -91,7 +112,7 @@ export function useNumber(key: string, bounds: NumberBounds): [number, (next: nu
   const set = useCallback(
     (next: number) => {
       writeChoice(key, String(next))
-      for (const listener of [...listeners]) listener()
+      notify()
     },
     [key],
   )
@@ -112,7 +133,7 @@ export function useChoice<T extends string>(
   const set = useCallback(
     (next: T) => {
       writeChoice(key, next)
-      for (const listener of [...listeners]) listener()
+      notify()
     },
     [key],
   )

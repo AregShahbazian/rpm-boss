@@ -2,13 +2,15 @@ import {useRef} from 'react'
 import {type MessageKey, useI18n} from '../i18n'
 import {CYLINDER_COUNTS, CYLINDERS, type Stroke, STROKES, useStroke} from './engineSettings'
 import {Icon} from './Icon'
-import {Button, NumberField, Segmented, Sheet} from './kit'
+import {Button, LinkButton, NumberField, Segmented, Sheet} from './kit'
 import {LanguagePicker} from './LanguagePicker'
 import {
   MAX_RPM_BOUNDS,
   type Motion,
   MOTIONS,
   redlineBounds,
+  resetTachoSettings,
+  tachoIsDefault,
   useMaxRpm,
   useMotion,
   useRedline,
@@ -137,6 +139,23 @@ export function SettingsButton() {
               step={500}
               onChange={setRedline}
             />
+            {/*
+              * A link rather than a button, and dead while there is nothing to
+              * undo. Dismiss is the button of this dialog; a second one of
+              * equal weight inside a section would read as the way out of it.
+              * It resets the three settings above it and nothing else — the
+              * theme, the language and the engine are not the tachometer's,
+              * and a reset that quietly took them too would be the kind of
+              * surprise a rider only finds afterwards.
+              */}
+            <div className="flex justify-end">
+              <LinkButton
+                disabled={tachoIsDefault(motion, maxRpm, redlineRpm)}
+                onClick={resetTachoSettings}
+              >
+                {t('tachoReset')}
+              </LinkButton>
+            </div>
           </div>
         </details>
         <Divider/>

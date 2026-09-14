@@ -60,4 +60,5 @@ export const messages: Messages = {
   liveMotionStep: 'Melangkah',
   dialMaxLabel: 'Maksimum dial',
   dialRedlineLabel: 'Garis merah dari',
+  tachoReset: 'Kembalikan ke awal',
 }

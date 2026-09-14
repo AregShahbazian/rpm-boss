@@ -60,4 +60,5 @@ export const messages: Messages = {
   liveMotionStep: 'Քայլերով',
   dialMaxLabel: 'Սանդղակի առավելագույնը',
   dialRedlineLabel: 'Կարմիր գոտին սկսած',
+  tachoReset: 'Վերականգնել սկզբնականը',
 }
