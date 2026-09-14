@@ -68,6 +68,17 @@ export function useAudioInput() {
     setState((s) => ({...s, status: 'error', error: code, playing: false, positionS: 0}))
   }
 
+  /**
+   * The same failure, raised from outside.
+   *
+   * Live mode has no clip and nothing to decode, but it can be refused the
+   * microphone exactly as recording can — and there is one error line on the
+   * screen, not one per feature. Handing it this keeps that true.
+   */
+  const reportError = useCallback((code: InputErrorCode) => {
+    setState((s) => ({...s, status: 'error', error: code, playing: false, positionS: 0}))
+  }, [])
+
   const setClip = (clip: AudioClip) => {
     disposePlayer()
     const p = createPlayer(clip)
@@ -188,5 +199,16 @@ export function useAudioInput() {
     [state.clip, state.selection],
   )
 
-  return {state, getWindowClip, upload, startRecording, stopRecording, clear, dismissError, togglePlay, setSelection}
+  return {
+    state,
+    getWindowClip,
+    upload,
+    startRecording,
+    stopRecording,
+    clear,
+    dismissError,
+    togglePlay,
+    setSelection,
+    reportError,
+  }
 }

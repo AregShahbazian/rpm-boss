@@ -39,9 +39,16 @@ export const en = {
   pickSample: 'Try a sample',
   // Starts recording from the microphone.
   record: 'Record',
+  // Starts live mode: the microphone is opened and the tachometer follows it,
+  // but nothing is captured. Not "record" — a rider is being shown a reading,
+  // not asked to be recorded.
+  listen: 'Listen',
   // Ends the recording early. The counter is drawn beside this, in a
   // monospaced font, which is no font at all for several of these scripts.
   stopRecording: 'Stop',
+  // Ends live mode. The button shows only a stop icon, so this is the whole of
+  // what a screen reader announces.
+  stopListening: 'Stop listening',
   // Plays back the selected part of the recording.
   play: 'Play',
   // Stops playback.
@@ -82,6 +89,9 @@ export const en = {
   errorNoAudio: 'Nothing was recorded. Close other apps using the microphone.',
   // Recording failed for a reason we cannot name.
   errorRecordFailed: 'Recording failed. Try again.',
+  // The same, for live mode, where nothing is being recorded and saying so
+  // would confuse the one thing the user did.
+  errorListenFailed: 'Could not start listening. Try again.',
   // This browser grants unprocessed recording and then delivers silence.
   errorCaptureBlocked: 'This browser cannot record engine sound. Use Chrome, or open a file.',
 
@@ -109,6 +119,22 @@ export const en = {
   themeLight: 'Light',
   // The app's own default: light text on a dark background.
   themeDark: 'Dark',
+
+  // Heads the collapsed section of the settings holding the two below.
+  tachoSettings: 'Tachometer settings',
+  // Labels the choice of what the needle does when the engine cannot be heard
+  // — stopped, too quiet, or turning too slowly to measure.
+  liveFallbackLabel: 'When the reading is lost',
+  // Send the needle back to zero.
+  liveFallbackZero: 'Drop to zero',
+  // Leave the last figure standing.
+  liveFallbackHold: 'Hold last value',
+  // Labels the choice of how the needle travels between two readings.
+  liveMotionLabel: 'Needle movement',
+  // Glide from one reading to the next.
+  liveMotionSmooth: 'Smooth',
+  // Jump, once per reading.
+  liveMotionStep: 'Step',
 } as const
 
 export type MessageKey = keyof typeof en
