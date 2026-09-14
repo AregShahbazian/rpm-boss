@@ -5,12 +5,26 @@
  * `scripts/reference/analyse.py`.
  */
 import {autocorrelate} from './fft'
+import {MAX_RPM, REVS_PER_PULSE} from './types'
 
 /** Each window is estimated on its own and the results are pooled. */
 export const WINDOW_S = 1
-/** Plausible combustion rates for an idling single, in pulses per second. */
-export const MIN_RATE = 8
-export const MAX_RATE = 100
+
+/**
+ * The combustion rates worth searching, in pulses per second.
+ *
+ * The floor is 600 rpm, not the 960 it was. 960 was the bottom of the seven
+ * ground-truth recordings rather than a limit anything measured: a Royal
+ * Enfield idles at 800-1,000, a mistuned bike hunting at 600-700 is the case
+ * this app exists for, and a generator at half speed sits at 1,500 or 1,800.
+ * Five pulses still put five periods inside the one-second window, which is
+ * what the autocorrelation needs to find one.
+ *
+ * The ceiling is not a number here at all. It is `MAX_RPM` converted, so the
+ * estimator's range and the tachometer's face cannot drift apart.
+ */
+export const MIN_RATE = 5
+export const MAX_RATE = MAX_RPM / 60 / REVS_PER_PULSE
 
 export interface Estimate {
   pulsesPerS: number
