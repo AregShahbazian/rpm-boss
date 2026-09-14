@@ -23,7 +23,7 @@ const THEME_KEYS: Record<Theme, MessageKey> = {
  * brings its own backdrop, its own focus trap and Escape to close, and a
  * hand-rolled sheet would be a worse version of all three.
  */
-export function Settings() {
+export function SettingsButton() {
   const dialog = useRef<HTMLDialogElement>(null)
   const {t} = useI18n()
   const [theme, setTheme] = useTheme()

@@ -21,8 +21,11 @@ export const en = {
   // Clears an error message so the user can try again.
   dismiss: 'Dismiss',
 
-  // Opens the device's file picker. Not "upload": nothing is sent anywhere.
+  // The upload button's accessible name. It shows only an icon, so this is
+  // the whole of what a screen reader has to announce. Not "upload": nothing
+  // is sent anywhere — it opens the device's file picker.
   openAudio: 'Open audio',
+
   // Opens the list of engine recordings bundled with the app, so someone
   // with no motorcycle to hand can still see it work. Demo builds only.
   pickSample: 'Try a sample',

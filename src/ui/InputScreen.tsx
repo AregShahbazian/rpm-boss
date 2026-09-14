@@ -11,7 +11,7 @@ import {RangeFields} from './RangeFields'
 import {ResultView} from './ResultView'
 import {RecordButton} from './RecordButton'
 import {SampleButton} from './SampleButton'
-import {Settings} from './Settings'
+import {SettingsButton} from './SettingsButton.tsx'
 import {StatusLine} from './StatusLine'
 import {UploadButton} from './UploadButton'
 import {type Marks, WaveformBlock} from './WaveformBlock'
@@ -142,7 +142,6 @@ export function InputScreen() {
           name already, and on a phone the screen is short enough that a
           heading costs more than it says. */}
       <div className="flex flex-wrap gap-3 [grid-area:source] split:gap-2">
-        <UploadButton disabled={busy} onFile={upload}/>
         <RecordButton
           recording={state.status === 'recording'}
           elapsedS={state.elapsedS}
@@ -150,8 +149,9 @@ export function InputScreen() {
           onStart={startRecording}
           onStop={stopRecording}
         />
+        <UploadButton disabled={busy} onFile={upload}/>
         <SampleButton disabled={busy} onFile={upload}/>
-        <Settings/>
+        <SettingsButton/>
       </div>
       <div className="[grid-area:status]">
         <StatusLine state={state} onDismiss={dismissError}/>
