@@ -16,7 +16,7 @@ export const messages: Messages = {
   openAudio: 'Buka audio',
   pickSample: 'Cuba sampel',
   record: 'Rakam',
-  listen: 'Dengar',
+  listen: 'Mula',
   stopRecording: 'Berhenti',
   stopListening: 'Berhenti mendengar',
   play: 'Main',

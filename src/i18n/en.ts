@@ -40,9 +40,10 @@ export const en = {
   // Starts recording from the microphone.
   record: 'Record',
   // Starts live mode: the microphone is opened and the tachometer follows it,
-  // but nothing is captured. Not "record" — a rider is being shown a reading,
-  // not asked to be recorded.
-  listen: 'Listen',
+  // but nothing is captured. The one green button on the screen, and the only
+  // thing to do on it, so it says what it does and nothing else. Not "record"
+  // — a rider is being shown a reading, not asked to be recorded.
+  listen: 'Start',
   // Ends the recording early. The counter is drawn beside this, in a
   // monospaced font, which is no font at all for several of these scripts.
   stopRecording: 'Stop',

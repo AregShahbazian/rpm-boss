@@ -23,6 +23,9 @@
   --color-accent: #8ab4f8;
   --color-error: #f20000;
   --color-btn: #2a2f36;
+  /* The one button that starts something. Muted on purpose: a saturated green
+     beside a red stop would make the screen a traffic light. */
+  --color-go: #2f7a4f;
 }
 
 /*
@@ -68,6 +71,7 @@
     --color-accent: #1f4e79;
     --color-error: #b3261e;
     --color-btn: #e9eef4;
+    --color-go: #1b6b41;
     --dim: 0.72;
   }
 }
@@ -80,5 +84,6 @@
   --color-accent: #1f4e79;
   --color-error: #b3261e;
   --color-btn: #e9eef4;
+  --color-go: #1b6b41;
   --dim: 0.72;
 }

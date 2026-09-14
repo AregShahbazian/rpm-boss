@@ -16,7 +16,7 @@ export const messages: Messages = {
   openAudio: 'Fungua sauti',
   pickSample: 'Jaribu sampuli',
   record: 'Rekodi',
-  listen: 'Sikiliza',
+  listen: 'Anza',
   stopRecording: 'Simamisha',
   stopListening: 'Acha kusikiliza',
   play: 'Sikiliza',

@@ -44,8 +44,8 @@ const SHAPE: Record<Shape, string> = {
 /** `className` is omitted on purpose: see the note above. The compiler enforces it. */
 type ButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'className'> & {
   shape?: Shape
-  /** `record` is the live-recording state: the one button that is not the default colour. */
-  tone?: 'default' | 'record'
+  /** The two buttons that are not the default colour: `record` stops a take, `go` starts live mode. */
+  tone?: 'default' | 'record' | 'go'
 }
 
 export function Button({shape = 'fill', tone = 'default', ...rest}: ButtonProps) {
@@ -67,7 +67,7 @@ export function Button({shape = 'fill', tone = 'default', ...rest}: ButtonProps)
         // in the branch below, which left the two red ones — stop recording,
         // stop listening — as the only things on the screen that did not say
         // they could be pressed.
-        tone === 'record' ? 'bg-error text-white' : 'bg-btn text-fg',
+        tone === 'record' ? 'bg-error text-white' : tone === 'go' ? 'bg-go text-white' : 'bg-btn text-fg',
         SHAPE[shape],
       )}
     />

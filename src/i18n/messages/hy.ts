@@ -16,7 +16,7 @@ export const messages: Messages = {
   openAudio: 'Բացել ձայնագրություն',
   pickSample: 'Փորձել նմուշը',
   record: 'Ձայնագրել',
-  listen: 'Լսել',
+  listen: 'Սկսել',
   stopRecording: 'Կանգ',
   stopListening: 'Դադարեցնել լսումը',
   play: 'Նվագարկել',

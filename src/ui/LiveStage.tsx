@@ -70,8 +70,11 @@ export function LiveStage({live, ring, rpm, motion, onStart}: Props) {
           <LiveScope ring={ring}/>
         ) : (
           <div className="flex size-full gap-[var(--gap)]">
-            <Button shape="fill" onClick={() => onStart('mic')}>
-              <Icon icon="mdi:ear-hearing"/> {t('listen')}
+            {/* No icon and a word twice the usual size: it is the only thing
+                to do on a screen that is otherwise a gauge at zero, and it
+                should read as such from arm's length. */}
+            <Button shape="fill" tone="go" onClick={() => onStart('mic')}>
+              <span className="text-[clamp(1.25rem,6vmin,2rem)]/[1.2]">{t('listen')}</span>
             </Button>
             {MOCK_AVAILABLE && (
               // Untranslated on purpose: a debug button is no reason to put a

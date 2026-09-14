@@ -16,7 +16,7 @@ export const messages: Messages = {
   openAudio: 'Mở âm thanh',
   pickSample: 'Thử một mẫu',
   record: 'Ghi âm',
-  listen: 'Nghe',
+  listen: 'Bắt đầu',
   stopRecording: 'Dừng',
   stopListening: 'Dừng nghe',
   play: 'Phát',

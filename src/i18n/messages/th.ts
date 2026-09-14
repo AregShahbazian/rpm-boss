@@ -16,7 +16,7 @@ export const messages: Messages = {
   openAudio: 'เปิดไฟล์เสียง',
   pickSample: 'ลองตัวอย่างเสียง',
   record: 'อัดเสียง',
-  listen: 'ฟัง',
+  listen: 'เริ่ม',
   stopRecording: 'หยุด',
   stopListening: 'หยุดฟัง',
   play: 'เล่น',

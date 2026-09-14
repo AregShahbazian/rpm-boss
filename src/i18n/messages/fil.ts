@@ -16,7 +16,7 @@ export const messages: Messages = {
   openAudio: 'Magbukas ng audio',
   pickSample: 'Sumubok ng sample',
   record: 'I-record',
-  listen: 'Makinig',
+  listen: 'Simulan',
   stopRecording: 'Itigil',
   stopListening: 'Itigil ang pakikinig',
   play: 'I-play',
