@@ -37,8 +37,17 @@
   font-family: system-ui, sans-serif;
 }
 
+/*
+ * The tap highlight goes with the box model because both are the same kind of
+ * rule: something the platform decides that the app decides instead. The
+ * WebView draws its highlight as a rectangle, so a rounded button squares off
+ * at the corners for as long as a finger is on it. Turning it off costs the
+ * only press feedback the platform gives for free, which is why `kit.tsx`
+ * gives the button its own — see the `active:` utility there.
+ */
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {

@@ -59,7 +59,9 @@ export function Button({shape = 'fill', tone = 'default', ...rest}: ButtonProps)
         // only the size, and the difference moves the glyphs by a fraction of a
         // pixel inside the centred box.
         'inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-[10px] border-0 text-base/[normal]',
-        'disabled:cursor-default disabled:opacity-50',
+        // The press feedback, in place of the platform's own square highlight
+        // (see `index.css`). It follows the radius because it is the button.
+        'active:opacity-70 disabled:cursor-default disabled:opacity-50 disabled:active:opacity-50',
         // The cursor belongs to every button, not to one tone. It used to sit
         // in the branch below, which left the two red ones — stop recording,
         // stop listening — as the only things on the screen that did not say
