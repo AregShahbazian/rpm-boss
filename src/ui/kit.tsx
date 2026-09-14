@@ -18,13 +18,14 @@
  */
 import {css} from '@emotion/react'
 import clsx from 'clsx'
+import {useId} from 'react'
 
 /**
  * How the button sits in its parent. Every value has a caller: `fill` is the
  * source row and Calculate, `icon` the two sheet triggers, `wide` the sample
- * list, `fit` the player's transport.
+ * list, `fit` the player's transport, `stop` the one that ends live mode.
  */
-type Shape = 'fill' | 'icon' | 'wide' | 'fit'
+type Shape = 'fill' | 'icon' | 'wide' | 'fit' | 'stop'
 
 const SHAPE: Record<Shape, string> = {
   fill: 'flex-auto justify-center px-5',
@@ -32,13 +33,20 @@ const SHAPE: Record<Shape, string> = {
   icon: 'w-12 flex-none justify-center p-0',
   wide: 'w-full justify-between px-5',
   fit: 'flex-none justify-center px-5',
+  /*
+   * Two icon buttons and the gap between them: 48 + 8 + 48. It spans exactly
+   * what the first two buttons of the row span, from the left edge of one to
+   * the right edge of the other, which is why it is not simply twice a button.
+   * Where it sits is `StopButton`'s business, not this one's.
+   */
+  stop: 'w-26 flex-none justify-center p-0',
 }
 
 /** `className` is omitted on purpose: see the note above. The compiler enforces it. */
 type ButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'className'> & {
   shape?: Shape
-  /** `record` is the live-recording state: the one button that is not the default colour. */
-  tone?: 'default' | 'record'
+  /** The two buttons that are not the default colour: `record` stops a take, `go` starts live mode. */
+  tone?: 'default' | 'record' | 'go'
 }
 
 export function Button({shape = 'fill', tone = 'default', ...rest}: ButtonProps) {
@@ -52,9 +60,15 @@ export function Button({shape = 'fill', tone = 'default', ...rest}: ButtonProps)
         // `text-base` would also set a 1.5 line-height; the rules this replaces set
         // only the size, and the difference moves the glyphs by a fraction of a
         // pixel inside the centred box.
-        'inline-flex min-h-12 items-center gap-2 rounded-[10px] border-0 text-base/[normal]',
-        'disabled:cursor-default disabled:opacity-50',
-        tone === 'record' ? 'bg-error text-white' : 'cursor-pointer bg-btn text-fg',
+        'inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-[10px] border-0 text-base/[normal]',
+        // The press feedback, in place of the platform's own square highlight
+        // (see `index.css`). It follows the radius because it is the button.
+        'active:opacity-70 disabled:cursor-default disabled:opacity-50 disabled:active:opacity-50',
+        // The cursor belongs to every button, not to one tone. It used to sit
+        // in the branch below, which left the two red ones — stop recording,
+        // stop listening — as the only things on the screen that did not say
+        // they could be pressed.
+        tone === 'record' ? 'bg-error text-white' : tone === 'go' ? 'bg-go text-white' : 'bg-btn text-fg',
         SHAPE[shape],
       )}
     />
@@ -119,7 +133,7 @@ export function Sheet({
     <dialog
       ref={ref}
       onClick={closeOnBackdrop}
-      className="rounded-xl border-0 bg-bg p-5 text-fg"
+      className="rounded-xl border border-solid border-btn bg-bg p-5 text-fg"
       css={css`
         inline-size: min(320px, calc(100vw - 32px));
         /* A landscape phone is 390 px tall and the sample list is seven rows
@@ -138,6 +152,55 @@ export function Sheet({
       <h2 className="m-0 mb-4 text-[1.1rem]">{title}</h2>
       <div className="flex flex-col gap-4">{children}</div>
     </dialog>
+  )
+}
+
+/**
+ * A labelled `<select>`.
+ *
+ * A native one, deliberately: on a phone it opens the platform's own list,
+ * scrollable, searchable on Android, and already drawn in the user's language.
+ * A custom dropdown would be a worse version of all three.
+ *
+ * One caller left, the language, and one layout with it: the label sits above
+ * the select, because in some languages it is long and the list is the point of
+ * the row anyway. Every other choice in the settings is short enough to spell
+ * out in full, and those are `Segmented`. The `layout` prop went with them.
+ */
+export function Picker<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: T
+  options: readonly { value: T; label: string }[]
+  onChange: (next: T) => void
+}) {
+  return (
+    <label
+      className="flex flex-col gap-1.5 text-[0.9rem]"
+      css={css`
+        select {
+          padding: 8px;
+          border-radius: 6px;
+          border: 1px solid var(--color-btn);
+          background: var(--color-btn);
+          color: inherit;
+          font: inherit;
+        }
+      `}
+    >
+      <span className="text-muted">{label}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value as T)}>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }
 
@@ -168,5 +231,82 @@ export function StatusText({
     >
       {children}
     </p>
+  )
+}
+
+/**
+ * A row of mutually exclusive choices, drawn as one pill split into segments.
+ *
+ * The theme used to be three stacked radio buttons, which gave a two-word
+ * choice three rows of a 320 px dialog and still looked like a form. A
+ * segmented control says the same thing in one row: every option is visible at
+ * once, which is the whole argument for it over the `<select>` next to it, and
+ * the filled segment is the answer.
+ *
+ * That argument holds for a short, closed, memorable set — the theme's three,
+ * the engine's two — and stops holding at the language's seventeen, which is
+ * why the one above it is still a `<select>`.
+ *
+ * `role="radiogroup"` rather than a `<fieldset>`: the group's name is the
+ * `<span>` beside it, on the same line, and a `<legend>` cannot be put there
+ * without fighting its own layout. Buttons, not radios, because there is
+ * nothing left of the native control to keep once it is drawn as a pill.
+ *
+ * `disabled` draws the whole group greyed with its answer still filled in,
+ * which is the point of showing it at all: the cylinder count is one, the app
+ * cannot yet do anything else, and a row that says so is more honest than no
+ * row. A control that is shown and refuses to move has to look refused, so the
+ * dimming is on the group rather than on the segments, or the unselected two
+ * would fade into the background and leave it looking merely answered.
+ */
+export function Segmented<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  disabled = false,
+}: {
+  label: string
+  value: T
+  options: readonly { value: T; label: string }[]
+  onChange: (next: T) => void
+  /** Shown, answered, and not yet changeable. */
+  disabled?: boolean
+}) {
+  const id = useId()
+  return (
+    <div className="flex items-center justify-between gap-3 text-[0.9rem]">
+      <span id={id} className="flex-none text-muted">{label}</span>
+      <div
+        role="radiogroup"
+        aria-labelledby={id}
+        aria-disabled={disabled || undefined}
+        className={clsx(
+          'flex min-w-0 flex-auto rounded-full border border-solid border-btn p-0.5',
+          disabled && 'opacity-50',
+        )}
+      >
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            role="radio"
+            aria-checked={value === o.value}
+            disabled={disabled}
+            onClick={() => onChange(o.value)}
+            className={clsx(
+              // 44 px inside a 48 px track: the same target the buttons keep,
+              // because a thumb does not know it is in a settings dialog.
+              'min-w-0 flex-1 truncate rounded-full border-0 px-1 text-[0.85rem]/[normal]',
+              'min-h-11',
+              disabled ? 'cursor-default' : 'cursor-pointer active:opacity-70',
+              value === o.value ? 'bg-accent text-bg' : 'bg-transparent text-muted',
+            )}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }

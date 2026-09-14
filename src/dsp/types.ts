@@ -8,6 +8,23 @@
 export const REVS_PER_PULSE = 2
 
 /**
+ * The top of the dial, and the top of what the estimator may return.
+ *
+ * Twelve thousand covers the 110-155 cc singles this app is aimed at, whose
+ * redlines fall between 9,500 and 11,000, with the head-room a blip of throttle
+ * needs. `MAX_RATE` is derived from it rather than stated beside it, so there
+ * is no arrangement of the two constants in which the analysis can return a
+ * number the tachometer cannot draw.
+ */
+export const MAX_RPM = 12_000
+
+/**
+ * Where the dial turns red. Conservative on purpose: warning a little early on
+ * a bike that spins to 11,000 costs less than missing one that does not.
+ */
+export const REDLINE_RPM = 9_000
+
+/**
  * Shortest clip the analysis will accept, in seconds. Measured, not chosen:
  * below 2 s one fixture falls outside its tolerance at some window positions.
  * See `scripts/reference/sweep.py` and the phase 4 design.

@@ -1,7 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { MAX_RATE, median, rateFromEnvelope, windowEstimate } from '../src/dsp/autocorr'
+import { MAX_RATE, MIN_RATE, median, rateFromEnvelope, windowEstimate } from '../src/dsp/autocorr'
+import { MAX_RPM, REVS_PER_PULSE } from '../src/dsp/types'
 
 const SR = 16000
+
+describe('the searched range', () => {
+  // The face of the tachometer and the estimator's ceiling are one number in
+  // two places. If a refactor ever states MAX_RATE on its own again, this is
+  // what says so.
+  it('derives its ceiling from the dial', () => {
+    expect(MAX_RATE).toBe(100)
+    expect(MAX_RATE * 60 * REVS_PER_PULSE).toBe(MAX_RPM)
+  })
+
+  it('reaches down to 600 rpm', () => {
+    expect(MIN_RATE * 60 * REVS_PER_PULSE).toBe(600)
+  })
+})
 
 /** A smooth positive bump once per period, the shape the envelope produces. */
 function bumps(durationS: number, rate: number, sampleRate = SR): Float64Array {

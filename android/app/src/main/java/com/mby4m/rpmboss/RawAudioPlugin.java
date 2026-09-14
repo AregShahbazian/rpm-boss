@@ -63,16 +63,25 @@ public class RawAudioPlugin extends Plugin {
         final int source;
         final int rate;
         final int maxBytes;
+        /**
+         * Live mode: frames go out as `frames` events and nothing is kept, so
+         * a capture can run for as long as the microphone is pointed at the
+         * engine without the take growing. See the live POC.
+         */
+        final boolean stream;
+        /** Bytes emitted so far, for the same cap a buffered take gets. */
+        volatile long streamed = 0;
         volatile boolean running = true;
         /** A negative AudioRecord error code, or 0 if the read loop was healthy. */
         volatile int readError = 0;
         Thread reader;
 
-        Take(AudioRecord recorder, int source, int rate, int maxBytes) {
+        Take(AudioRecord recorder, int source, int rate, int maxBytes, boolean stream) {
             this.recorder = recorder;
             this.source = source;
             this.rate = rate;
             this.maxBytes = maxBytes;
+            this.stream = stream;
         }
     }
 
@@ -112,6 +121,7 @@ public class RawAudioPlugin extends Plugin {
         }
 
         double maxS = call.getDouble("maxS", DEFAULT_MAX_S);
+        boolean stream = Boolean.TRUE.equals(call.getBoolean("stream", false));
         AudioRecord opened = null;
         int source = 0;
         int rate = 0;
@@ -153,7 +163,7 @@ public class RawAudioPlugin extends Plugin {
         // switching apps mid-recording would otherwise hold the microphone and
         // grow the buffer with nobody left to stop it.
         int maxBytes = (int) Math.ceil(maxS * rate) * BYTES_PER_FRAME;
-        final Take t = new Take(opened, source, rate, maxBytes);
+        final Take t = new Take(opened, source, rate, maxBytes, stream);
 
         try {
             t.recorder.startRecording();
@@ -169,9 +179,28 @@ public class RawAudioPlugin extends Plugin {
             while (t.running) {
                 int read = t.recorder.read(buffer, 0, CHUNK_BYTES);
                 if (read > 0) {
-                    synchronized (t.out) {
-                        t.out.write(buffer, 0, read);
-                        if (t.out.size() >= t.maxBytes) t.running = false;
+                    // Every slice goes out as an event, in both modes. 2048
+                    // frames a slice is about eight crossings a second at
+                    // 16 kHz: small enough that base64 over the bridge costs
+                    // nothing worth measuring, large enough that the web side
+                    // is not woken per render quantum. A buffered take emits
+                    // too, because the screen draws the waveform while the
+                    // recording runs and the audio is otherwise not in reach
+                    // of JavaScript until the take ends.
+                    JSObject frames = new JSObject();
+                    frames.put("pcm16", Base64.encodeToString(buffer, 0, read, Base64.NO_WRAP));
+                    frames.put("sampleRate", t.rate);
+                    notifyListeners("frames", frames);
+
+                    if (t.stream) {
+                        // Nothing is kept: the cap counts what was emitted.
+                        t.streamed += read;
+                        if (t.streamed >= t.maxBytes) t.running = false;
+                    } else {
+                        synchronized (t.out) {
+                            t.out.write(buffer, 0, read);
+                            if (t.out.size() >= t.maxBytes) t.running = false;
+                        }
                     }
                 } else if (read < 0) {
                     // The microphone went away: a call came in, or another app

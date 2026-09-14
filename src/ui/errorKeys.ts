@@ -18,6 +18,7 @@ export const INPUT_ERROR_KEYS: Record<InputErrorCode | 'unknown', MessageKey> = 
   'too-short': 'errorTooShort',
   'no-audio': 'errorNoAudio',
   'record-failed': 'errorRecordFailed',
+  'listen-failed': 'errorListenFailed',
   'capture-blocked': 'errorCaptureBlocked',
 }
 

@@ -1,8 +1,10 @@
 import {useRef} from 'react'
 import {type MessageKey, useI18n} from '../i18n'
+import {CYLINDER_COUNTS, CYLINDERS, DEFAULT_STROKE, type Stroke, STROKES} from './engineSettings'
 import {Icon} from './Icon'
-import {Button, Sheet} from './kit'
+import {Button, Segmented, Sheet} from './kit'
 import {LanguagePicker} from './LanguagePicker'
+import {type Motion, MOTIONS, useMotion} from './liveSettings'
 import {type Theme, THEMES, useTheme} from './theme'
 
 const THEME_KEYS: Record<Theme, MessageKey> = {
@@ -11,13 +13,26 @@ const THEME_KEYS: Record<Theme, MessageKey> = {
   dark: 'themeDark',
 }
 
+const MOTION_KEYS: Record<Motion, MessageKey> = {
+  smooth: 'liveMotionSmooth',
+  step: 'liveMotionStep',
+}
+
+const STROKE_KEYS: Record<Stroke, MessageKey> = {
+  '2': 'strokeTwo',
+  '4': 'strokeFour',
+}
+
+/** One line of the settings from the next. */
+const Divider = () => <hr className="m-0 w-full border-0 border-t border-solid border-btn"/>
+
 /**
- * Language and theme, behind one icon.
+ * Everything the app remembers about its user, behind one icon.
  *
- * Both used to have nowhere to live: the language picker sat in the middle of
- * the measuring flow because that is where it was added, and the theme had no
- * control at all. Neither is touched while measuring an engine, and neither is
- * worth a row of the screen, so they share a dialog.
+ * Two of them used to have nowhere to live: the language picker sat in the
+ * middle of the measuring flow because that is where it was added, and the
+ * theme had no control at all. None of these is touched while measuring an
+ * engine, and none is worth a row of the screen, so they share a dialog.
  *
  * A native `<dialog>`, deliberately, like the native `<select>` inside it: it
  * brings its own backdrop, its own focus trap and Escape to close, and a
@@ -25,8 +40,9 @@ const THEME_KEYS: Record<Theme, MessageKey> = {
  */
 export function SettingsButton() {
   const dialog = useRef<HTMLDialogElement>(null)
-  const {t} = useI18n()
+  const {t, n} = useI18n()
   const [theme, setTheme] = useTheme()
+  const [motion, setMotion] = useMotion()
 
   return (
     <>
@@ -35,21 +51,69 @@ export function SettingsButton() {
       </Button>
       <Sheet ref={dialog} title={t('settings')}>
         <LanguagePicker/>
-        <fieldset className="m-0 flex flex-col gap-1.5 border-0 p-0">
-          <legend className="mb-1.5 p-0 text-[0.9rem] text-muted">{t('theme')}</legend>
-          {THEMES.map((value) => (
-            <label key={value} className="flex min-h-11 items-center gap-2">
-              <input
-                type="radio"
-                name="theme"
-                value={value}
-                checked={theme === value}
-                onChange={() => setTheme(value)}
-              />
-              <span>{t(THEME_KEYS[value])}</span>
-            </label>
-          ))}
-        </fieldset>
+        <Segmented
+          label={t('theme')}
+          value={theme}
+          options={THEMES.map((v) => ({value: v, label: t(THEME_KEYS[v])}))}
+          onChange={setTheme}
+        />
+        <Divider/>
+        {/*
+          * The engine, not the gauge, which is why these two are out here
+          * rather than in the tachometer section below: they are facts about
+          * the motorcycle. Both are answered and greyed, and for the same
+          * reason — the analysis counts combustions, and what a count of them
+          * means in rpm is settled by the stroke and the cylinder count
+          * together. Neither is a question worth asking until the arithmetic
+          * behind it exists; until then the rows say what the app assumes.
+          *
+          * The stroke is shown at its default rather than at whatever is
+          * stored, so that a preference set before this was greyed cannot
+          * leave the dial reading one engine and the dialog claiming another.
+          */}
+        <Segmented
+          label={t('strokeLabel')}
+          value={DEFAULT_STROKE}
+          options={STROKES.map((v) => ({value: v, label: t(STROKE_KEYS[v])}))}
+          onChange={() => {}}
+          disabled
+        />
+        {/*
+          * No divider above it: it is the same subject as the row before. The
+          * numerals go through `n` because the reader's digits are not always
+          * these ones.
+          */}
+        <Segmented
+          label={t('cylindersLabel')}
+          value={CYLINDERS}
+          options={CYLINDER_COUNTS.map((v) => ({value: v, label: n(Number(v))}))}
+          onChange={() => {}}
+          disabled
+        />
+        <Divider/>
+        {/*
+          * Closed until asked for, and closed by a `<details>` rather than by
+          * a piece of state: it brings its own disclosure semantics, its own
+          * keyboard handling and its own marker, which is the same argument
+          * that made the dialog a `<dialog>` and the language a `<select>`.
+          *
+          * The rows above it stay in the open. A setting a rider will open once
+          * and never again does not deserve the same standing as the one that
+          * decides whether the screen is readable in daylight, or the one that
+          * says what engine is being listened to.
+          */}
+        <details className="[&>summary]:cursor-pointer">
+          <summary className="text-[0.9rem] text-muted">{t('tachoSettings')}</summary>
+          <div className="mt-3 flex flex-col gap-3">
+            <Segmented
+              label={t('liveMotionLabel')}
+              value={motion}
+              options={MOTIONS.map((v) => ({value: v, label: t(MOTION_KEYS[v])}))}
+              onChange={setMotion}
+            />
+          </div>
+        </details>
+        <Divider/>
         <Button onClick={() => dialog.current?.close()}>{t('dismiss')}</Button>
       </Sheet>
     </>

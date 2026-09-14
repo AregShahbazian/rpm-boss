@@ -1,7 +1,7 @@
 import type {AudioInputState, InputStatus} from '../state/useAudioInput'
 import {duration, useI18n} from '../i18n'
 import {INPUT_ERROR_KEYS} from './errorKeys'
-import {type AudioClip, MIN_CLIP_S} from '../audio/types'
+import {type AudioClip, MAX_RECORD_S, MIN_CLIP_S} from '../audio/types'
 import {LinkButton, StatusText} from './kit'
 
 interface Props {
@@ -36,7 +36,16 @@ export function StatusLine({state, onDismiss, onClear, onSave}: Props) {
       case 'decoding':
         return <StatusText>{t('statusDecoding')}</StatusText>
       case 'recording':
-        return <StatusText>{t('statusRecording')}</StatusText>
+        return (
+          <StatusText>
+            {t('statusRecording')} -{' '}
+            {/* Red, and the same red as the stop button above it: the two are
+                one thing, and the counter is the only part that moves. */}
+            <span className="tabular-nums text-error">
+              {state.elapsedS.toFixed(1)} / {MAX_RECORD_S} s
+            </span>
+          </StatusText>
+        )
       case 'loaded':
         return state.clip ? <LoadedLine clip={state.clip} onClear={onClear} onSave={onSave}/> : null
     }
@@ -85,11 +94,15 @@ function LoadedLine({clip, onClear, onSave}: {clip: AudioClip; onClear: () => vo
   const recorded = clip.source.kind === 'mic'
   const length = duration(Number(clip.durationS.toFixed(1)), lang)
   return (
-    <div className="flex items-baseline gap-3">
+    // Wraps: the column is only as wide as the source row, and a long file
+    // name with two actions after it does not fit on one line of that. The
+    // actions go to a second line together rather than the name truncating to
+    // nothing.
+    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
       <div className="min-w-0 flex-auto">
         <StatusText>{recorded ? t('statusRecorded', {duration: length}) : `${clip.source.name} - ${length}`}</StatusText>
       </div>
-      <div className="flex shrink-0 gap-3">
+      <div className="flex shrink-0 gap-3 ms-auto">
         {recorded && <LinkButton onClick={onSave}>{t('download')}</LinkButton>}
         <LinkButton onClick={onClear}>{t('cancel')}</LinkButton>
       </div>

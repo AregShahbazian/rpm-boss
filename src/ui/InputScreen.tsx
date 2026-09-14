@@ -2,18 +2,23 @@ import {css} from '@emotion/react'
 import {useMemo, useState} from 'react'
 import {useAnalysis} from '../state/useAnalysis'
 import {useAudioInput} from '../state/useAudioInput'
+import {displayRpm, useLive} from '../state/useLive'
 import type {ExpectedRange} from '../dsp/types'
 import {FEATURES} from '../features'
 import {useI18n} from '../i18n'
 import {saveClip} from '../audio/save'
 import {SPLIT, TALL} from './breakpoints'
 import {Button} from './kit'
+import {useMotion} from './liveSettings'
+import {LiveScope} from './LiveScope'
+import {LiveStage} from './LiveStage'
 import {Player} from './Player'
 import {RangeFields} from './RangeFields'
 import {ResultView} from './ResultView'
 import {RecordButton} from './RecordButton'
 import {SampleButton} from './SampleButton'
 import {SettingsButton} from './SettingsButton.tsx'
+import {StopButton} from './StopButton'
 import {StatusLine} from './StatusLine'
 import {UploadButton} from './UploadButton'
 import {type Marks, WaveformBlock} from './WaveformBlock'
@@ -73,7 +78,14 @@ const SCREEN = css`
      * cap that stops the waveform growing without limit.
      */
     grid-template-rows: auto auto minmax(0, 1fr) ${withRange('auto')} auto;
-    grid-template-columns: minmax(0, var(--col)) minmax(0, 1fr);
+    /*
+     * The control column is as wide as its widest control and no wider: four
+     * icon buttons, or the rpm figure once there is one. It used to be a
+     * clamp, sized for two labelled buttons on one line; the labels are gone,
+     * and holding that width would have left a third of a landscape phone
+     * empty beside the waveform.
+     */
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
       'source wave'
       'status wave'
@@ -94,28 +106,46 @@ const SCREEN = css`
 `
 
 /*
- * Before a recording is opened there is no second column to fill, and a split
- * layout would leave two buttons pinned to the left edge of a laptop screen
- * with the whole signal column empty beside them. The empty state is one
- * centred column, the same shape the stacked layout has.
+ * The empty screen is the same two columns as the loaded one: the source row
+ * on the left, the stage where the waveform goes. Nothing about it is a
+ * special shape — only the right-hand column has different contents.
+ *
+ * The split rules are written out in full rather than inherited from the block
+ * above, because every declaration outside a nested block is emitted in one
+ * rule *before* the media rules, whatever the source order. A bare
+ * `grid-template-areas` here would lose to the split layout's own instead of
+ * overriding it, the `stage` area would not exist in landscape, and the
+ * placeholder would land in an implicit row with no height.
  */
 const SCREEN_EMPTY = css`
+  min-block-size: 100dvh;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-areas: 'source' 'status' 'stage';
+
   @media ${SPLIT} {
-    max-inline-size: 480px;
-    margin-inline: auto;
-    align-content: center;
-    grid-template-columns: minmax(0, 1fr);
-    /* Two tracks, not five: the flexible row above belongs to a result that
-       does not exist yet, and left in place it would push the buttons off the
-       top of the screen. */
-    grid-template-rows: auto auto;
-    grid-template-areas: 'source' 'status';
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'source stage'
+      'status stage';
   }
 `
 
 export function InputScreen() {
-  const {state, getWindowClip, upload, startRecording, stopRecording, clear, dismissError, togglePlay, setSelection} =
-    useAudioInput()
+  const {
+    state,
+    recordRing,
+    getWindowClip,
+    upload,
+    startRecording,
+    stopRecording,
+    clear,
+    dismissError,
+    togglePlay,
+    setSelection,
+    reportError,
+  } = useAudioInput()
   const [range, setRange] = useState({minRpm: '', maxRpm: ''})
   const {t} = useI18n()
   // Any change to the clip or the window clears the last result.
@@ -124,6 +154,14 @@ export function InputScreen() {
 
   const busy = state.status === 'decoding' || state.status === 'recording'
   const running = analysis.status === 'running'
+
+  // Live mode and the batch path share a microphone and a screen, so they are
+  // never both underway: the source row is disabled while this runs, and this
+  // can only be started from the resting screen.
+  const [motion] = useMotion()
+  const {live, ring, start, stop: stopLive} = useLive(reportError)
+  const listening = live.status !== 'off'
+  const rpm = displayRpm(live)
 
   // The window the marks belong to, held so they are drawn against what was
   // analysed rather than whatever the crop is now. It is replaced on each
@@ -157,26 +195,59 @@ export function InputScreen() {
   // Nothing to split until there is something to show in the second column.
   const loaded = state.clip !== undefined && state.status !== 'recording'
 
+  // The stage belongs to the resting screen only. It keeps its room while a
+  // recording runs, a file decodes or an error stands — the layout does not
+  // move under the counter or the message — but shows nothing: a tachometer
+  // reading zero next to "recording too short" would look like its answer.
+  const stage = state.status === 'idle'
+
   return (
     <main css={loaded ? SCREEN : [SCREEN, SCREEN_EMPTY]}>
       {/* No title: the launcher, the tab and the app switcher all carry the
           name already, and on a phone the screen is short enough that a
           heading costs more than it says. */}
-      <div className="flex flex-wrap gap-3 [grid-area:source] split:gap-2">
+      {/* 8 px, not 12, and in both layouts. A 360 px phone — the narrowest the
+          app is built for — has 328 px across this row, and four icon buttons
+          plus the double-width stop come to 320 at this gap and 336 at the
+          last one, which put the stop on a line of its own in portrait when it
+          was meant to sit beside the settings. */}
+      <div className="flex flex-wrap gap-2 [grid-area:source]">
         <RecordButton
           recording={state.status === 'recording'}
-          elapsedS={state.elapsedS}
-          disabled={state.status === 'decoding'}
+          disabled={state.status === 'decoding' || listening}
           onStart={startRecording}
           onStop={stopRecording}
         />
-        <UploadButton disabled={busy} onFile={upload}/>
-        <SampleButton disabled={busy} onFile={upload}/>
+        <UploadButton disabled={busy || listening} onFile={upload}/>
+        <SampleButton disabled={busy || listening} onFile={upload}/>
         <SettingsButton/>
+        {listening && <StopButton placement="row" onStop={stopLive}/>}
       </div>
-      <div className="[grid-area:status]">
+      {/* Zero wide, then at least as wide as its area. The column beside the
+          stage is sized to the buttons, and an `auto` track takes the widest
+          thing in it — so a sentence-long error would push the stage across
+          the screen. A width of zero is what the track sees; the minimum is
+          what the text gets, and it wraps inside it. */}
+      <div className="w-0 min-w-full [grid-area:status]">
         <StatusLine state={state} onDismiss={dismissError} onClear={clear} onSave={onSave}/>
       </div>
+      {listening && <StopButton placement="own-row" onStop={stopLive}/>}
+      {stage && (
+        <div className="min-h-0 [grid-area:stage]">
+          <LiveStage live={live} ring={ring} rpm={rpm} motion={motion} onStart={start}/>
+        </div>
+      )}
+      {/* A take draws itself. The stage is the tachometer's at rest, and for
+          these ten seconds it is the signal being recorded — the whole area in
+          landscape, a band across the middle in portrait, where a full-height
+          waveform would be a wall. */}
+      {state.status === 'recording' && (
+        <div className="grid min-h-0 items-center [grid-area:stage] split:items-stretch">
+          <div className="h-[clamp(120px,32dvh,280px)] w-full split:h-full">
+            <LiveScope ring={recordRing}/>
+          </div>
+        </div>
+      )}
       {state.clip && state.status !== 'recording' && (
         <>
           <div className="min-w-0 [grid-area:wave]">

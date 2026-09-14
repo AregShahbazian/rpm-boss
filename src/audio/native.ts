@@ -6,7 +6,7 @@
  * discussion note). The Kotlin-free Java plugin behind this opens `AudioRecord`
  * on `UNPROCESSED` and hands back raw PCM.
  */
-import {registerPlugin} from '@capacitor/core'
+import {type PluginListenerHandle, registerPlugin} from '@capacitor/core'
 import {assertMinLength, decodeToClip, trimClip} from './decode'
 import {type AudioClip, InputError, MAX_RECORD_S} from './types'
 import type {Recording, RecordOptions} from './record'
@@ -26,10 +26,24 @@ export interface StopResult {
   source: string
 }
 
+/** One slice of a live capture. See `startLiveCapture`. */
+export interface FramesEvent {
+  /** The slice, 16-bit little-endian PCM, base64. */
+  pcm16: string
+  sampleRate: number
+}
+
 interface RawAudioPlugin {
-  start(options: { maxS: number }): Promise<StartResult>
+  /**
+   * `stream` turns the take into a live one: frames are emitted as `frames`
+   * events and nothing is kept, so `stop` returns an empty take. Without it
+   * the whole recording is buffered natively and returned by `stop`.
+   */
+  start(options: { maxS: number; stream?: boolean }): Promise<StartResult>
 
   stop(): Promise<StopResult>
+
+  addListener(event: 'frames', handler: (event: FramesEvent) => void): Promise<PluginListenerHandle>
 }
 
 export const RawAudio = registerPlugin<RawAudioPlugin>('RawAudio')
@@ -37,7 +51,7 @@ export const RawAudio = registerPlugin<RawAudioPlugin>('RawAudio')
 /** The source the last recording actually used, for the review and for bug reports. */
 export let lastSource: string | undefined
 
-function decodeBase64(base64: string): Uint8Array {
+export function decodeBase64(base64: string): Uint8Array {
   const binary = atob(base64)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
@@ -74,15 +88,18 @@ function timeLabel(d = new Date()): string {
  * countdown, and an `AudioClip` through the same `decodeToClip`. Nothing above
  * this ever learns which recorder ran.
  */
-export function recordNative({maxS = MAX_RECORD_S, onTick, onDone, onError}: RecordOptions): Recording {
+export function recordNative({maxS = MAX_RECORD_S, onTick, onChunk, onDone, onError}: RecordOptions): Recording {
   let stopped = false
   let finished = false
   let ticker: ReturnType<typeof setInterval> | undefined
   let hardStop: ReturnType<typeof setTimeout> | undefined
+  let listener: PluginListenerHandle | undefined
 
   const clearTimers = () => {
     if (ticker) clearInterval(ticker)
     if (hardStop) clearTimeout(hardStop)
+    void listener?.remove()
+    listener = undefined
   }
 
   const finish = async () => {
@@ -109,6 +126,14 @@ export function recordNative({maxS = MAX_RECORD_S, onTick, onDone, onError}: Rec
 
   void (async () => {
     try {
+      // Attached before start, and only when someone is drawing: the reader
+      // thread emits from the moment the recorder opens, and a slice with
+      // nobody listening is just gone.
+      if (onChunk) {
+        listener = await RawAudio.addListener('frames', (event) => {
+          if (!stopped) onChunk(pcm16ToFloat(decodeBase64(event.pcm16)), event.sampleRate)
+        })
+      }
       const started = await RawAudio.start({maxS})
       lastSource = started.source
       if (import.meta.env.DEV) console.info('[rec] native source', started)

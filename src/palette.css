@@ -21,27 +21,22 @@
   --color-bg: #121212;
   --color-muted: #a0a0a0;
   --color-accent: #8ab4f8;
-  --color-error: #f2b8b5;
+  --color-error: #f20000;
   --color-btn: #2a2f36;
+  /* The one button that starts something. Muted on purpose: a saturated green
+     beside a red stop would make the screen a traffic light. */
+  --color-go: #2f7a4f;
 }
 
 /*
  * Not colours, so not in the theme namespace — but they belong beside it.
- * `--dim` changes with the theme and is read by the canvas; the other two set
- * the shape of the layout.
+ * `--dim` changes with the theme and is read by the canvas; `--gap` sets the
+ * shape of the layout.
  */
 :root {
   /* How much background is laid over the audio outside the crop window. */
   --dim: 0.6;
   --gap: 12px;
-  /*
-   * The control column. The floor is what the source row needs on one line —
-   * two labelled buttons and the settings icon — because wrapping that row
-   * costs 52 px of height, and a landscape phone has 360 px in total. The
-   * ceiling leaves the waveform more than 500 px on a 844 px screen, which is
-   * where the marks stop being a fence and start being countable.
-   */
-  --col: clamp(300px, 34vw, 460px);
 
   /*
    * What the device keeps for itself: the status bar, the navigation bar and
@@ -76,6 +71,7 @@
     --color-accent: #1f4e79;
     --color-error: #b3261e;
     --color-btn: #e9eef4;
+    --color-go: #1b6b41;
     --dim: 0.72;
   }
 }
@@ -88,5 +84,6 @@
   --color-accent: #1f4e79;
   --color-error: #b3261e;
   --color-btn: #e9eef4;
+  --color-go: #1b6b41;
   --dim: 0.72;
 }

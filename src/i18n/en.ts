@@ -14,7 +14,7 @@ export const en = {
   // A file or a recording is being decoded. Lasts under a second.
   statusDecoding: 'Decoding…',
   // The microphone is live and the countdown is running.
-  statusRecording: 'Recording. Hold the phone near the engine.',
+  statusRecording: 'Recording',
   // The recording is finished and loaded. Only its length is worth saying: the
   // name is a timestamp the app made up, which tells the user nothing they did
   // not just watch happen. {duration} is already in the reader's language.
@@ -39,9 +39,17 @@ export const en = {
   pickSample: 'Try a sample',
   // Starts recording from the microphone.
   record: 'Record',
+  // Starts live mode: the microphone is opened and the tachometer follows it,
+  // but nothing is captured. The one green button on the screen, and the only
+  // thing to do on it, so it says what it does and nothing else. Not "record"
+  // — a rider is being shown a reading, not asked to be recorded.
+  listen: 'Start',
   // Ends the recording early. The counter is drawn beside this, in a
   // monospaced font, which is no font at all for several of these scripts.
   stopRecording: 'Stop',
+  // Ends live mode. The button shows only a stop icon, so this is the whole of
+  // what a screen reader announces.
+  stopListening: 'Stop listening',
   // Plays back the selected part of the recording.
   play: 'Play',
   // Stops playback.
@@ -82,6 +90,9 @@ export const en = {
   errorNoAudio: 'Nothing was recorded. Close other apps using the microphone.',
   // Recording failed for a reason we cannot name.
   errorRecordFailed: 'Recording failed. Try again.',
+  // The same, for live mode, where nothing is being recorded and saying so
+  // would confuse the one thing the user did.
+  errorListenFailed: 'Could not start listening. Try again.',
   // This browser grants unprocessed recording and then delivers silence.
   errorCaptureBlocked: 'This browser cannot record engine sound. Use Chrome, or open a file.',
 
@@ -109,6 +120,29 @@ export const en = {
   themeLight: 'Light',
   // The app's own default: light text on a dark background.
   themeDark: 'Dark',
+
+  // Labels the choice of engine cycle, above the tachometer section. Two-stroke
+  // engines fire once per revolution and four-strokes every other one, so the
+  // answer will eventually decide how a count of combustions becomes an rpm.
+  strokeLabel: 'Engine',
+  // An engine that fires on every revolution. Written as riders write it.
+  strokeTwo: '2-stroke',
+  // An engine that fires every other revolution. Almost every bike on the road.
+  strokeFour: '4-stroke',
+
+  // Labels the cylinder count, which is shown answered and greyed: the analysis
+  // is right for a single and nothing else yet, and saying so beside the engine
+  // is better than letting a twin read high without explanation.
+  cylindersLabel: 'Cylinders',
+
+  // Heads the collapsed section of the settings holding the one below.
+  tachoSettings: 'Tachometer settings',
+  // Labels the choice of how the needle travels between two readings.
+  liveMotionLabel: 'Needle movement',
+  // Glide from one reading to the next.
+  liveMotionSmooth: 'Smooth',
+  // Jump, once per reading.
+  liveMotionStep: 'Step',
 } as const
 
 export type MessageKey = keyof typeof en
