@@ -7,7 +7,6 @@
 import type {Messages} from '../en'
 
 export const messages: Messages = {
-  statusIdle: 'রেকর্ডিং খুলুন, বা ইঞ্জিন রেকর্ড করুন।',
   statusDecoding: 'প্রক্রিয়া চলছে…',
   statusRecording: 'রেকর্ড হচ্ছে। ফোনটি ইঞ্জিনের কাছে ধরুন।',
   statusRecorded: 'রেকর্ড করা হয়েছে - {duration}',

@@ -7,7 +7,6 @@
 import type {Messages} from '../en'
 
 export const messages: Messages = {
-  statusIdle: 'Fungua rekodi, au rekodi injini.',
   statusDecoding: 'Inachakata…',
   statusRecording: 'Inarekodi. Sogeza simu karibu na injini.',
   statusRecorded: 'Imerekodiwa - {duration}',

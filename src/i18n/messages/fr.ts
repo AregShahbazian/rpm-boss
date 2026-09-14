@@ -7,7 +7,6 @@
 import type {Messages} from '../en'
 
 export const messages: Messages = {
-  statusIdle: 'Ouvre un enregistrement, ou enregistre le moteur.',
   statusDecoding: 'Traitement…',
   statusRecording: 'Enregistrement. Approche le téléphone du moteur.',
   statusRecorded: 'Enregistré - {duration}',

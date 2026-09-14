@@ -7,7 +7,6 @@
 import type {Messages} from '../en'
 
 export const messages: Messages = {
-  statusIdle: 'Magbukas ng rekording, o i-record ang makina.',
   statusDecoding: 'Pinoproseso…',
   statusRecording: 'Nagre-record. Ilapit ang telepono sa makina.',
   statusRecorded: 'Na-record - {duration}',

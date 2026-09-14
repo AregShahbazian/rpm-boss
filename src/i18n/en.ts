@@ -11,7 +11,6 @@
  */
 export const en = {
   // Nothing loaded yet. Both ways in are on screen above this line.
-  statusIdle: 'Open a recording, or record the engine.',
   // A file or a recording is being decoded. Lasts under a second.
   statusDecoding: 'Decoding…',
   // The microphone is live and the countdown is running.

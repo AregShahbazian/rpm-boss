@@ -32,7 +32,7 @@ export function StatusLine({state, onDismiss, onClear, onSave}: Props) {
   const settledLine = () => {
     switch (settled) {
       case 'idle':
-        return <StatusText tone="muted">{t('statusIdle')}</StatusText>
+        return null
       case 'decoding':
         return <StatusText>{t('statusDecoding')}</StatusText>
       case 'recording':

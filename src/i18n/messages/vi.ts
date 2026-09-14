@@ -7,7 +7,6 @@
 import type {Messages} from '../en'
 
 export const messages: Messages = {
-  statusIdle: 'Mở một bản ghi, hoặc ghi âm động cơ.',
   statusDecoding: 'Đang xử lý…',
   statusRecording: 'Đang ghi. Đưa điện thoại lại gần động cơ.',
   statusRecorded: 'Đã ghi - {duration}',

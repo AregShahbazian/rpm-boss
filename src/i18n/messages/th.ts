@@ -7,7 +7,6 @@
 import type {Messages} from '../en'
 
 export const messages: Messages = {
-  statusIdle: 'เปิดไฟล์เสียง หรืออัดเสียงเครื่องยนต์',
   statusDecoding: 'กำลังประมวลผล…',
   statusRecording: 'กำลังอัด ถือโทรศัพท์ใกล้เครื่องยนต์',
   statusRecorded: 'บันทึกแล้ว - {duration}',

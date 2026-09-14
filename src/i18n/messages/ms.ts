@@ -7,7 +7,6 @@
 import type {Messages} from '../en'
 
 export const messages: Messages = {
-  statusIdle: 'Buka rakaman, atau rakam enjin.',
   statusDecoding: 'Memproses…',
   statusRecording: 'Merakam. Dekatkan telefon ke enjin.',
   statusRecorded: 'Dirakam - {duration}',
