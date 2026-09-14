@@ -116,12 +116,15 @@ The same web build, wrapped in Capacitor. The app is `RPM Boss`,
 
 ```bash
 ./scripts/apk.sh         # signed release APK
-./scripts/install.sh     # the above, then install and launch it over USB
+./scripts/aab.sh         # signed release bundle, the one Play takes
+./scripts/install.sh     # the APK, then install and launch it over USB
 ./scripts/uninstall.sh   # remove it from the phone
 ```
 
-Both build the web app, copy it into the native project and run Gradle, so
-there is no separate sync step to remember. `npm run android:sync` and
+They all build the web app, copy it into the native project and run Gradle, so
+there is no separate sync step to remember. `aab.sh` reads the version back out
+of the finished bundle, because Play refuses an upload whose versionCode is not
+higher than the last one. `npm run android:sync` and
 `npm run android:build` do the same without the checks, if you prefer them.
 
 **JDK 21 is required.** Capacitor 8 compiles its own module at source level 21,
