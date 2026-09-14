@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n'
 import { formatTime } from './format'
+import { Icon } from './Icon'
 import { Button } from './kit'
 
 interface Props {
@@ -14,7 +15,17 @@ export function Player({ playing, positionS, durationS, onToggle }: Props) {
   return (
     <div className="flex items-center gap-3">
       <Button shape="fit" onClick={onToggle}>
-        {playing ? `■ ${t('stopPlaying')}` : `▶ ${t('play')}`}
+        {playing ? (
+          <>
+            <Icon icon="mdi:stop" />
+            {t('stopPlaying')}
+          </>
+        ) : (
+          <>
+            <Icon icon="mdi:play" />
+            {t('play')}
+          </>
+        )}
       </Button>
       <span className="flex-auto tabular-nums">
         {formatTime(positionS)} / {formatTime(durationS)}

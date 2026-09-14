@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { useI18n, type MessageKey } from '../i18n'
+import { Icon } from './Icon'
 import { Button, Sheet } from './kit'
 import { LanguagePicker } from './LanguagePicker'
 import { THEMES, useTheme, type Theme } from './theme'
@@ -30,7 +31,7 @@ export function Settings() {
   return (
     <>
       <Button shape="icon" aria-label={t('settings')} onClick={() => dialog.current?.showModal()}>
-        <GearIcon />
+        <Icon icon="lucide:settings" />
       </Button>
       <Sheet ref={dialog} title={t('settings')}>
         <LanguagePicker />
@@ -55,14 +56,3 @@ export function Settings() {
   )
 }
 
-function GearIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-      <circle cx="10" cy="10" r="2.75" />
-      <path
-        d="M10 2.2l1.1 2.05 2.3-.35.6 2.24 2.05 1.1-1.2 1.99 1.2 1.99-2.05 1.1-.6 2.24-2.3-.35L10 17.8l-1.1-2.05-2.3.35-.6-2.24-2.05-1.1 1.2-1.99-1.2-1.99 2.05-1.1.6-2.24 2.3.35z"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}

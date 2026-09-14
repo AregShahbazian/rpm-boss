@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import tailwind from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vitest/config'
+import { iconBundle } from './scripts/icon-bundle.ts'
 
 const AUDIO_DIR = 'audio'
 const SAMPLE_FILE = /^sample-\d+\.m4a$/
@@ -46,7 +47,12 @@ export default defineConfig(({ command }) => {
     // compiler setting, not a runtime one: Emotion's JSX factory replaces
     // React's, and nothing has to be imported per file except the `css` tag
     // itself. No Babel — see the styling design note.
-    plugins: [react({ jsxImportSource: '@emotion/react' }), tailwind(), samples(enabled, command === 'build')],
+    plugins: [
+      react({ jsxImportSource: '@emotion/react' }),
+      tailwind(),
+      samples(enabled, command === 'build'),
+      iconBundle(),
+    ],
     define: { __SAMPLES__: JSON.stringify(enabled) },
     test: { environment: 'node', include: ['test/**/*.test.ts', 'src/**/*.test.ts'] },
   }

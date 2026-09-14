@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useI18n } from '../i18n'
 import { SAMPLES, SAMPLES_ENABLED, sampleFile, sampleUrl } from '../samples'
+import { Icon } from './Icon'
 import { Button, Sheet } from './kit'
 
 interface Props {
@@ -47,7 +48,7 @@ export function SampleButton({ disabled, onFile }: Props) {
         aria-label={t('pickSample')}
         onClick={() => dialog.current?.showModal()}
       >
-        <SamplesIcon />
+        <Icon icon="lucide:list-music" />
       </Button>
       <Sheet ref={dialog} title={t('pickSample')}>
         {/* The bundled recordings, one per row. */}
@@ -71,13 +72,3 @@ export function SampleButton({ disabled, onFile }: Props) {
   )
 }
 
-/** A stack of clips, which is what the list is. */
-function SamplesIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden>
-      <rect x="3" y="4.5" width="14" height="3.2" rx="1.1" />
-      <rect x="3" y="10" width="14" height="3.2" rx="1.1" />
-      <path d="M5.5 16.4h9" strokeLinecap="round" />
-    </svg>
-  )
-}
