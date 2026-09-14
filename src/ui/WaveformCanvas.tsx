@@ -26,14 +26,21 @@ interface Props {
   marks?: Marks
 }
 
-/** How near an edge a press outside the window still grabs that edge. */
-const EDGE_HIT_PX = 24
+/**
+ * How near an edge a press outside the window still grabs that edge.
+ *
+ * A fingertip covers about 9 mm, which is the 48 px the buttons are already
+ * sized to, and the thumb hides the edge it is reaching for — so the target
+ * has to be the finger's size, not the handle's. Pressing outside the window
+ * costs nothing to give away: there is nothing else to hit out there.
+ */
+const EDGE_HIT_PX = 48
 /**
  * The same, for a press *inside* the window. Kept small so a narrow window
- * still has a draggable body: with 24 px on both sides, anything under 48 px
+ * still has a draggable body: with 16 px on both sides, anything under 32 px
  * wide could only ever be resized.
  */
-const EDGE_HIT_INSIDE_PX = 8
+const EDGE_HIT_INSIDE_PX = 16
 /** How far a combustion tick reaches in from the top and bottom edges. */
 const TICK_PX = 10
 type Drag = { kind: 'start' | 'end' } | { kind: 'body'; x0: number; sel0: Selection }
@@ -110,13 +117,19 @@ export function WaveformCanvas({clip, range, selection, onChange, positionS, han
       ctx.lineWidth = 2 * dpr
       ctx.strokeRect(sx, dpr, ex - sx, h - 2 * dpr)
       if (handles) {
+        // Only the grip grew. The line is what marks the edge and wants to
+        // stay a hairline over the audio — a thick one hides the samples it is
+        // pointing at, and the press target is 48 px whatever it looks like.
+        // The pill is the part the thumb aims for, so that is the part drawn
+        // at a thumb's size, capped against the height so it stays a grip on a
+        // short waveform rather than a second frame.
         ctx.fillStyle = palette.accent
         const hw = 4 * dpr
-        const gh = Math.min(h * 0.5, 28 * dpr)
+        const gh = Math.min(h * 0.5, 56 * dpr)
         for (const x of [sx, ex]) {
           ctx.fillRect(x - hw / 2, 0, hw, h)
           ctx.beginPath()
-          ctx.roundRect(x - 6 * dpr, h / 2 - gh / 2, 12 * dpr, gh, 4 * dpr)
+          ctx.roundRect(x - 12 * dpr, h / 2 - gh / 2, 24 * dpr, gh, 8 * dpr)
           ctx.fill()
         }
       }
