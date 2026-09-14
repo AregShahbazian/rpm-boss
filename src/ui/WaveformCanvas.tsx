@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef} from 'react'
 import type {AudioClip} from '../audio/types'
+import {displayGain} from '../waveform/gain'
 import {computePeaks} from '../waveform/peaks'
 import type {TimeRange} from '../waveform/range'
 import {moveBy, type Selection, setEnd, setStart} from '../waveform/selection'
@@ -62,6 +63,10 @@ export function WaveformCanvas({clip, range, selection, onChange, positionS, han
     return computePeaks(clip.samples, range.fromS * clip.sampleRate, range.toS * clip.sampleRate, w)
   }, [clip, range.fromS, range.toS, width, dpr])
 
+  // Per clip, not per range: see `displayGain`. Cheap enough to sit beside the
+  // peaks, and it must not be recomputed when the window moves.
+  const gain = useMemo(() => displayGain(clip.samples), [clip])
+
   // The bars are rasterised once per (peaks, size, theme). Redrawing them
   // column by column on every selection change or playback frame would be
   // thousands of fillRects a second on a phone; this is one drawImage.
@@ -77,12 +82,12 @@ export function WaveformCanvas({clip, range, selection, onChange, positionS, han
     const mid = h / 2
     ctx.fillStyle = palette.muted
     for (let c = 0; c < w; c++) {
-      const top = mid - peaks.max[c] * mid
-      const bottom = mid - peaks.min[c] * mid
+      const top = mid - peaks.max[c] * gain * mid
+      const bottom = mid - peaks.min[c] * gain * mid
       ctx.fillRect(c, top, 1, Math.max(1, bottom - top))
     }
     return off
-  }, [peaks, width, height, dpr, palette])
+  }, [peaks, width, height, dpr, palette, gain])
 
   // Overlay only: a handful of operations per frame.
   useEffect(() => {
