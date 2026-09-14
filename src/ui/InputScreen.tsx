@@ -219,7 +219,7 @@ export function InputScreen() {
         <UploadButton disabled={busy || listening} onFile={upload}/>
         <SampleButton disabled={busy || listening} onFile={upload}/>
         <SettingsButton/>
-        {listening && <StopButton onStop={stopLive}/>}
+        {listening && <StopButton placement="row" onStop={stopLive}/>}
       </div>
       {/* Zero wide, then at least as wide as its area. The column beside the
           stage is sized to the buttons, and an `auto` track takes the widest
@@ -229,6 +229,7 @@ export function InputScreen() {
       <div className="w-0 min-w-full [grid-area:status]">
         <StatusLine state={state} onDismiss={dismissError} onClear={clear} onSave={onSave}/>
       </div>
+      {listening && <StopButton placement="own-row" onStop={stopLive}/>}
       {stage && (
         <div className="min-h-0 [grid-area:stage]">
           <LiveStage live={live} ring={ring} rpm={rpm} motion={motion} onStart={start}/>

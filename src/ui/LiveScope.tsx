@@ -60,7 +60,11 @@ export function LiveScope({ring}: Props) {
         const a = Math.abs(v)
         if (a > peak) peak = a
       }
-      const gain = peak > NOISE_FLOOR ? 0.95 / peak : 0
+      // Silence draws nothing at all. A flat line across the strip is read as
+      // a rule between two sections rather than as a quiet microphone, which
+      // is the opposite of what it is there to say.
+      if (peak <= NOISE_FLOOR) return
+      const gain = 0.95 / peak
 
       const peaks = computePeaks(tail, 0, tail.length, w)
       const mid = h / 2

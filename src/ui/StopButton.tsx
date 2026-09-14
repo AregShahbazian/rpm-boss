@@ -3,27 +3,40 @@ import {Icon} from './Icon'
 import {Button} from './kit'
 
 /**
- * Ends live mode, and says so by being the wrong size: 96 px wide in a row of
- * 48 px squares, so it is not mistaken for a fifth source. It joins the source
- * row rather than the stage, because it belongs with the things that decide
- * what the app is listening to.
+ * Ends live mode, and says so by being the wrong size: 104 px — two icon
+ * buttons and the gap between them — in a row of 48 px squares, so it is not
+ * mistaken for a fifth source. It belongs with the things that decide what the
+ * app is listening to, which is why it is up there and not on the stage.
  *
- * The wrapper is what puts it on the line below in landscape. Width on the
- * button itself cannot do it: a flex line breaks on the item's basis *after*
- * its own max-width has clamped it, so anything narrow enough to look right
- * is narrow enough to fit on the line above.
+ * Where it sits is a layout decision with a history:
  *
- * Zero wide, then at least as wide as the row. The control column is sized to
- * its widest row, and a plain full-width wrapper is still measured at the
- * button's 104 px while that happens — so the column came out as the icons
- * *plus* this button, and the tachometer beside it shrank by exactly that when
- * live mode started. A width of zero is what the measurement sees; the minimum
- * is what the layout gets, and it is what breaks the line.
+ * - **Portrait** it joins the source row, wrapping to the next line only if it
+ *   does not fit.
+ * - **Landscape** it cannot be in that row at all. The control column is as
+ *   wide as its widest row, so anything added to the row widens the column and
+ *   the tachometer beside it shrinks by that much the moment live mode starts.
+ *   Zero width was not enough: a flex gap is drawn before the item whether or
+ *   not the item has any width, and eight pixels of tachometer still went.
+ *
+ * So there are two of it, one per layout, each hidden in the other — rather
+ * than one that negative margins and percentage minimums shuffle into place.
+ * Only ever one is in the tree that a screen reader or a test walks, because
+ * `display: none` takes the other out of it entirely.
  */
-export function StopButton({onStop}: { onStop: () => void }) {
+export function StopButton({placement, onStop}: { placement: 'row' | 'own-row'; onStop: () => void }) {
   const {t} = useI18n()
   return (
-    <div className="split:w-0 split:min-w-full">
+    <div
+      className={
+        placement === 'row'
+          ? 'split:hidden'
+          : // Its own row in the control column. It shares the status area,
+            // which is empty for as long as live mode runs: the idle status
+            // says nothing, and an error is what stops live mode rather than
+            // something that appears beside it.
+            'hidden [grid-area:status] split:block'
+      }
+    >
       <Button shape="stop" tone="record" aria-label={t('stopListening')} onClick={onStop}>
         <Icon icon="mdi:stop"/>
       </Button>
