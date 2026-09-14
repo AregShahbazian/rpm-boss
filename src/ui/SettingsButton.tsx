@@ -3,18 +3,13 @@ import {type MessageKey, useI18n} from '../i18n'
 import {Icon} from './Icon'
 import {Button, Picker, Sheet} from './kit'
 import {LanguagePicker} from './LanguagePicker'
-import {type Fallback, FALLBACKS, type Motion, MOTIONS, useFallback, useMotion} from './liveSettings'
+import {type Motion, MOTIONS, useMotion} from './liveSettings'
 import {type Theme, THEMES, useTheme} from './theme'
 
 const THEME_KEYS: Record<Theme, MessageKey> = {
   system: 'themeSystem',
   light: 'themeLight',
   dark: 'themeDark',
-}
-
-const FALLBACK_KEYS: Record<Fallback, MessageKey> = {
-  zero: 'liveFallbackZero',
-  hold: 'liveFallbackHold',
 }
 
 const MOTION_KEYS: Record<Motion, MessageKey> = {
@@ -38,7 +33,6 @@ export function SettingsButton() {
   const dialog = useRef<HTMLDialogElement>(null)
   const {t} = useI18n()
   const [theme, setTheme] = useTheme()
-  const [fallback, setFallback] = useFallback()
   const [motion, setMotion] = useMotion()
 
   return (
@@ -77,13 +71,6 @@ export function SettingsButton() {
         <details className="[&>summary]:cursor-pointer">
           <summary className="text-[0.9rem] text-muted">{t('tachoSettings')}</summary>
           <div className="mt-3 flex flex-col gap-3">
-            <Picker
-              label={t('liveFallbackLabel')}
-              value={fallback}
-              options={FALLBACKS.map((v) => ({value: v, label: t(FALLBACK_KEYS[v])}))}
-              onChange={setFallback}
-              layout="row"
-            />
             <Picker
               label={t('liveMotionLabel')}
               value={motion}

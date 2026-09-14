@@ -9,25 +9,20 @@ const listening = (over: Partial<LiveState> = {}): LiveState => ({
 
 describe('displayRpm', () => {
   it('says nothing before live mode is running', () => {
-    expect(displayRpm({status: 'off', quiet: false}, 'hold')).toBeUndefined()
-    expect(displayRpm({status: 'starting', quiet: false, reading: 1600}, 'hold')).toBeUndefined()
+    expect(displayRpm({status: 'off', quiet: false})).toBeUndefined()
+    expect(displayRpm({status: 'starting', quiet: false, reading: 1600})).toBeUndefined()
   })
 
   it('shows the reading while the engine is heard', () => {
-    expect(displayRpm(listening({reading: 1603}), 'zero')).toBe(1603)
-    expect(displayRpm(listening({reading: 1603}), 'hold')).toBe(1603)
+    expect(displayRpm(listening({reading: 1603}))).toBe(1603)
   })
 
-  it('drops the reading on a quiet window when asked to', () => {
-    expect(displayRpm(listening({reading: 1603, quiet: true}), 'zero')).toBeUndefined()
+  it('drops the reading on a quiet window', () => {
+    expect(displayRpm(listening({reading: 1603, quiet: true}))).toBeUndefined()
   })
 
-  it('keeps it on a quiet window when asked to hold', () => {
-    expect(displayRpm(listening({reading: 1603, quiet: true}), 'hold')).toBe(1603)
-  })
-
-  it('has nothing to hold before the first reading arrives', () => {
-    expect(displayRpm(listening({quiet: true}), 'hold')).toBeUndefined()
+  it('says nothing when there has been no reading at all', () => {
+    expect(displayRpm(listening({quiet: true}))).toBeUndefined()
   })
 })
 

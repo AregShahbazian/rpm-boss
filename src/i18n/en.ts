@@ -122,13 +122,6 @@ export const en = {
 
   // Heads the collapsed section of the settings holding the two below.
   tachoSettings: 'Tachometer settings',
-  // Labels the choice of what the needle does when the engine cannot be heard
-  // — stopped, too quiet, or turning too slowly to measure.
-  liveFallbackLabel: 'When the reading is lost',
-  // Send the needle back to zero.
-  liveFallbackZero: 'Drop to zero',
-  // Leave the last figure standing.
-  liveFallbackHold: 'Hold last value',
   // Labels the choice of how the needle travels between two readings.
   liveMotionLabel: 'Needle movement',
   // Glide from one reading to the next.

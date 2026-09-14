@@ -24,7 +24,7 @@ import {Tacho} from './Tacho'
 interface Props {
   live: LiveState
   ring: React.RefObject<Ring | undefined>
-  /** Already resolved against the user's fallback preference; see `displayRpm`. */
+  /** What the dial should point at, or undefined for nothing; see `displayRpm`. */
   rpm?: number
   motion: Motion
   onStart: (source: LiveSource) => void

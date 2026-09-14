@@ -9,7 +9,7 @@ import {useI18n} from '../i18n'
 import {saveClip} from '../audio/save'
 import {SPLIT, TALL} from './breakpoints'
 import {Button} from './kit'
-import {useFallback, useMotion} from './liveSettings'
+import {useMotion} from './liveSettings'
 import {LiveStage} from './LiveStage'
 import {Player} from './Player'
 import {RangeFields} from './RangeFields'
@@ -156,11 +156,10 @@ export function InputScreen() {
   // Live mode and the batch path share a microphone and a screen, so they are
   // never both underway: the source row is disabled while this runs, and this
   // can only be started from the resting screen.
-  const [fallback] = useFallback()
   const [motion] = useMotion()
   const {live, ring, start, stop: stopLive} = useLive(reportError)
   const listening = live.status !== 'off'
-  const rpm = displayRpm(live, fallback)
+  const rpm = displayRpm(live)
 
   // The window the marks belong to, held so they are drawn against what was
   // analysed rather than whatever the crop is now. It is replaced on each

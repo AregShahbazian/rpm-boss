@@ -21,7 +21,6 @@ import {median} from '../dsp/autocorr'
 import {LIVE_INTERVAL_MS, LIVE_SMOOTH_N, LIVE_WINDOW_S, Ring} from '../live/ring'
 import {startMockCapture} from '../live/mock'
 import {type LiveCapture, startLiveCapture} from '../live/stream'
-import type {Fallback} from '../ui/liveSettings'
 import {keepScreenAwake} from './wakeLock'
 
 /** Where the audio comes from. The only difference between the two. */
@@ -61,16 +60,19 @@ export interface LiveState {
 const OFF: LiveState = {status: 'off', quiet: false}
 
 /**
- * What the dial should point at, given the state and the preference.
+ * What the dial should point at.
  *
  * `undefined` means "nothing to say", which the screen draws as a needle at
  * zero and a row of dashes — the same thing it draws before live mode starts,
  * so one rendering path covers both.
+ *
+ * A quiet window says nothing, and the dial says nothing back. Holding the
+ * last reading through it was tried and dropped: a needle still pointing at
+ * 1600 after the engine has stopped is a worse lie than a needle at zero.
  */
-export function displayRpm(live: LiveState, fallback: Fallback): number | undefined {
-  if (live.status !== 'listening') return undefined
-  if (!live.quiet) return live.reading
-  return fallback === 'hold' ? live.reading : undefined
+export function displayRpm(live: LiveState): number | undefined {
+  if (live.status !== 'listening' || live.quiet) return undefined
+  return live.reading
 }
 
 export function useLive(onError: (code: InputErrorCode) => void) {
