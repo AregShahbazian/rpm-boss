@@ -22,6 +22,7 @@ import {LIVE_INTERVAL_MS, LIVE_SMOOTH_N, LIVE_WINDOW_S, Ring} from '../live/ring
 import {startMockCapture} from '../live/mock'
 import {type LiveCapture, startLiveCapture} from '../live/stream'
 import type {Fallback} from '../ui/liveSettings'
+import {keepScreenAwake} from './wakeLock'
 
 /** Where the audio comes from. The only difference between the two. */
 export type LiveSource = 'mic' | 'mock'
@@ -92,10 +93,13 @@ export function useLive(onError: (code: InputErrorCode) => void) {
    * nobody is waiting for it.
    */
   const generation = useRef(0)
+  const releaseScreen = useRef<() => void>(undefined)
   const totals = useRef({runs: 0, sumMs: 0, maxMs: 0, skipped: 0, frames: 0, startedAt: 0})
 
   const stop = useCallback(() => {
     generation.current++
+    releaseScreen.current?.()
+    releaseScreen.current = undefined
     if (timer.current) clearInterval(timer.current)
     timer.current = undefined
     capture.current?.stop()
@@ -141,6 +145,9 @@ export function useLive(onError: (code: InputErrorCode) => void) {
       totals.current = {runs: 0, sumMs: 0, maxMs: 0, skipped: 0, frames: 0, startedAt: performance.now()}
       setLive({status: 'starting', quiet: false})
 
+      // Nobody touches this screen while it works; the display timeout would
+      // otherwise take it mid-measurement.
+      releaseScreen.current = keepScreenAwake()
       client.current = createAnalysisClient()
       const begin = source === 'mock' ? startMockCapture : startLiveCapture
       capture.current = begin({
