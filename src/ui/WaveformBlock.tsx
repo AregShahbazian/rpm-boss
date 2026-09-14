@@ -118,7 +118,7 @@ export function WaveformBlock({clip, selection, onChange, positionS, marks}: Pro
         />
       </div>
       <p className="m-0 text-[0.95rem] tabular-nums" dir="ltr">
-        {formatTime(selection.startS, 1)} - {formatTime(selection.endS, 1)} · {selectionLength(selection).toFixed(1)} s
+        {formatTime(selection.startS, 1)} - {formatTime(selection.endS, 1)} | {selectionLength(selection).toFixed(1)} s
       </p>
     </div>
   )
