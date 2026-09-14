@@ -14,6 +14,7 @@ import {useI18n} from '../i18n'
 import type {Ring} from '../live/ring'
 import {SAMPLES_ENABLED} from '../samples'
 import type {LiveSource, LiveState} from '../state/useLive'
+import {LiveStats} from './LiveStats'
 import {Icon} from './Icon'
 import {Button} from './kit'
 import type {Motion} from './liveSettings'
@@ -61,7 +62,8 @@ export function LiveStage({live, ring, rpm, motion, onStart}: Props) {
           </p>
         </div>
       </div>
-      <div className="min-h-0">
+      <div className="relative min-h-0">
+        {live.stats && <LiveStats stats={live.stats}/>}
         {listening ? (
           <LiveScope ring={ring}/>
         ) : (

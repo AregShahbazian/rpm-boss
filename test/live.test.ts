@@ -30,3 +30,4 @@ describe('displayRpm', () => {
     expect(displayRpm(listening({quiet: true}), 'hold')).toBeUndefined()
   })
 })
+

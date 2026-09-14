@@ -16,6 +16,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
 import {type AnalysisClient, createAnalysisClient} from '../analysis/client'
 import {InputError, type InputErrorCode, SAMPLE_RATE} from '../audio/types'
+import {FEATURES} from '../features'
 import {median} from '../dsp/autocorr'
 import {LIVE_INTERVAL_MS, LIVE_SMOOTH_N, LIVE_WINDOW_S, Ring} from '../live/ring'
 import {startMockCapture} from '../live/mock'
@@ -27,12 +28,33 @@ export type LiveSource = 'mic' | 'mock'
 
 export type LiveStatus = 'off' | 'starting' | 'listening'
 
+/**
+ * What the feature costs, measured while it runs.
+ *
+ * Only gathered behind `FEATURES.mockLive`, and only read by the developer
+ * readout under the scope. The whole design rests on an assumption — that a
+ * phone can run the batch analysis five times a second — and `skipped` is the
+ * number that says whether it holds: it counts ticks that arrived while the
+ * previous analysis was still running, so zero means the device keeps up and a
+ * rising count says by how much it does not.
+ */
+export interface LiveStats {
+  runs: number
+  lastMs: number
+  avgMs: number
+  maxMs: number
+  skipped: number
+  /** Seconds of audio received per second of wall time. Should sit at 1.00. */
+  captureRatio: number
+}
+
 export interface LiveState {
   status: LiveStatus
   /** The last reading that succeeded: the median of the last `LIVE_SMOOTH_N`. */
   reading?: number
   /** True when the most recent window yielded nothing — silence, or no rhythm in it. */
   quiet: boolean
+  stats?: LiveStats
 }
 
 const OFF: LiveState = {status: 'off', quiet: false}
@@ -58,8 +80,22 @@ export function useLive(onError: (code: InputErrorCode) => void) {
   const timer = useRef<ReturnType<typeof setInterval>>(undefined)
   const running = useRef(false)
   const recent = useRef<number[]>([])
+  /*
+   * Which run of live mode a result belongs to.
+   *
+   * An analysis takes about 60 ms of every 200, so roughly a third of all
+   * stops land while one is in flight. Its `then` runs afterwards, against a
+   * hook that has already been torn down, and — before this — set the state
+   * back to `listening`: stop button still on screen, dial still showing a
+   * reading, but the timer cleared, the ring gone and the scope blank. A
+   * zombie. Bumping this on every stop is what makes a late result know that
+   * nobody is waiting for it.
+   */
+  const generation = useRef(0)
+  const totals = useRef({runs: 0, sumMs: 0, maxMs: 0, skipped: 0, frames: 0, startedAt: 0})
 
   const stop = useCallback(() => {
+    generation.current++
     if (timer.current) clearInterval(timer.current)
     timer.current = undefined
     capture.current?.stop()
@@ -102,12 +138,16 @@ export function useLive(onError: (code: InputErrorCode) => void) {
       const buffer = new Ring()
       ring.current = buffer
       recent.current = []
+      totals.current = {runs: 0, sumMs: 0, maxMs: 0, skipped: 0, frames: 0, startedAt: performance.now()}
       setLive({status: 'starting', quiet: false})
 
       client.current = createAnalysisClient()
       const begin = source === 'mock' ? startMockCapture : startLiveCapture
       capture.current = begin({
-        onChunk: (samples) => buffer.push(samples),
+        onChunk: (samples) => {
+          buffer.push(samples)
+          totals.current.frames += samples.length
+        },
         onOpen: () => setLive((prev) => ({...prev, status: 'listening'})),
         onError: (err: InputError) => {
           stop()
@@ -117,15 +157,22 @@ export function useLive(onError: (code: InputErrorCode) => void) {
         },
       })
 
+      const era = generation.current
+
       timer.current = setInterval(() => {
+        const t = totals.current
         // Not full yet: the window would be part silence, and silence
         // prepended to an engine is a different sound from an engine.
         if (!buffer.full) return
         // A tick that arrives while the last analysis is still running is
         // dropped rather than queued. A queue would grow without bound on a
         // phone that cannot keep up, and every entry in it would be stale.
-        if (running.current) return
+        if (running.current) {
+          t.skipped++
+          return
+        }
         running.current = true
+        const startedAt = performance.now()
 
         // The snapshot buffer is reused, and `run` structured-clones it on the
         // way into the worker, so there is nothing to wait for here.
@@ -138,11 +185,28 @@ export function useLive(onError: (code: InputErrorCode) => void) {
             source: {kind: 'mic', name: 'live'},
           })
           .then((result) => {
+            // Stopped, or restarted, while this was in the worker.
+            if (era !== generation.current) return
             running.current = false
+            const ms = performance.now() - startedAt
+            t.runs++
+            t.sumMs += ms
+            t.maxMs = Math.max(t.maxMs, ms)
+            const elapsedS = (performance.now() - t.startedAt) / 1000
+            const stats: LiveStats | undefined = FEATURES.mockLive
+              ? {
+                  runs: t.runs,
+                  lastMs: ms,
+                  avgMs: t.sumMs / t.runs,
+                  maxMs: t.maxMs,
+                  skipped: t.skipped,
+                  captureRatio: elapsedS > 0 ? t.frames / SAMPLE_RATE / elapsedS : 0,
+                }
+              : undefined
             if (!result.ok) {
               // The engine stopping is not an error. It is a quiet window, and
               // what to do about it is the user's preference, not ours.
-              setLive((prev) => ({...prev, status: 'listening', quiet: true}))
+              setLive((prev) => ({...prev, status: 'listening', quiet: true, stats}))
               return
             }
 
@@ -152,7 +216,7 @@ export function useLive(onError: (code: InputErrorCode) => void) {
             const history = recent.current
             history.push(result.rpm)
             if (history.length > LIVE_SMOOTH_N) history.shift()
-            setLive({status: 'listening', reading: median(history), quiet: false})
+            setLive({status: 'listening', reading: median(history), quiet: false, stats})
           })
       }, LIVE_INTERVAL_MS)
     },

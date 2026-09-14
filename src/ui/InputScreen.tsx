@@ -205,7 +205,12 @@ export function InputScreen() {
       {/* No title: the launcher, the tab and the app switcher all carry the
           name already, and on a phone the screen is short enough that a
           heading costs more than it says. */}
-      <div className="flex flex-wrap gap-3 [grid-area:source] split:gap-2">
+      {/* 8 px, not 12, and in both layouts. A 360 px phone — the narrowest the
+          app is built for — has 328 px across this row, and four icon buttons
+          plus the double-width stop come to 320 at this gap and 336 at the
+          last one, which put the stop on a line of its own in portrait when it
+          was meant to sit beside the settings. */}
+      <div className="flex flex-wrap gap-2 [grid-area:source]">
         <RecordButton
           recording={state.status === 'recording'}
           disabled={state.status === 'decoding' || listening}
