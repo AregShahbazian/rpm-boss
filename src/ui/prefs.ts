@@ -15,7 +15,7 @@
  * element and pushed to the Android system bars, so what it shares with these
  * is the smaller half of it.
  */
-import {useCallback, useState} from 'react'
+import {useCallback, useSyncExternalStore} from 'react'
 
 /** The stored value if it is one of the choices, the fallback otherwise. */
 export function readChoice<T extends string>(key: string, values: readonly T[], fallback: T): T {
@@ -35,16 +35,39 @@ export function writeChoice(key: string, value: string): void {
   }
 }
 
+/**
+ * Everyone who asks for a preference reads the same one.
+ *
+ * With `useState` each caller held a private copy: the settings dialog would
+ * change its own and the screen, holding another, would never hear. Storage is
+ * the value and the components are views of it, so the state lives where all
+ * of them can see it. One listener set for every key — a change re-reads them
+ * all, and React drops the renders where nothing moved.
+ */
+const listeners = new Set<() => void>()
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => void listeners.delete(listener)
+}
+
 /** The pair a settings control wants: what is chosen, and how to change it. */
 export function useChoice<T extends string>(
   key: string,
   values: readonly T[],
   fallback: T,
 ): [T, (next: T) => void] {
-  const [value, setValue] = useState(() => readChoice(key, values, fallback))
-  const set = useCallback((next: T) => {
-    writeChoice(key, next)
-    setValue(next)
-  }, [key])
+  const value = useSyncExternalStore(
+    subscribe,
+    () => readChoice(key, values, fallback),
+    () => fallback,
+  )
+  const set = useCallback(
+    (next: T) => {
+      writeChoice(key, next)
+      for (const listener of [...listeners]) listener()
+    },
+    [key],
+  )
   return [value, set]
 }

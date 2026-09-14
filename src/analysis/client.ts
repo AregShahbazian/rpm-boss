@@ -11,11 +11,11 @@
  * rejecting.
  */
 import type {AudioClip} from '../audio/types'
-import {type Analysis, type ExpectedRange, failure} from '../dsp/types'
+import {type Analysis, type ExpectedRange, failure, type RevsPerPulse} from '../dsp/types'
 import type {AnalyseRequest, AnalyseResponse} from './protocol'
 
 export interface AnalysisClient {
-  run(clip: AudioClip, range?: ExpectedRange): Promise<Analysis>
+  run(clip: AudioClip, range?: ExpectedRange, revsPerPulse?: RevsPerPulse): Promise<Analysis>
 
   dispose(): void
 }
@@ -50,7 +50,7 @@ export function createAnalysisClient(): AnalysisClient {
   }
 
   return {
-    run(clip, range) {
+    run(clip, range, revsPerPulse) {
       const target = worker
       if (!target) return Promise.resolve(failure('worker-failed'))
 
@@ -59,7 +59,13 @@ export function createAnalysisClient(): AnalysisClient {
       // clip can be the loaded clip itself, and handing its buffer away would
       // empty the waveform behind the user. A copy of at most 640 kB, once per
       // press, is not worth the risk.
-      const request: AnalyseRequest = {id, samples: clip.samples, sampleRate: clip.sampleRate, range}
+      const request: AnalyseRequest = {
+        id,
+        samples: clip.samples,
+        sampleRate: clip.sampleRate,
+        range,
+        revsPerPulse,
+      }
       return new Promise<Analysis>((resolve) => {
         pending.set(id, resolve)
         try {

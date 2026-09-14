@@ -1,11 +1,22 @@
 /** What the analysis produces, and the constants that shape it. */
 
 /**
- * Revolutions per combustion. Two for the 4-stroke single the MVP targets; a
- * 2-stroke would be one. Named rather than inlined so the deferred preset can
- * set it without touching the DSP (see backlog).
+ * Revolutions per combustion. Two for a four-stroke, which fires every other
+ * turn; one for a two-stroke, which fires every one.
+ *
+ * It is the whole difference between the two engines, and it reaches further
+ * than the last multiplication: at the same rpm a two-stroke's combustions come
+ * twice as fast, so everything the chain says in combustions per second — the
+ * envelope's smoothing, the rates it searches — has to be said twice as fast
+ * too. `rateScale` is that factor; the constants are all stated for the
+ * four-stroke, which is the default and what the fixtures are.
  */
-export const REVS_PER_PULSE = 2
+export type RevsPerPulse = 1 | 2
+
+export const REVS_PER_PULSE: RevsPerPulse = 2
+
+/** How many times faster the combustions arrive than on a four-stroke at the same rpm. */
+export const rateScale = (revsPerPulse: RevsPerPulse): number => REVS_PER_PULSE / revsPerPulse
 
 /**
  * The top of the dial, and the top of what the estimator may return.
@@ -48,6 +59,8 @@ export interface ExpectedRange {
 export interface AnalysisResult {
   ok: true
   rpm: number
+  /** Which engine the rate was converted for; the caption needs it back. */
+  revsPerPulse: RevsPerPulse
   /** Autocorrelation estimate, the primary one. */
   pulsesPerS: number
   /** Peak-count estimate, the cross-check. */

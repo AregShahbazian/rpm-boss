@@ -16,6 +16,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
 import {type AnalysisClient, createAnalysisClient} from '../analysis/client'
 import {InputError, type InputErrorCode, SAMPLE_RATE} from '../audio/types'
+import {REVS_PER_PULSE, type RevsPerPulse} from '../dsp/types'
 import {FEATURES} from '../features'
 import {median} from '../dsp/autocorr'
 import {LIVE_INTERVAL_MS, LIVE_SMOOTH_N, LIVE_WINDOW_S, Ring} from '../live/ring'
@@ -75,8 +76,18 @@ export function displayRpm(live: LiveState): number | undefined {
   return live.reading
 }
 
-export function useLive(onError: (code: InputErrorCode) => void) {
+export function useLive(onError: (code: InputErrorCode) => void, revsPerPulse: RevsPerPulse = REVS_PER_PULSE) {
   const [live, setLive] = useState<LiveState>(OFF)
+  /*
+   * The engine, held in a ref rather than closed over: the settings stay
+   * reachable while live mode runs, and the tick below belongs to an interval
+   * made when it started. A rider who realises mid-session that the app was
+   * told the wrong engine gets the next reading corrected, not a restart.
+   */
+  const revs = useRef(revsPerPulse)
+  useEffect(() => {
+    revs.current = revsPerPulse
+  }, [revsPerPulse])
   const ring = useRef<Ring>(undefined)
   const capture = useRef<LiveCapture>(undefined)
   const client = useRef<AnalysisClient>(undefined)
@@ -202,7 +213,7 @@ export function useLive(onError: (code: InputErrorCode) => void) {
             samples: window,
             durationS: LIVE_WINDOW_S,
             source: {kind: 'mic', name: 'live'},
-          })
+          }, undefined, revs.current)
           .then((result) => {
             // Stopped, or restarted, while this was in the worker.
             if (era !== generation.current) return

@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
 import {type AnalysisClient, createAnalysisClient} from '../analysis/client'
 import type {AudioClip} from '../audio/types'
-import type {AnalysisErrorCode, AnalysisResult, ExpectedRange} from '../dsp/types'
+import type {AnalysisErrorCode, AnalysisResult, ExpectedRange, RevsPerPulse} from '../dsp/types'
 
 export type AnalysisStatus = 'idle' | 'running' | 'done' | 'failed'
 
@@ -45,17 +45,20 @@ export function useAnalysis(resetKey: unknown) {
     }
   }, [])
 
-  const analyse = useCallback(async (clip: AudioClip, key: unknown, range?: ExpectedRange) => {
+  const analyse = useCallback(
+    async (clip: AudioClip, key: unknown, range?: ExpectedRange, revsPerPulse?: RevsPerPulse) => {
     client.current ??= createAnalysisClient()
     const token = ++runToken.current
     setState({status: 'running'})
 
-    const result = await client.current.run(clip, range)
+    const result = await client.current.run(clip, range, revsPerPulse)
     // Drop the answer if another run started, or if the window moved under it.
     if (token !== runToken.current || key !== currentKey.current) return
 
     setState(result.ok ? {status: 'done', result} : {status: 'failed', error: result.code})
-  }, [])
+    },
+    [],
+  )
 
   return {analysis: state, analyse}
 }

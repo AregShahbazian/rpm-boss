@@ -1,6 +1,6 @@
 import {useRef} from 'react'
 import {type MessageKey, useI18n} from '../i18n'
-import {CYLINDER_COUNTS, CYLINDERS, DEFAULT_STROKE, type Stroke, STROKES} from './engineSettings'
+import {CYLINDER_COUNTS, CYLINDERS, type Stroke, STROKES, useStroke} from './engineSettings'
 import {Icon} from './Icon'
 import {Button, Segmented, Sheet} from './kit'
 import {LanguagePicker} from './LanguagePicker'
@@ -43,6 +43,7 @@ export function SettingsButton() {
   const {t, n} = useI18n()
   const [theme, setTheme] = useTheme()
   const [motion, setMotion] = useMotion()
+  const [stroke, setStroke] = useStroke()
 
   return (
     <>
@@ -61,27 +62,20 @@ export function SettingsButton() {
         {/*
           * The engine, not the gauge, which is why these two are out here
           * rather than in the tachometer section below: they are facts about
-          * the motorcycle. Both are answered and greyed, and for the same
-          * reason — the analysis counts combustions, and what a count of them
-          * means in rpm is settled by the stroke and the cylinder count
-          * together. Neither is a question worth asking until the arithmetic
-          * behind it exists; until then the rows say what the app assumes.
-          *
-          * The stroke is shown at its default rather than at whatever is
-          * stored, so that a preference set before this was greyed cannot
-          * leave the dial reading one engine and the dialog claiming another.
+          * the motorcycle, and the stroke is the one thing on this screen a
+          * two-stroke rider has to change before the reading is right.
           */}
         <Segmented
           label={t('strokeLabel')}
-          value={DEFAULT_STROKE}
+          value={stroke}
           options={STROKES.map((v) => ({value: v, label: t(STROKE_KEYS[v])}))}
-          onChange={() => {}}
-          disabled
+          onChange={setStroke}
         />
         {/*
           * No divider above it: it is the same subject as the row before. The
-          * numerals go through `n` because the reader's digits are not always
-          * these ones.
+          * count is answered and greyed — the analysis is right for a single
+          * and nothing else yet, see `engineSettings` — and the numerals go
+          * through `n` because the reader's digits are not always these ones.
           */}
         <Segmented
           label={t('cylindersLabel')}

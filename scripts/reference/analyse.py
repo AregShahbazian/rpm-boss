@@ -21,14 +21,26 @@ SR = 16000
 BAND_LOW_HZ, BAND_HIGH_HZ = 60, 2000
 ENVELOPE_HZ = 150
 WINDOW_S = 1.0
-MIN_RATE, MAX_RATE = 8.0, 100.0  # pulses per second
-REVS_PER_PULSE = 2  # 4-stroke single
+MIN_RATE, MAX_RATE = 5.0, 100.0  # pulses per second, on a four-stroke
+# The search reaches a tenth past either end of the dial: a cycle shorter than
+# the shortest lag searched cannot be found, and an engine at the top has some.
+SEARCH_HEADROOM = 1.1
+REVS_PER_PULSE = 2  # 4-stroke single; a two-stroke is 1
+# How strong a divisor's own comb teeth must be, next to the ones it shares
+# with the tallest peak, to be the period rather than a twice-a-cycle sound.
+FUNDAMENTAL_MIN = 0.65
+MULTIPLE_SLACK = 0.015
+
+
+def rate_scale(revs_per_pulse):
+    """How many times faster the combustions come than on a four-stroke at the same rpm."""
+    return REVS_PER_PULSE / revs_per_pulse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FIXTURES = os.path.join(ROOT, "test", "fixtures")
 
 
-def envelope(x):
+def envelope(x, smooth_hz=ENVELOPE_HZ):
     """Bandpass, rectify, smooth — the same three sections the app applies.
 
     The band is a 2nd-order highpass cascaded with a 2nd-order lowpass rather
@@ -45,7 +57,7 @@ def envelope(x):
             butter(2, BAND_HIGH_HZ, btype="low", fs=SR, output="sos"),
         ]
     )
-    smooth = butter(2, ENVELOPE_HZ, btype="low", fs=SR, output="sos")
+    smooth = butter(2, smooth_hz, btype="low", fs=SR, output="sos")
     return sosfiltfilt(smooth, np.abs(sosfiltfilt(band, x)))
 
 
@@ -55,15 +67,70 @@ def windows(env, sr=SR):
         yield env[start : start + n]
 
 
-def window_rate(w, sr=SR):
+def tooth(ac, at):
+    """The correlation at `at`, or the best within one percent of it."""
+    slack = max(2, round(at * 0.01))
+    lo, hi = max(1, at - slack), min(len(ac) - 1, at + slack)
+    return float(np.max(ac[lo : hi + 1]))
+
+
+def peaks(ac, lag_min, lag_max):
+    """Local maxima that are also the top within a tenth of their own lag."""
+    out = []
+    for lag in range(max(1, lag_min), lag_max + 1):
+        if ac[lag] <= ac[lag - 1] or ac[lag] < ac[lag + 1]:
+            continue
+        lo, hi = max(1, int(np.floor(lag * 0.9))), min(len(ac) - 1, int(np.ceil(lag * 1.1)))
+        if np.max(ac[lo : hi + 1]) > ac[lag]:
+            continue
+        out.append(lag)
+    return out
+
+
+def fundamental_ratio(ac, lag, k, lag_max):
+    """The mean of lag's own comb teeth over the mean of those it shares with k*lag."""
+    own, shared = [], []
+    j = 1
+    while j * lag <= lag_max:
+        (shared if j % k == 0 else own).append(tooth(ac, j * lag))
+        j += 1
+    return float(np.mean(own) / np.mean(shared))
+
+
+def fundamental(ac, lag_min, lag_max):
+    """The period: the tallest peak, or the shortest divisor of it whose comb holds up."""
+    cands = peaks(ac, lag_min, lag_max)
+    if not cands:
+        return None
+    tallest = max(cands, key=lambda lag: ac[lag])
+    for lag in cands:
+        if lag >= tallest:
+            break
+        k = round(tallest / lag)
+        if k < 2 or abs(tallest - k * lag) > MULTIPLE_SLACK * tallest:
+            continue
+        if fundamental_ratio(ac, lag, k, lag_max) >= FUNDAMENTAL_MIN:
+            return lag
+    return tallest
+
+
+def rate_range(revs_per_pulse=REVS_PER_PULSE):
+    scale = rate_scale(revs_per_pulse)
+    return MIN_RATE / SEARCH_HEADROOM * scale, MAX_RATE * SEARCH_HEADROOM * scale
+
+
+def window_rate(w, sr=SR, revs_per_pulse=REVS_PER_PULSE):
     """Rate in pulses/s and a confidence, or None if the window is silent."""
     w = w - w.mean()
     if w.std() < 1e-9:
         return None
     ac = np.correlate(w, w, "full")[len(w) - 1 :]
     ac = ac / ac[0]
-    lag_min, lag_max = int(sr / MAX_RATE), int(sr / MIN_RATE)
-    k = int(np.argmax(ac[lag_min : lag_max + 1])) + lag_min
+    min_rate, max_rate = rate_range(revs_per_pulse)
+    lag_min, lag_max = int(sr / max_rate), int(sr / min_rate)
+    k = fundamental(ac, lag_min, lag_max)
+    if k is None:
+        return None
     trough = float(np.min(ac[1 : k + 1])) if k > 1 else 0.0
     confidence = float(ac[k]) - trough
     if 0 < k < len(ac) - 1:  # parabolic refinement
@@ -79,8 +146,8 @@ def window_rate(w, sr=SR):
     return sr / k, confidence
 
 
-def autocorr_rate(env):
-    got = [r for r in (window_rate(w) for w in windows(env)) if r is not None]
+def autocorr_rate(env, revs_per_pulse=REVS_PER_PULSE):
+    got = [r for r in (window_rate(w, SR, revs_per_pulse) for w in windows(env)) if r is not None]
     if not got:
         return None, 0.0
     return float(np.median([r for r, _ in got])), float(np.median([c for _, c in got]))
@@ -93,9 +160,10 @@ def peak_rate(env, rate, sr=SR):
     return len(peaks) / (len(env) / sr), peaks
 
 
-def analyse(x, sr=SR):
-    env = envelope(x.astype(np.float64))
-    rate, confidence = autocorr_rate(env)
+def analyse(x, sr=SR, revs_per_pulse=REVS_PER_PULSE):
+    """The chain, scaled to how fast this engine fires: a two-stroke is a four-stroke heard at double speed."""
+    env = envelope(x.astype(np.float64), ENVELOPE_HZ * rate_scale(revs_per_pulse))
+    rate, confidence = autocorr_rate(env, revs_per_pulse)
     if rate is None:
         return None
     peaks_per_s, positions = peak_rate(env, rate, sr)
@@ -103,7 +171,7 @@ def analyse(x, sr=SR):
         "pulsesPerS": rate,
         "confidence": confidence,
         "peakPulsesPerS": peaks_per_s,
-        "rpm": rate * 60 * REVS_PER_PULSE,
+        "rpm": rate * 60 * revs_per_pulse,
         "peakCount": len(positions),
     }
 
@@ -143,7 +211,9 @@ def main():
                         "bandHz": [BAND_LOW_HZ, BAND_HIGH_HZ],
                         "envelopeHz": ENVELOPE_HZ,
                         "windowS": WINDOW_S,
-                        "rateRange": [MIN_RATE, MAX_RATE],
+                        "rateRange": list(rate_range()),
+                        "searchHeadroom": SEARCH_HEADROOM,
+                        "fundamentalMin": FUNDAMENTAL_MIN,
                     },
                     "fixtures": out,
                 },

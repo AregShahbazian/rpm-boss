@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it} from 'vitest'
-import {DEFAULT_STROKE, readStroke} from '../src/ui/engineSettings'
+import {DEFAULT_STROKE, readStroke, revsPerPulse} from '../src/ui/engineSettings'
 
 /** The tests run under `environment: 'node'`, so storage is stubbed. */
 function stubStorage(entries?: Record<string, string>) {
@@ -50,5 +50,12 @@ describe('the engine preference', () => {
 
   it('survives no storage at all', () => {
     expect(readStroke()).toBe('4')
+  })
+})
+
+describe('the stroke, as the analysis wants it', () => {
+  it('is one revolution per combustion on a two-stroke and two on a four', () => {
+    expect(revsPerPulse('2')).toBe(1)
+    expect(revsPerPulse('4')).toBe(2)
   })
 })
