@@ -7,11 +7,9 @@
  * than one that admits it has lost the sound. Falling to zero is the only
  * behaviour, not the default of two.
  *
- * `theme.ts` is the model here, down to the tolerance for storage that throws:
- * a preference is not worth an error, and a private window that refuses
- * `localStorage` should still get a working app.
+ * The storage is `prefs.ts`, which this file used to hold its own copy of.
  */
-import {useCallback, useState} from 'react'
+import {readChoice, useChoice} from './prefs'
 
 /** How the needle travels between two readings. */
 export type Motion = 'smooth' | 'step'
@@ -23,30 +21,6 @@ export const DEFAULT_MOTION: Motion = 'smooth'
 
 const MOTION_KEY = 'rpm-boss.live.motion'
 
-function read<T extends string>(key: string, values: readonly T[], fallback: T): T {
-  try {
-    const stored = localStorage.getItem(key)
-    return values.includes(stored as T) ? (stored as T) : fallback
-  } catch {
-    return fallback
-  }
-}
+export const readMotion = (): Motion => readChoice(MOTION_KEY, MOTIONS, DEFAULT_MOTION)
 
-function write(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value)
-  } catch {
-    // no persistence available; the choice still holds for this session
-  }
-}
-
-export const readMotion = (): Motion => read(MOTION_KEY, MOTIONS, DEFAULT_MOTION)
-
-export function useMotion(): [Motion, (next: Motion) => void] {
-  const [value, setValue] = useState(readMotion)
-  const set = useCallback((next: Motion) => {
-    write(MOTION_KEY, next)
-    setValue(next)
-  }, [])
-  return [value, set]
-}
+export const useMotion = (): [Motion, (next: Motion) => void] => useChoice(MOTION_KEY, MOTIONS, DEFAULT_MOTION)

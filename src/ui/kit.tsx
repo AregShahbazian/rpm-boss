@@ -18,6 +18,7 @@
  */
 import {css} from '@emotion/react'
 import clsx from 'clsx'
+import {useId} from 'react'
 
 /**
  * How the button sits in its parent. Every value has a caller: `fill` is the
@@ -161,30 +162,25 @@ export function Sheet({
  * scrollable, searchable on Android, and already drawn in the user's language.
  * A custom dropdown would be a worse version of all three.
  *
- * Two layouts, because the settings dialog wants both. The language sits above
- * its select — its label is long in some languages and the list is the point of
- * the row. The tachometer's two sit beside theirs, which is what a row of
- * small either/or choices should look like.
+ * One caller left, the language, and one layout with it: the label sits above
+ * the select, because in some languages it is long and the list is the point of
+ * the row anyway. Every other choice in the settings is short enough to spell
+ * out in full, and those are `Segmented`. The `layout` prop went with them.
  */
 export function Picker<T extends string>({
   label,
   value,
   options,
   onChange,
-  layout = 'column',
 }: {
   label: string
   value: T
   options: readonly { value: T; label: string }[]
   onChange: (next: T) => void
-  layout?: 'column' | 'row'
 }) {
   return (
     <label
-      className={clsx(
-        'flex gap-1.5 text-[0.9rem]',
-        layout === 'row' ? 'items-center justify-between gap-3' : 'flex-col',
-      )}
+      className="flex flex-col gap-1.5 text-[0.9rem]"
       css={css`
         select {
           padding: 8px;
@@ -235,5 +231,82 @@ export function StatusText({
     >
       {children}
     </p>
+  )
+}
+
+/**
+ * A row of mutually exclusive choices, drawn as one pill split into segments.
+ *
+ * The theme used to be three stacked radio buttons, which gave a two-word
+ * choice three rows of a 320 px dialog and still looked like a form. A
+ * segmented control says the same thing in one row: every option is visible at
+ * once, which is the whole argument for it over the `<select>` next to it, and
+ * the filled segment is the answer.
+ *
+ * That argument holds for a short, closed, memorable set — the theme's three,
+ * the engine's two — and stops holding at the language's seventeen, which is
+ * why the one above it is still a `<select>`.
+ *
+ * `role="radiogroup"` rather than a `<fieldset>`: the group's name is the
+ * `<span>` beside it, on the same line, and a `<legend>` cannot be put there
+ * without fighting its own layout. Buttons, not radios, because there is
+ * nothing left of the native control to keep once it is drawn as a pill.
+ *
+ * `disabled` draws the whole group greyed with its answer still filled in,
+ * which is the point of showing it at all: the cylinder count is one, the app
+ * cannot yet do anything else, and a row that says so is more honest than no
+ * row. A control that is shown and refuses to move has to look refused, so the
+ * dimming is on the group rather than on the segments, or the unselected two
+ * would fade into the background and leave it looking merely answered.
+ */
+export function Segmented<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  disabled = false,
+}: {
+  label: string
+  value: T
+  options: readonly { value: T; label: string }[]
+  onChange: (next: T) => void
+  /** Shown, answered, and not yet changeable. */
+  disabled?: boolean
+}) {
+  const id = useId()
+  return (
+    <div className="flex items-center justify-between gap-3 text-[0.9rem]">
+      <span id={id} className="flex-none text-muted">{label}</span>
+      <div
+        role="radiogroup"
+        aria-labelledby={id}
+        aria-disabled={disabled || undefined}
+        className={clsx(
+          'flex min-w-0 flex-auto rounded-full border border-solid border-btn p-0.5',
+          disabled && 'opacity-50',
+        )}
+      >
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            role="radio"
+            aria-checked={value === o.value}
+            disabled={disabled}
+            onClick={() => onChange(o.value)}
+            className={clsx(
+              // 44 px inside a 48 px track: the same target the buttons keep,
+              // because a thumb does not know it is in a settings dialog.
+              'min-w-0 flex-1 truncate rounded-full border-0 px-1 text-[0.85rem]/[normal]',
+              'min-h-11',
+              disabled ? 'cursor-default' : 'cursor-pointer active:opacity-70',
+              value === o.value ? 'bg-accent text-bg' : 'bg-transparent text-muted',
+            )}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }

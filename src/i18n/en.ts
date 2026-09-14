@@ -121,7 +121,21 @@ export const en = {
   // The app's own default: light text on a dark background.
   themeDark: 'Dark',
 
-  // Heads the collapsed section of the settings holding the two below.
+  // Labels the choice of engine cycle, above the tachometer section. Two-stroke
+  // engines fire once per revolution and four-strokes every other one, so the
+  // answer will eventually decide how a count of combustions becomes an rpm.
+  strokeLabel: 'Engine',
+  // An engine that fires on every revolution. Written as riders write it.
+  strokeTwo: '2-stroke',
+  // An engine that fires every other revolution. Almost every bike on the road.
+  strokeFour: '4-stroke',
+
+  // Labels the cylinder count, which is shown answered and greyed: the analysis
+  // is right for a single and nothing else yet, and saying so beside the engine
+  // is better than letting a twin read high without explanation.
+  cylindersLabel: 'Cylinders',
+
+  // Heads the collapsed section of the settings holding the one below.
   tachoSettings: 'Tachometer settings',
   // Labels the choice of how the needle travels between two readings.
   liveMotionLabel: 'Needle movement',
