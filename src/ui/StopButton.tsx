@@ -3,19 +3,28 @@ import {Icon} from './Icon'
 import {Button} from './kit'
 
 /**
- * Ends live mode, and says so by being the wrong size.
+ * Ends live mode, and says so by being the wrong size: 96 px wide in a row of
+ * 48 px squares, so it is not mistaken for a fifth source. It joins the source
+ * row rather than the stage, because it belongs with the things that decide
+ * what the app is listening to.
  *
- * It joins the source row rather than the stage, because it belongs with the
- * things that decide what the app is listening to. Twice an icon button wide
- * in portrait, so it is not mistaken for a fifth source; the full width of the
- * row in landscape, where the row wraps and this takes the line below — see
- * the `stop` shape in `kit.tsx`.
+ * The wrapper is what puts it on the line below in landscape. Width on the
+ * button itself cannot do it: a flex line breaks on the item's basis *after*
+ * its own max-width has clamped it, so anything narrow enough to look right
+ * is narrow enough to fit on the line above. A full-width wrapper breaks the
+ * line and the button keeps its size inside it.
+ *
+ * And the line has to break, or the control column — which is as wide as its
+ * widest row — grows by this button the moment live mode starts, with the
+ * stage shrinking under it.
  */
 export function StopButton({onStop}: { onStop: () => void }) {
   const {t} = useI18n()
   return (
-    <Button shape="stop" tone="record" aria-label={t('stopListening')} onClick={onStop}>
-      <Icon icon="mdi:stop"/>
-    </Button>
+    <div className="split:w-full">
+      <Button shape="stop" tone="record" aria-label={t('stopListening')} onClick={onStop}>
+        <Icon icon="mdi:stop"/>
+      </Button>
+    </div>
   )
 }

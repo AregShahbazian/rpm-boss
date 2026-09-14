@@ -34,15 +34,10 @@ const SHAPE: Record<Shape, string> = {
   fit: 'flex-none justify-center px-5',
   /*
    * Twice an icon button and never more: 96 px against a 48 px height, which
-   * is the odd one out in a row of squares without becoming a slab.
-   *
-   * Landscape needs the same width but a line of its own, or the control
-   * column grows by the width of this button the moment live mode starts and
-   * the stage shrinks under it. A flex basis of the whole row is what forces
-   * the break; the max-width then clamps what the basis asked for, because a
-   * flex item's base size is bounded by its own max-width.
+   * is the odd one out in a row of squares without becoming a slab. Where it
+   * sits is `StopButton`'s business, not this one's.
    */
-  stop: 'w-24 flex-none justify-center p-0 split:[flex:0_0_100%] split:max-w-24',
+  stop: 'w-24 flex-none justify-center p-0',
 }
 
 /** `className` is omitted on purpose: see the note above. The compiler enforces it. */
