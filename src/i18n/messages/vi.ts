@@ -12,6 +12,8 @@ export const messages: Messages = {
   statusRecording: 'Đang ghi. Đưa điện thoại lại gần động cơ.',
   statusRecorded: 'Đã ghi - {duration}',
   dismiss: 'Đóng',
+  cancel: 'Hủy',
+  download: 'Tải xuống',
   openAudio: 'Mở âm thanh',
   pickSample: 'Thử một mẫu',
   record: 'Ghi âm',

@@ -12,6 +12,8 @@ export const messages: Messages = {
   statusRecording: 'Grabando. Acerca el teléfono al motor.',
   statusRecorded: 'Grabado - {duration}',
   dismiss: 'Cerrar',
+  cancel: 'Cancelar',
+  download: 'Descargar',
   openAudio: 'Abrir audio',
   pickSample: 'Probar un ejemplo',
   record: 'Grabar',

@@ -12,6 +12,8 @@ export const messages: Messages = {
   statusRecording: 'Ձայնագրվում է։ Հեռախոսը մոտ պահեք շարժիչին։',
   statusRecorded: 'Ձայնագրված է - {duration}',
   dismiss: 'Փակել',
+  cancel: 'Չեղարկել',
+  download: 'Ներբեռնել',
   openAudio: 'Բացել ձայնագրություն',
   pickSample: 'Փորձել նմուշը',
   record: 'Ձայնագրել',

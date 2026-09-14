@@ -12,6 +12,8 @@ export const messages: Messages = {
   statusRecording: 'Merakam. Dekatkan telefon ke enjin.',
   statusRecorded: 'Dirakam - {duration}',
   dismiss: 'Tutup',
+  cancel: 'Batal',
+  download: 'Muat turun',
   openAudio: 'Buka audio',
   pickSample: 'Cuba sampel',
   record: 'Rakam',

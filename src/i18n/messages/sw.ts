@@ -12,6 +12,8 @@ export const messages: Messages = {
   statusRecording: 'Inarekodi. Sogeza simu karibu na injini.',
   statusRecorded: 'Imerekodiwa - {duration}',
   dismiss: 'Funga',
+  cancel: 'Ghairi',
+  download: 'Pakua',
   openAudio: 'Fungua sauti',
   pickSample: 'Jaribu sampuli',
   record: 'Rekodi',

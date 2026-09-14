@@ -22,6 +22,13 @@ export const en = {
   statusRecorded: 'Recorded - {duration}',
   // Clears an error message so the user can try again.
   dismiss: 'Dismiss',
+  // Unloads the clip and puts the screen back to empty. Next to the name, not
+  // a button: it undoes the last thing done rather than doing something.
+  cancel: 'Cancel',
+  // Saves a recording as a file. On Android there is no download folder to
+  // drop it in, so this opens the share sheet instead — "Save to Files" is one
+  // of the things on it.
+  download: 'Download',
 
   // The upload button's accessible name. It shows only an icon, so this is
   // the whole of what a screen reader has to announce. Not "upload": nothing

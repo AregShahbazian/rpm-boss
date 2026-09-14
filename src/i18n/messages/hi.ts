@@ -12,6 +12,8 @@ export const messages: Messages = {
   statusRecording: 'रिकॉर्ड हो रहा है। फ़ोन इंजन के पास रखें।',
   statusRecorded: 'रिकॉर्ड किया गया - {duration}',
   dismiss: 'बंद करें',
+  cancel: 'रद्द करें',
+  download: 'डाउनलोड',
   openAudio: 'ऑडियो खोलें',
   pickSample: 'नमूना आज़माएँ',
   record: 'रिकॉर्ड',

@@ -12,6 +12,8 @@ export const messages: Messages = {
   statusRecording: 'ریکارڈ ہو رہا ہے۔ فون انجن کے قریب رکھیں۔',
   statusRecorded: 'ریکارڈ ہو گیا - {duration}',
   dismiss: 'بند کریں',
+  cancel: 'منسوخ کریں',
+  download: 'ڈاؤن لوڈ',
   openAudio: 'آڈیو کھولیں',
   pickSample: 'نمونہ آزمائیں',
   record: 'ریکارڈ',

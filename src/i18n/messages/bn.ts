@@ -12,6 +12,8 @@ export const messages: Messages = {
   statusRecording: 'রেকর্ড হচ্ছে। ফোনটি ইঞ্জিনের কাছে ধরুন।',
   statusRecorded: 'রেকর্ড করা হয়েছে - {duration}',
   dismiss: 'বন্ধ',
+  cancel: 'বাতিল',
+  download: 'ডাউনলোড',
   openAudio: 'অডিও খুলুন',
   pickSample: 'নমুনা শুনে দেখুন',
   record: 'রেকর্ড',

@@ -12,6 +12,8 @@ export const messages: Messages = {
   statusRecording: 'Идёт запись. Держите телефон у двигателя.',
   statusRecorded: 'Записано - {duration}',
   dismiss: 'Закрыть',
+  cancel: 'Отмена',
+  download: 'Скачать',
   openAudio: 'Открыть аудио',
   pickSample: 'Попробовать пример',
   record: 'Записать',

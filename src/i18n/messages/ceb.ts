@@ -12,6 +12,8 @@ export const messages: Messages = {
   statusRecording: 'Nagrekord. Iduol ang telepono sa makina.',
   statusRecorded: 'Na-record - {duration}',
   dismiss: 'Sirad-i',
+  cancel: 'Kanselahon',
+  download: 'I-download',
   openAudio: 'Ablihi ang audio',
   pickSample: 'Sulayi ang sample',
   record: 'Irekord',

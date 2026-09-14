@@ -1,15 +1,17 @@
 import type {AudioInputState, InputStatus} from '../state/useAudioInput'
 import {duration, useI18n} from '../i18n'
 import {INPUT_ERROR_KEYS} from './errorKeys'
-import {MIN_CLIP_S} from '../audio/types'
+import {type AudioClip, MIN_CLIP_S} from '../audio/types'
 import {LinkButton, StatusText} from './kit'
 
 interface Props {
   state: AudioInputState
   onDismiss: () => void
+  onClear: () => void
+  onSave: () => void
 }
 
-export function StatusLine({state, onDismiss}: Props) {
+export function StatusLine({state, onDismiss, onClear, onSave}: Props) {
   const {t, lang} = useI18n()
 
   /**
@@ -35,19 +37,8 @@ export function StatusLine({state, onDismiss}: Props) {
         return <StatusText>{t('statusDecoding')}</StatusText>
       case 'recording':
         return <StatusText>{t('statusRecording')}</StatusText>
-      case 'loaded': {
-        // A file says its own name; a recording's name is a timestamp the app
-        // invented, and repeating it back says nothing the user did not just
-        // watch happen.
-        const length = duration(Number((state.clip?.durationS ?? 0).toFixed(1)), lang)
-        return (
-          <StatusText>
-            {state.clip?.source.kind === 'mic'
-              ? t('statusRecorded', {duration: length})
-              : `${state.clip?.source.name ?? ''} - ${length}`}
-          </StatusText>
-        )
-      }
+      case 'loaded':
+        return state.clip ? <LoadedLine clip={state.clip} onClear={onClear} onSave={onSave}/> : null
     }
   }
 
@@ -65,5 +56,38 @@ export function StatusLine({state, onDismiss}: Props) {
       )}
       {settledLine()}
     </>
+  )
+}
+
+/**
+ * What is loaded, and what can be done with it, on one line.
+ *
+ * The actions are link-styled rather than buttons, and for the same reason
+ * Dismiss is: they sit inside a line of prose, and a third and fourth filled
+ * button on this screen would compete with Record and Calculate for an eye
+ * that should be going to those. They are pushed to the end of the line so the
+ * name keeps the left edge and can truncate into the space they leave.
+ *
+ * Only a recording can be downloaded. A file that came off the device is
+ * already on the device, and offering to give it back would be offering a
+ * worse copy of it: what the app holds is 16 kHz mono, not what was opened.
+ */
+function LoadedLine({clip, onClear, onSave}: {clip: AudioClip; onClear: () => void; onSave: () => void}) {
+  const {t, lang} = useI18n()
+  // A file says its own name; a recording's name is a timestamp the app
+  // invented, and repeating it back says nothing the user did not just watch
+  // happen.
+  const recorded = clip.source.kind === 'mic'
+  const length = duration(Number(clip.durationS.toFixed(1)), lang)
+  return (
+    <div className="flex items-baseline gap-3">
+      <div className="min-w-0 flex-auto">
+        <StatusText>{recorded ? t('statusRecorded', {duration: length}) : `${clip.source.name} - ${length}`}</StatusText>
+      </div>
+      <div className="flex shrink-0 gap-3">
+        {recorded && <LinkButton onClick={onSave}>{t('download')}</LinkButton>}
+        <LinkButton onClick={onClear}>{t('cancel')}</LinkButton>
+      </div>
+    </div>
   )
 }

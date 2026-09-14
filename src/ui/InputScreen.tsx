@@ -5,6 +5,7 @@ import {useAudioInput} from '../state/useAudioInput'
 import type {ExpectedRange} from '../dsp/types'
 import {FEATURES} from '../features'
 import {useI18n} from '../i18n'
+import {saveClip} from '../audio/save'
 import {SPLIT, TALL} from './breakpoints'
 import {Button} from './kit'
 import {Player} from './Player'
@@ -113,7 +114,7 @@ const SCREEN_EMPTY = css`
 `
 
 export function InputScreen() {
-  const {state, getWindowClip, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection} =
+  const {state, getWindowClip, upload, startRecording, stopRecording, clear, dismissError, togglePlay, setSelection} =
     useAudioInput()
   const [range, setRange] = useState({minRpm: '', maxRpm: ''})
   const {t} = useI18n()
@@ -137,6 +138,14 @@ export function InputScreen() {
         : undefined,
     [analysis, analysedWindow],
   )
+
+  const onSave = () => {
+    // Nothing to say if it fails: the browser's own download UI reports its
+    // problems, and on Android a dismissed share sheet rejects the same way a
+    // failed write does. Worth seeing while developing, not worth a line of
+    // the screen.
+    if (state.clip) void saveClip(state.clip).catch((e) => import.meta.env.DEV && console.error('save failed', e))
+  }
 
   const onCalculate = () => {
     const clip = getWindowClip()
@@ -166,7 +175,7 @@ export function InputScreen() {
         <SettingsButton/>
       </div>
       <div className="[grid-area:status]">
-        <StatusLine state={state} onDismiss={dismissError}/>
+        <StatusLine state={state} onDismiss={dismissError} onClear={clear} onSave={onSave}/>
       </div>
       {state.clip && state.status !== 'recording' && (
         <>

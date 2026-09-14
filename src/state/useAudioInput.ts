@@ -120,6 +120,28 @@ export function useAudioInput() {
     setState((s) => (s.status === 'recording' ? {...s, status: 'decoding'} : s))
   }, [])
 
+  /**
+   * Back to empty, as if nothing had been loaded.
+   *
+   * `clipId` still rises. It is what everything downstream keys off to notice
+   * "different clip now" — the analysis drops its result on it — and a clear
+   * is exactly that kind of change, so going back to the old id would leave a
+   * number on screen for a recording that is no longer there.
+   */
+  const clear = useCallback(() => {
+    recording.current?.stop()
+    recording.current = undefined
+    disposePlayer()
+    setState((s) => ({
+      status: 'idle',
+      clipId: s.clipId + 1,
+      selection: {startS: 0, endS: 0},
+      elapsedS: 0,
+      playing: false,
+      positionS: 0,
+    }))
+  }, [])
+
   const dismissError = useCallback(() => {
     setState((s) => ({...s, status: s.clip ? 'loaded' : 'idle', error: undefined}))
   }, [])
@@ -166,5 +188,5 @@ export function useAudioInput() {
     [state.clip, state.selection],
   )
 
-  return {state, getWindowClip, upload, startRecording, stopRecording, dismissError, togglePlay, setSelection}
+  return {state, getWindowClip, upload, startRecording, stopRecording, clear, dismissError, togglePlay, setSelection}
 }

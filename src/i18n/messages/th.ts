@@ -12,6 +12,8 @@ export const messages: Messages = {
   statusRecording: 'กำลังอัด ถือโทรศัพท์ใกล้เครื่องยนต์',
   statusRecorded: 'บันทึกแล้ว - {duration}',
   dismiss: 'ปิด',
+  cancel: 'ยกเลิก',
+  download: 'ดาวน์โหลด',
   openAudio: 'เปิดไฟล์เสียง',
   pickSample: 'ลองตัวอย่างเสียง',
   record: 'อัดเสียง',
