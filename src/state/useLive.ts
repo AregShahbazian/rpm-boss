@@ -171,14 +171,24 @@ export function useLive(onError: (code: InputErrorCode) => void) {
           t.skipped++
           return
         }
+        /*
+         * Bound to a local, and checked. As `client.current?.run(...)` this
+         * was one refactor away from freezing the loop for good: an undefined
+         * client short-circuits the whole chain, `then` included, so the flag
+         * below would never be cleared and every later tick would return at
+         * the line above it — a live mode that is running, drawing, and never
+         * measuring again.
+         */
+        const worker = client.current
+        if (!worker) return
         running.current = true
         const startedAt = performance.now()
 
         // The snapshot buffer is reused, and `run` structured-clones it on the
         // way into the worker, so there is nothing to wait for here.
         const window = buffer.snapshot()
-        void client.current
-          ?.run({
+        void worker
+          .run({
             sampleRate: SAMPLE_RATE,
             samples: window,
             durationS: LIVE_WINDOW_S,
@@ -187,7 +197,6 @@ export function useLive(onError: (code: InputErrorCode) => void) {
           .then((result) => {
             // Stopped, or restarted, while this was in the worker.
             if (era !== generation.current) return
-            running.current = false
             const ms = performance.now() - startedAt
             t.runs++
             t.sumMs += ms
@@ -217,6 +226,19 @@ export function useLive(onError: (code: InputErrorCode) => void) {
             history.push(result.rpm)
             if (history.length > LIVE_SMOOTH_N) history.shift()
             setLive({status: 'listening', reading: median(history), quiet: false, stats})
+          })
+          /*
+           * The flag is cleared here rather than in `then`, so that a rejection
+           * unblocks the loop too. `AnalysisClient.run` is documented to settle
+           * every request, failures included — but this loop should not be the
+           * thing that depends on that promise staying kept.
+           *
+           * The era is checked again: a result from a stopped run must not
+           * clear the flag of the run that replaced it, or two analyses would
+           * be in the worker at once.
+           */
+          .finally(() => {
+            if (era === generation.current) running.current = false
           })
       }, LIVE_INTERVAL_MS)
     },

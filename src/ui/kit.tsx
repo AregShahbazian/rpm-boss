@@ -58,9 +58,13 @@ export function Button({shape = 'fill', tone = 'default', ...rest}: ButtonProps)
         // `text-base` would also set a 1.5 line-height; the rules this replaces set
         // only the size, and the difference moves the glyphs by a fraction of a
         // pixel inside the centred box.
-        'inline-flex min-h-12 items-center gap-2 rounded-[10px] border-0 text-base/[normal]',
+        'inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-[10px] border-0 text-base/[normal]',
         'disabled:cursor-default disabled:opacity-50',
-        tone === 'record' ? 'bg-error text-white' : 'cursor-pointer bg-btn text-fg',
+        // The cursor belongs to every button, not to one tone. It used to sit
+        // in the branch below, which left the two red ones — stop recording,
+        // stop listening — as the only things on the screen that did not say
+        // they could be pressed.
+        tone === 'record' ? 'bg-error text-white' : 'bg-btn text-fg',
         SHAPE[shape],
       )}
     />
