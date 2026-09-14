@@ -1,7 +1,7 @@
 import {useRef} from 'react'
 import {useI18n} from '../i18n'
 import {Button} from './kit'
-import {Icon} from "./Icon.tsx";
+import {Icon} from './Icon.tsx';
 
 interface Props {
   disabled?: boolean
@@ -24,8 +24,8 @@ export function UploadButton({disabled, onFile}: Props) {
           if (f) onFile(f)
         }}
       />
-      <Button shape={"icon"} aria-label={t('openAudio')} disabled={disabled} onClick={() => input.current?.click()}>
-        <Icon icon={"ant-design:file-add-filled"}/>
+      <Button shape={'icon'} aria-label={t('openAudio')} disabled={disabled} onClick={() => input.current?.click()}>
+        <Icon icon={'ant-design:file-add-filled'}/>
       </Button>
     </>
   )

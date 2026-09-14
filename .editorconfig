@@ -30,6 +30,14 @@ trim_trailing_whitespace = false
 # ---------------------------------------------------------------------------
 
 [*.{js,jsx,ts,tsx,mjs,cjs}]
+# Single quotes, and reformatting converts the odd double-quoted one rather
+# than leaving it where it landed. `quote_type` is the same statement for
+# tooling that is not WebStorm.
+quote_type = single
+ij_typescript_use_double_quotes = false
+ij_typescript_force_quote_style = true
+ij_javascript_use_double_quotes = false
+ij_javascript_force_quote_style = true
 # `{useMemo, useState}`, not `{ useMemo, useState }`.
 ij_typescript_spaces_within_imports = false
 ij_typescript_spaces_within_object_literal_braces = false
@@ -53,5 +61,9 @@ ij_javascript_align_multiline_parameters_in_calls = false
 # re-indented every template literal in the reformat.
 [*.css]
 indent_size = 2
+# `@import 'tailwindcss/theme.css'`, and the quoted names in
+# `grid-template-areas`.
+ij_css_use_double_quotes = false
+ij_css_enforce_quotes_on_format = true
 ij_css_keep_blank_lines_in_code = 1
 ij_css_keep_single_line_blocks = true

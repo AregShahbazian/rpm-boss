@@ -33,7 +33,7 @@ export const en = {
   record: 'Record',
   // Ends the recording early. The counter is drawn beside this, in a
   // monospaced font, which is no font at all for several of these scripts.
-  stopRecording: "Stop",
+  stopRecording: 'Stop',
   // Plays back the selected part of the recording.
   play: 'Play',
   // Stops playback.
@@ -52,7 +52,7 @@ export const en = {
   rpm: 'rpm',
   // How many combustions the analysis found. {count} is a whole number.
   // The noun is named rather than left implicit: "75 marked" does not say what.
-  marked: "{count} combustions marked",
+  marked: '{count} combustions marked',
   // The expected range doubled the reading, so each mark is two combustions.
   octaveUp: 'your range says each mark is two combustions',
   // The expected range halved the reading, so two marks are one combustion.
@@ -79,7 +79,7 @@ export const en = {
 
   // Anything that went wrong without a name of its own. Deliberately
   // neutral: an upload that fails must not blame the microphone.
-  errorUnknown: "Something went wrong. Try again.",
+  errorUnknown: 'Something went wrong. Try again.',
 
   // The selected part is shorter than the analysis needs. {duration} is a length.
   errorWindowTooShort: 'Choose at least {duration}.',
