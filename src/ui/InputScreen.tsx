@@ -3,6 +3,7 @@ import {useMemo, useState} from 'react'
 import {useAnalysis} from '../state/useAnalysis'
 import {useAudioInput} from '../state/useAudioInput'
 import type {ExpectedRange} from '../dsp/types'
+import {FEATURES} from '../features'
 import {useI18n} from '../i18n'
 import {SPLIT, TALL} from './breakpoints'
 import {Button} from './kit'
@@ -25,6 +26,17 @@ import {type Marks, WaveformBlock} from './WaveformBlock'
  * Each child names its own `grid-area`, so this block owns the shape and
  * nothing else owns a piece of it.
  */
+/**
+ * A grid row, or nothing at all.
+ *
+ * A named area with no element in it is still a row: it collapses to no
+ * height, but the gap above and below it is still drawn, so switching the
+ * fields off would leave a double gap where they used to be. Taking the row
+ * out of the template is what actually removes it — and the track with it, in
+ * the split layout, where the rows are listed explicitly.
+ */
+const withRange = (value: string) => (FEATURES.expectedRange ? value : '')
+
 const SCREEN = css`
   display: grid;
   gap: var(--gap);
@@ -32,7 +44,7 @@ const SCREEN = css`
   margin-inline: auto;
   padding-block: calc(24px + var(--safe-t)) calc(24px + var(--safe-b));
   padding-inline: calc(16px + var(--safe-l)) calc(16px + var(--safe-r));
-  grid-template-areas: 'source' 'status' 'wave' 'transport' 'range' 'calc' 'result';
+  grid-template-areas: 'source' 'status' 'wave' 'transport' ${withRange("'range'")} 'calc' 'result';
 
   /*
    * The split needs width *and* a landscape shape. Width alone put a portrait
@@ -59,13 +71,13 @@ const SCREEN = css`
      * bottom, the number with air around it — and the detail view carries the
      * cap that stops the waveform growing without limit.
      */
-    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto minmax(0, 1fr) ${withRange('auto')} auto;
     grid-template-columns: minmax(0, var(--col)) minmax(0, 1fr);
     grid-template-areas:
       'source wave'
       'status wave'
       'result wave'
-      'range  wave'
+      ${withRange("'range  wave'")}
       'calc   transport';
   }
 
@@ -175,9 +187,11 @@ export function InputScreen() {
               onToggle={togglePlay}
             />
           </div>
-          <div className="[grid-area:range]">
-            <RangeFields {...range} disabled={running} onChange={setRange}/>
-          </div>
+          {FEATURES.expectedRange && (
+            <div className="[grid-area:range]">
+              <RangeFields {...range} disabled={running} onChange={setRange}/>
+            </div>
+          )}
           <div className="flex [grid-area:calc]">
             <Button disabled={busy || running} onClick={onCalculate}>
               {t('calculate')}
