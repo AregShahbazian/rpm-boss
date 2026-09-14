@@ -46,12 +46,10 @@ export function LiveStage({live, ring, rpm, motion, onStart}: Props) {
         <div className="min-h-0">
           <Tacho rpm={rpm} motion={motion}/>
         </div>
-        {/* One line, not a second box: the figure belongs to the dial and is
-            divided from it, not set apart from it. `border-0` first, because
-            `border-solid` sets the style on all four edges and without
-            Preflight the other three would then draw themselves at the
-            initial `medium` width — a box, not a line. */}
-        <div className="flex items-center justify-center border-0 border-t border-solid border-muted/40">
+        {/* No rule between the dial and its figure. The gap says it, and a
+            line across a screen this sparse reads as a box that lost three
+            of its sides. */}
+        <div className="flex items-center justify-center">
           {/* The unit under the figure, not beside it. Beside it, the two
               compete for the same line in a strip that is a fifth of the
               stage; under it, the figure gets the whole width and the unit
