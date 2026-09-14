@@ -4,6 +4,8 @@ import {loadFile} from '../audio/load'
 import {createPlayer, type Player} from '../audio/player'
 import {record, type Recording} from '../audio/record'
 import {type AudioClip, InputError, type InputErrorCode, MAX_RECORD_S} from '../audio/types'
+import {Ring} from '../live/ring'
+import {batcher} from '../live/stream'
 import {defaultSelection, type Selection} from '../waveform/selection'
 
 const POSITION_STEP_S = 0.05
@@ -45,6 +47,15 @@ export function useAudioInput() {
     positionS: 0
   })
   const recording = useRef<Recording>(undefined)
+  /**
+   * The last couple of seconds of the take, for the screen to draw.
+   *
+   * A recording used to be invisible until it ended. It is the same audio the
+   * clip will be made of — the recorder still decides what is kept — read a
+   * second time on its way past, so the rider can see the microphone is
+   * hearing the engine before committing to ten seconds of it.
+   */
+  const recordRing = useRef<Ring>(undefined)
   const player = useRef<Player>(undefined)
   const raf = useRef<number>(undefined)
 
@@ -112,15 +123,29 @@ export function useAudioInput() {
     // nothing until the file was loaded again.
     stopPlayback()
     setState((s) => ({...s, status: 'recording', elapsedS: 0, error: undefined, playing: false, positionS: 0}))
+
+    const ring = new Ring()
+    recordRing.current = ring
+    // Made on the first chunk, because only then is the microphone's own rate
+    // known; it batches render quanta before resampling, since the resampler
+    // zero-pads its edges and a 128-frame chunk would be mostly edge.
+    let feed: ((frames: Float32Array) => void) | undefined
+
     recording.current = record({
       maxS: MAX_RECORD_S,
       onTick: (elapsedS) => setState((s) => (s.status === 'recording' ? {...s, elapsedS} : s)),
+      onChunk: (frames, sampleRate) => {
+        feed ??= batcher(sampleRate, (samples) => ring.push(samples))
+        feed(frames)
+      },
       onDone: (clip) => {
         recording.current = undefined
+        recordRing.current = undefined
         setClip(clip)
       },
       onError: (e) => {
         recording.current = undefined
+        recordRing.current = undefined
         fail(e)
       },
     })
@@ -201,6 +226,7 @@ export function useAudioInput() {
 
   return {
     state,
+    recordRing,
     getWindowClip,
     upload,
     startRecording,

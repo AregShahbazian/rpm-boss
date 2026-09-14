@@ -179,15 +179,21 @@ public class RawAudioPlugin extends Plugin {
             while (t.running) {
                 int read = t.recorder.read(buffer, 0, CHUNK_BYTES);
                 if (read > 0) {
+                    // Every slice goes out as an event, in both modes. 2048
+                    // frames a slice is about eight crossings a second at
+                    // 16 kHz: small enough that base64 over the bridge costs
+                    // nothing worth measuring, large enough that the web side
+                    // is not woken per render quantum. A buffered take emits
+                    // too, because the screen draws the waveform while the
+                    // recording runs and the audio is otherwise not in reach
+                    // of JavaScript until the take ends.
+                    JSObject frames = new JSObject();
+                    frames.put("pcm16", Base64.encodeToString(buffer, 0, read, Base64.NO_WRAP));
+                    frames.put("sampleRate", t.rate);
+                    notifyListeners("frames", frames);
+
                     if (t.stream) {
-                        // 2048 frames a slice, so about eight crossings a
-                        // second at 16 kHz. Small enough that base64 over the
-                        // bridge costs nothing worth measuring, large enough
-                        // that the web side is not woken per render quantum.
-                        JSObject frames = new JSObject();
-                        frames.put("pcm16", Base64.encodeToString(buffer, 0, read, Base64.NO_WRAP));
-                        frames.put("sampleRate", t.rate);
-                        notifyListeners("frames", frames);
+                        // Nothing is kept: the cap counts what was emitted.
                         t.streamed += read;
                         if (t.streamed >= t.maxBytes) t.running = false;
                     } else {

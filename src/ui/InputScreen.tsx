@@ -10,6 +10,7 @@ import {saveClip} from '../audio/save'
 import {SPLIT, TALL} from './breakpoints'
 import {Button} from './kit'
 import {useMotion} from './liveSettings'
+import {LiveScope} from './LiveScope'
 import {LiveStage} from './LiveStage'
 import {Player} from './Player'
 import {RangeFields} from './RangeFields'
@@ -134,6 +135,7 @@ const SCREEN_EMPTY = css`
 export function InputScreen() {
   const {
     state,
+    recordRing,
     getWindowClip,
     upload,
     startRecording,
@@ -233,6 +235,17 @@ export function InputScreen() {
       {stage && (
         <div className="min-h-0 [grid-area:stage]">
           <LiveStage live={live} ring={ring} rpm={rpm} motion={motion} onStart={start}/>
+        </div>
+      )}
+      {/* A take draws itself. The stage is the tachometer's at rest, and for
+          these ten seconds it is the signal being recorded — the whole area in
+          landscape, a band across the middle in portrait, where a full-height
+          waveform would be a wall. */}
+      {state.status === 'recording' && (
+        <div className="grid min-h-0 items-center [grid-area:stage] split:items-stretch">
+          <div className="h-[clamp(120px,32dvh,280px)] w-full split:h-full">
+            <LiveScope ring={recordRing}/>
+          </div>
         </div>
       )}
       {state.clip && state.status !== 'recording' && (

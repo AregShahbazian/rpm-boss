@@ -88,15 +88,18 @@ function timeLabel(d = new Date()): string {
  * countdown, and an `AudioClip` through the same `decodeToClip`. Nothing above
  * this ever learns which recorder ran.
  */
-export function recordNative({maxS = MAX_RECORD_S, onTick, onDone, onError}: RecordOptions): Recording {
+export function recordNative({maxS = MAX_RECORD_S, onTick, onChunk, onDone, onError}: RecordOptions): Recording {
   let stopped = false
   let finished = false
   let ticker: ReturnType<typeof setInterval> | undefined
   let hardStop: ReturnType<typeof setTimeout> | undefined
+  let listener: PluginListenerHandle | undefined
 
   const clearTimers = () => {
     if (ticker) clearInterval(ticker)
     if (hardStop) clearTimeout(hardStop)
+    void listener?.remove()
+    listener = undefined
   }
 
   const finish = async () => {
@@ -123,6 +126,14 @@ export function recordNative({maxS = MAX_RECORD_S, onTick, onDone, onError}: Rec
 
   void (async () => {
     try {
+      // Attached before start, and only when someone is drawing: the reader
+      // thread emits from the moment the recorder opens, and a slice with
+      // nobody listening is just gone.
+      if (onChunk) {
+        listener = await RawAudio.addListener('frames', (event) => {
+          if (!stopped) onChunk(pcm16ToFloat(decodeBase64(event.pcm16)), event.sampleRate)
+        })
+      }
       const started = await RawAudio.start({maxS})
       lastSource = started.source
       if (import.meta.env.DEV) console.info('[rec] native source', started)

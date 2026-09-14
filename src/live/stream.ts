@@ -58,7 +58,7 @@ function micError(e: unknown): InputError {
  * chunk at 16 kHz. A rate already at 16 kHz — which is what the native
  * recorder asks for first — passes straight through.
  */
-function batcher(sampleRate: number, onChunk: (samples: Float32Array) => void) {
+export function batcher(sampleRate: number, onChunk: (samples: Float32Array) => void) {
   const held: Float32Array[] = []
   let heldFrames = 0
 

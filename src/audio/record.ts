@@ -6,6 +6,15 @@ import {type AudioClip, InputError, MAX_RECORD_S, SAMPLE_RATE} from './types'
 export interface RecordOptions {
   maxS?: number
   onTick?: (elapsedS: number) => void
+  /**
+   * The audio as it arrives, at whatever rate the microphone opened at.
+   *
+   * A take is otherwise invisible until it ends — natively it is held in a
+   * buffer the web side cannot see — and the screen now draws the waveform
+   * while the recording runs. Nothing here decides what is kept; that is still
+   * the recorder's business.
+   */
+  onChunk?: (frames: Float32Array, sampleRate: number) => void
   onDone: (clip: AudioClip) => void
   onError: (err: InputError) => void
 }
@@ -80,7 +89,7 @@ export function record(options: RecordOptions): Recording {
   return Capacitor.isNativePlatform() ? recordNative(options) : recordWorklet(options)
 }
 
-export function recordWorklet({maxS = MAX_RECORD_S, onTick, onDone, onError}: RecordOptions): Recording {
+export function recordWorklet({maxS = MAX_RECORD_S, onTick, onChunk, onDone, onError}: RecordOptions): Recording {
   let stream: MediaStream | undefined
   let context: AudioContext | undefined
   let stopped = false
@@ -163,6 +172,7 @@ export function recordWorklet({maxS = MAX_RECORD_S, onTick, onDone, onError}: Re
 
       capture.port.onmessage = (event: MessageEvent<Float32Array>) => {
         chunks.push(event.data)
+        onChunk?.(event.data, context?.sampleRate ?? SAMPLE_RATE)
         if (heardSomething || stopped) return
         if (event.data.some((v) => v !== 0)) {
           heardSomething = true
