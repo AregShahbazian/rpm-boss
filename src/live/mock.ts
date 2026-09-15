@@ -1,106 +1,149 @@
 /**
- * A microphone that is not one: ten seconds of a real engine, looped.
+ * A microphone that is not one: an engine the app synthesises for itself.
  *
- * Live mode can only be tested next to a running motorcycle, which is a poor
- * place to hold a laptop. This wears exactly the interface the real capture
- * wears — same options, same `LiveCapture` back — so the ring, the worker, the
- * smoothing, the needle and the scope are handed the same shape of data at the
- * same rate and cannot tell which one they got.
+ * It exists twice over. Live mode is otherwise only testable next to a running
+ * motorcycle, which is a poor place to hold a laptop — and the web build at
+ * areg.nl is a demo, where a visitor with no engine in the room would otherwise
+ * find the app's main feature to be a dial at zero and a permission prompt.
  *
- * It is a developer's tool, gated by `FEATURES.mockLive` and by the samples
- * being in the build at all. Nothing about it ships switched on.
+ * It wears exactly the interface the real capture wears — same options, same
+ * `LiveCapture` back — so the ring, the worker, the smoothing, the needle and
+ * the scope are handed the same shape of data at the same rate and cannot tell
+ * which one they got. What it is *not* is a microphone pointed at a speaker:
+ * the signal never leaves the app, so the room's noise, the volume and whether
+ * the phone is muted have no bearing on the reading.
+ *
+ * It looped a bundled recording until 2026-09-15. A synthesiser is better on
+ * every count that matters here: it needs no audio in the build, it holds a
+ * speed instead of replaying one, and that speed can be changed while it runs,
+ * which is the difference between showing a tachometer and showing a picture of
+ * one. The synthesis comes from `~/git/revbench`; see `engine-worklet.js`.
+ *
+ * What ships with it is decided by the build, not by an edit here:
+ * `VITE_MOCK=1` for the website, nothing for a release.
  */
-import {decodeBuffer} from '../audio/load'
-import {InputError, SAMPLE_RATE} from '../audio/types'
-import {sampleUrl} from '../samples'
+import {MIN_RATE} from '../dsp/autocorr'
+import {MAX_RPM, REVS_PER_PULSE, type RevsPerPulse} from '../dsp/types'
+import {InputError} from '../audio/types'
+import type {MockHandle} from './mock-engine'
 import type {LiveCapture, LiveOptions} from './stream'
 
-/** Sample 6, whose reference count is 1603 rpm — so the dial has a right answer. */
-export const MOCK_SAMPLE = 6
-/** The steady part of it: the first seconds carry the phone being brought up to the engine. */
-export const MOCK_FROM_S = 3
-export const MOCK_TO_S = 13
+export const MOCK_ENABLED = __MOCK__
 
-/**
- * Frames per slice, matching what the native recorder delivers, so the
- * downstream batching sees the same rhythm from both sources. At 16 kHz this
- * is 128 ms of audio.
- */
-const CHUNK = 2048
-
-/**
- * How many whole chunks are owed at this moment.
- *
- * The timer is not trusted to be a clock. A throttled tab, a slow frame or a
- * long analysis would each leave the interval behind, and a mock that quietly
- * runs at nine tenths of real time would make every measurement taken against
- * it wrong in the same invisible direction. The wall clock decides, and the
- * tick delivers however many chunks that implies.
- */
-export function chunksOwed(elapsedMs: number, sent: number, sampleRate = SAMPLE_RATE): number {
-  const due = Math.floor((elapsedMs / 1000) * sampleRate / CHUNK)
-  return Math.max(0, due - sent)
+/** What the engine is doing: the two things the worklet needs told. */
+export interface MockEngine {
+  rpm: number
+  /** Followed from the rider's own stroke setting, so the dial reads the same on both. */
+  revsPerPulse: RevsPerPulse
 }
 
 /**
- * The loop, as an index map.
- *
- * Reading `CHUNK` samples from `at` wraps around the end of the slice rather
- * than stopping at it, so the join is a join and not a gap — the engine note
- * carries across it.
+ * Where the slider starts, every time. A speed a single-cylinder four-stroke
+ * plausibly idles at, and inside the range every part of the app agrees on.
  */
-export function readLooped(slice: Float32Array, at: number, out: Float32Array): number {
-  for (let i = 0; i < out.length; i++) out[i] = slice[(at + i) % slice.length]
-  return (at + out.length) % slice.length
+export const MOCK_START_RPM = 1500
+
+/** A drag resolution, not a precision claim. */
+export const MOCK_STEP_RPM = 100
+
+/**
+ * The bottom of what the estimator searches — the same floor `ui/dial.ts` draws
+ * from. Below it the app has nothing to say, so the slider does not go there.
+ */
+export const MOCK_MIN_RPM = MIN_RATE * 60 * REVS_PER_PULSE
+
+/**
+ * The top of what the synthesised engine and the analysis agree on.
+ *
+ * Measured rather than argued. revbench's own sweep renders this worklet at a
+ * spread of speeds and reads each clip back through the scipy baseline; run on
+ * 2026-09-15 against the search range *scaled to the engine rendered*, which is
+ * what the app does and what revbench's `check.py` does not, both strokes read
+ * back inside 1.1% at every speed from 600 to 12,000. So this is `MAX_RPM`, for
+ * either engine, and the slider needs no second ceiling.
+ *
+ * It is worth knowing which direction it would give way in. On a two-stroke the
+ * combustions arrive twice as fast — 200 a second at the top — and the
+ * confidence falls with it, 1.18 at the floor to 0.63 at 12,000. Still well
+ * clear of `MIN_CONFIDENCE`, but it is the number that would go first if the
+ * envelope or the search were ever retuned. The evidence is in
+ * `features/demo-mock/evidence/` in the workflow repo.
+ */
+export const MOCK_MAX_RPM = MAX_RPM
+
+export interface MockBounds {
+  min: number
+  max: number
+  step: number
 }
 
-export function startMockCapture({onChunk, onOpen, onError}: LiveOptions): LiveCapture {
-  let stopped = false
-  let timer: ReturnType<typeof setInterval> | undefined
-
-  const stop = () => {
-    if (stopped) return
-    stopped = true
-    if (timer) clearInterval(timer)
-    timer = undefined
+/**
+ * Three limits, and the tightest wins: what the estimator can read, what this
+ * engine reads back truthfully, and what the rider's own dial can draw. The
+ * last is why the face is an argument — a demo that drives the needle onto the
+ * stop is showing a broken instrument, not a working one.
+ *
+ * The stroke is not an argument, though the sweep was run per stroke to find
+ * out whether it had to be: a two-stroke fires twice as often at the same
+ * speed, and the search is scaled by exactly that, so the two ends of the dial
+ * are the two ends of the dial on either engine.
+ */
+export function mockRpmBounds(maxRpm: number): MockBounds {
+  return {
+    min: MOCK_MIN_RPM,
+    max: Math.max(MOCK_MIN_RPM, Math.min(maxRpm, MOCK_MAX_RPM)),
+    step: MOCK_STEP_RPM,
   }
+}
+
+/** Held to the face and the floor, and to whole steps of the slider. */
+export function clampMockRpm(rpm: number, bounds: MockBounds): number {
+  const stepped = Math.round(rpm / bounds.step) * bounds.step
+  return Math.min(bounds.max, Math.max(bounds.min, stepped))
+}
+
+/**
+ * Starts the engine, and hands back the handle before it is running.
+ *
+ * Synchronous, because that is the shape `useLive` starts a capture with — it
+ * has to have something to stop before the audio graph exists. Everything that
+ * can be awaited is awaited inside, and a stop or a tune that arrives during
+ * those few hundred milliseconds is remembered rather than lost.
+ *
+ * The import is dynamic and inside `__MOCK__` on purpose: it is what keeps the
+ * synthesiser, and the worklet asset it names, out of every build that is not a
+ * demo. See `mock-engine.ts`.
+ */
+export function startMockCapture(options: LiveOptions, engine: MockEngine): LiveCapture {
+  let stopped = false
+  let open: MockHandle | undefined
+  // The one place the engine's current state lives. The slider knows a speed
+  // and the settings know a stroke; neither knows both, and neither has to.
+  let wanted = engine
 
   void (async () => {
-    let slice: Float32Array
+    if (!__MOCK__) return
     try {
-      const response = await fetch(sampleUrl(MOCK_SAMPLE))
-      if (!response.ok) throw new Error(`sample ${MOCK_SAMPLE}: ${response.status}`)
-      const clip = await decodeBuffer(await response.arrayBuffer(), {kind: 'file', name: 'mock'})
-      slice = clip.samples.subarray(
-        Math.round(MOCK_FROM_S * clip.sampleRate),
-        Math.round(MOCK_TO_S * clip.sampleRate),
-      )
+      const {openMockEngine} = await import('./mock-engine')
+      if (stopped) return
+      open = await openMockEngine(options, wanted, () => !stopped)
+      if (stopped) open.stop()
+      else open.tune(wanted)
     } catch (e) {
-      // A broken mock should look like a broken microphone rather than a
-      // crash: it goes down the same path, and the screen says one sentence.
-      onError(e instanceof InputError ? e : new InputError('listen-failed', e))
-      return
+      // A broken mock should look like a broken microphone rather than a crash:
+      // it goes down the same path, and the screen says one sentence.
+      options.onError(e instanceof InputError ? e : new InputError('listen-failed', e))
     }
-    if (stopped) return
-
-    const startedAt = performance.now()
-    let at = 0
-    let sent = 0
-    const out = new Float32Array(CHUNK)
-
-    timer = setInterval(() => {
-      const owed = chunksOwed(performance.now() - startedAt, sent)
-      for (let i = 0; i < owed; i++) {
-        at = readLooped(slice, at, out)
-        sent++
-        // A copy per chunk: the caller keeps what it is given until the next
-        // analysis, and `out` is about to be overwritten.
-        onChunk(out.slice())
-      }
-    }, 50)
-
-    onOpen?.({source: 'mock', sampleRate: SAMPLE_RATE})
   })()
 
-  return {stop}
+  return {
+    stop: () => {
+      stopped = true
+      open?.stop()
+    },
+    tune: (next) => {
+      wanted = {...wanted, ...next}
+      open?.tune(wanted)
+    },
+  }
 }

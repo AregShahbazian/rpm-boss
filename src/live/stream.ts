@@ -12,10 +12,23 @@ import type {PluginListenerHandle} from '@capacitor/core'
 import {decodeBase64, pcm16ToFloat, RawAudio} from '../audio/native'
 import {resampleTo16k} from '../audio/resample'
 import {InputError, SAMPLE_RATE} from '../audio/types'
+import type {MockEngine} from './mock'
 
 export interface LiveCapture {
   /** Idempotent. */
   stop: () => void
+  /**
+   * The simulated engine only: what about it should change, from now on.
+   *
+   * Partial, because the two callers each know one half — the slider sets a
+   * speed, the settings set a stroke — and neither should have to carry the
+   * other's value around to say its own. What the engine is currently doing is
+   * remembered by the thing running it.
+   *
+   * Optional because a microphone cannot be tuned, and should not have to carry
+   * a no-op saying so. See `mock.ts`.
+   */
+  tune?: (engine: Partial<MockEngine>) => void
 }
 
 export interface LiveOptions {
@@ -120,7 +133,42 @@ function liveNative({ onChunk, onOpen, onError }: LiveOptions): LiveCapture {
   return { stop }
 }
 
-function liveWorklet({ onChunk, onOpen, onError }: LiveOptions): LiveCapture {
+/**
+ * Everything after the audio exists: the capture worklet, the batching, the
+ * muted sink, and the promise that the context is running.
+ *
+ * Shared, because the simulated engine needs exactly this and none of what
+ * surrounds it below — no permission to ask for, no device to release. The
+ * caller owns the context and the node; this owns what happens between them
+ * and `onChunk`.
+ */
+export async function captureFrom(
+  context: AudioContext,
+  source: AudioNode,
+  {onChunk, onOpen}: LiveOptions,
+  label: string,
+  alive: () => boolean,
+): Promise<void> {
+  await context.audioWorklet.addModule(new URL('../audio/capture-worklet.js', import.meta.url))
+  if (!alive()) return
+
+  const feed = batcher(context.sampleRate, onChunk)
+  const capture = new AudioWorkletNode(context, 'capture')
+  capture.port.onmessage = (event: MessageEvent<Float32Array>) => {
+    if (alive()) feed(event.data)
+  }
+  // The same muted path to the destination as the recorder uses: a capture
+  // node that reaches nothing is rendered with silence in its input.
+  const muted = context.createGain()
+  muted.gain.value = 0
+  source.connect(capture)
+  capture.connect(muted).connect(context.destination)
+  await context.resume()
+  onOpen?.({ source: label, sampleRate: context.sampleRate })
+}
+
+function liveWorklet(options: LiveOptions): LiveCapture {
+  const { onError } = options
   let stream: MediaStream | undefined
   let context: AudioContext | undefined
   let stopped = false
@@ -150,25 +198,7 @@ function liveWorklet({ onChunk, onOpen, onError }: LiveOptions): LiveCapture {
 
     try {
       context = new AudioContext()
-      await context.audioWorklet.addModule(new URL('../audio/capture-worklet.js', import.meta.url))
-      if (stopped) {
-        stop()
-        return
-      }
-      const feed = batcher(context.sampleRate, onChunk)
-      const source = context.createMediaStreamSource(stream)
-      const capture = new AudioWorkletNode(context, 'capture')
-      capture.port.onmessage = (event: MessageEvent<Float32Array>) => {
-        if (!stopped) feed(event.data)
-      }
-      // The same muted path to the destination as the recorder uses: a capture
-      // node that reaches nothing is rendered with silence in its input.
-      const muted = context.createGain()
-      muted.gain.value = 0
-      source.connect(capture)
-      capture.connect(muted).connect(context.destination)
-      await context.resume()
-      onOpen?.({ source: 'web-worklet', sampleRate: context.sampleRate })
+      await captureFrom(context, context.createMediaStreamSource(stream), options, 'web-worklet', () => !stopped)
     } catch (e) {
       stop()
       onError(new InputError('record-failed', e))

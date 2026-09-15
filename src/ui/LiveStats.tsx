@@ -1,7 +1,7 @@
 /**
  * What the feature costs, on the screen it costs it on.
  *
- * A developer's readout, shown only with `FEATURES.mockLive` and never
+ * A developer's readout, shown only with `FEATURES.liveStats` and never
  * translated. It exists to answer one question — whether the phone keeps up
  * with an analysis every 200 ms — and `skipped` is the answer: ticks that
  * arrived while the previous analysis was still running. Zero means it keeps

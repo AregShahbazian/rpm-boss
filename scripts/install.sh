@@ -4,6 +4,7 @@
 #   ./scripts/install.sh            build, install, launch
 #   ./scripts/install.sh --keep     install without launching
 #   ./scripts/install.sh --samples  build with the demo recordings, then launch
+#   ./scripts/install.sh --demo     the recordings and the simulated engine too
 #
 # Needs a phone attached with USB debugging on. Installing over an existing copy
 # keeps its data and its granted permissions. With more than one phone attached
@@ -19,8 +20,8 @@ PACKAGE=com.mby4m.rpmboss
 require_adb
 use_device
 
-if [ "$1" = "--samples" ]; then
-  ./scripts/apk.sh --samples
+if [ "$1" = "--samples" ] || [ "$1" = "--demo" ]; then
+  ./scripts/apk.sh "$1"
 else
   ./scripts/apk.sh
 fi

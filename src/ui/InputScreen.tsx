@@ -167,7 +167,7 @@ export function InputScreen() {
   // reaches both the batch analysis and the live loop.
   const [stroke] = useStroke()
   const revs = revsPerPulse(stroke)
-  const {live, ring, start, stop: stopLive} = useLive(reportError, revs)
+  const {live, ring, start, stop: stopLive, tune} = useLive(reportError, revs)
   const listening = live.status !== 'off'
   const rpm = displayRpm(live)
 
@@ -250,6 +250,7 @@ export function InputScreen() {
               maxRpm={maxRpm}
               redlineRpm={redlineRpm}
               onStart={start}
+              onTune={tune}
             />
         </div>
       )}

@@ -21,7 +21,15 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      # The one build that is a demo. The website is linked as "try it", and a
+      # visitor has neither engine audio nor an engine: the samples give the
+      # batch path something to read, and the simulated engine gives the live
+      # tachometer something to show. Nothing else sets either flag — a release
+      # APK, the Play bundle and a bare `npm run build` all carry neither.
       - run: npm run build
+        env:
+          VITE_SAMPLES: '1'
+          VITE_MOCK: '1'
       - name: Upload dist over FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:

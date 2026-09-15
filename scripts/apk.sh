@@ -3,6 +3,7 @@
 #
 #   ./scripts/apk.sh              a release APK
 #   ./scripts/apk.sh --samples    the same, carrying the demo recordings
+#   ./scripts/apk.sh --demo       the recordings and the simulated engine too
 #
 # Builds the web app, copies it into the native project, and runs Gradle. The
 # APK is signed with the key named in android/key.properties; without that file
@@ -13,10 +14,19 @@ HERE=$(dirname "$0")
 cd "$HERE/.."
 
 # The bundled engine recordings, off unless asked for. See README.
-if [ "$1" = "--samples" ]; then
+if [ "$1" = "--samples" ] || [ "$1" = "--demo" ]; then
   VITE_SAMPLES=1
   export VITE_SAMPLES
   echo "Samples: bundled."
+fi
+
+# The simulated engine as well: an APK to hand someone who has no motorcycle.
+# Deliberately not in aab.sh — the bundle is what goes to Play, and no release
+# on the store carries a simulated engine.
+if [ "$1" = "--demo" ]; then
+  VITE_MOCK=1
+  export VITE_MOCK
+  echo "Simulated engine: on. NOT a build to upload."
 fi
 
 APK=android/app/build/outputs/apk/release/app-release.apk

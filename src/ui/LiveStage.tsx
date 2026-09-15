@@ -9,14 +9,15 @@
  * Both halves fill what they are given. The stage's own proportions, set in
  * `InputScreen`, are the only thing deciding how big either of them is.
  */
-import {FEATURES} from '../features'
+import clsx from 'clsx'
+import {useState} from 'react'
 import {useI18n} from '../i18n'
+import {MOCK_ENABLED, MOCK_START_RPM, mockRpmBounds} from '../live/mock'
 import type {Ring} from '../live/ring'
-import {SAMPLES_ENABLED} from '../samples'
 import type {LiveSource, LiveState} from '../state/useLive'
 import {LiveStats} from './LiveStats'
 import {Icon} from './Icon'
-import {Button} from './kit'
+import {Button, Slider} from './kit'
 import type {Motion} from './liveSettings'
 import {LiveScope} from './LiveScope'
 import {Tacho} from './Tacho'
@@ -31,23 +32,61 @@ interface Props {
   maxRpm: number
   redlineRpm: number
   onStart: (source: LiveSource) => void
+  /** How fast the simulated engine should turn. Ignored by a microphone. */
+  onTune: (rpm: number) => void
 }
 
 /** Three dashes rather than a zero: the app is not claiming the engine is stopped. */
 const NOTHING = '---'
 
-/** The mock is a developer's affordance, and dead in a build with no samples to play. */
-const MOCK_AVAILABLE = FEATURES.mockLive && SAMPLES_ENABLED
-
-export function LiveStage({live, ring, rpm, motion, maxRpm, redlineRpm, onStart}: Props) {
+export function LiveStage({live, ring, rpm, motion, maxRpm, redlineRpm, onStart, onTune}: Props) {
   const {t} = useI18n()
   const listening = live.status !== 'off'
+  /*
+   * Whether what is on the dial came out of a synthesiser. It is the only thing
+   * the badge and the slider are allowed to key off: a reading from a real
+   * engine is never marked, and never gets a throttle.
+   *
+   * `MOCK_ENABLED` is redundant to the running app — without it nothing can set
+   * the source to `mock` — and load-bearing to the bundler, which cannot know
+   * that. With the constant false this is false at compile time, and the badge,
+   * the slider and the extra grid row go with it.
+   */
+  const simulated = MOCK_ENABLED && live.source === 'mock'
+  const bounds = mockRpmBounds(maxRpm)
+  const [mockRpm, setMockRpm] = useState(MOCK_START_RPM)
+
+  // Not remembered between runs: every start of the simulated engine begins at
+  // the same idle, so the demo is the same demo for the next visitor. Reset
+  // where the run begins rather than in an effect watching for it to end —
+  // there is exactly one way in, and it is a button.
+  const startMock = () => {
+    setMockRpm(MOCK_START_RPM)
+    onStart('mock')
+  }
 
   return (
-    <div className="grid size-full grid-rows-[4fr_1fr] gap-[var(--gap)]">
+    <div
+      className={clsx(
+        'grid size-full gap-[var(--gap)]',
+        // An extra row, and only while there is something in it. The dial keeps
+        // its share of what is left; the slider is the height of one control.
+        simulated ? 'grid-rows-[4fr_1fr_auto]' : 'grid-rows-[4fr_1fr]',
+      )}
+    >
       <div className="grid min-h-0 grid-rows-[4fr_1fr]">
-        <div className="min-h-0">
+        <div className="relative min-h-0">
           <Tacho rpm={rpm} motion={motion} maxRpm={maxRpm} redlineRpm={redlineRpm}/>
+          {/* Over the dial, not under it. A screenshot of the needle has to
+              carry the caveat, or the caveat has failed at the one job it has. */}
+          {simulated && (
+            <p
+              className="pointer-events-none absolute inset-x-0 top-0 m-0 text-center text-[0.7rem]/[1.4] text-muted"
+              data-testid="simulated"
+            >
+              {t('simulated')}
+            </p>
+          )}
         </div>
         {/* No rule between the dial and its figure. The gap says it, and a
             line across a screen this sparse reads as a box that lost three
@@ -79,16 +118,32 @@ export function LiveStage({live, ring, rpm, motion, maxRpm, redlineRpm, onStart}
             <Button shape="fill" tone="go" onClick={() => onStart('mic')}>
               <span className="text-[clamp(1.25rem,6vmin,2rem)]/[1.2]">{t('listen')}</span>
             </Button>
-            {MOCK_AVAILABLE && (
-              // Untranslated on purpose: a debug button is no reason to put a
-              // word in front of sixteen translators.
-              <Button shape="fill" onClick={() => onStart('mock')}>
-                <Icon icon="mdi:flask-outline"/> Mock
+            {/* The real thing stays the primary action, on the demo build too:
+                this one is the same size in a plainer tone, and says in a word
+                that the engine behind it is not real. */}
+            {MOCK_ENABLED && (
+              <Button shape="fill" onClick={startMock}>
+                <Icon icon="mdi:flask-outline"/> {t('mockEngine')}
               </Button>
             )}
           </div>
         )}
       </div>
+      {/* The throttle. A tachometer at one speed is a picture of a tachometer;
+          this is what makes the demo show the needle doing its job. */}
+      {simulated && (
+        <Slider
+          label={t('mockSpeed')}
+          value={mockRpm}
+          min={bounds.min}
+          max={bounds.max}
+          step={bounds.step}
+          onChange={(next) => {
+            setMockRpm(next)
+            onTune(next)
+          }}
+        />
+      )}
     </div>
   )
 }

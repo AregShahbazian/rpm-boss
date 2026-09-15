@@ -11,8 +11,11 @@
  * still reads as a question with two answers and the compiler does not start
  * calling the other branch dead code.
  *
- * `SAMPLES_ENABLED` is deliberately not one of these. It is decided by the
- * build rather than by an edit, so it lives with the samples it gates.
+ * `SAMPLES_ENABLED` and `MOCK_ENABLED` are deliberately not among these. Both
+ * are decided by the build rather than by an edit, so each lives with the thing
+ * it gates. That is the difference: a flag here is wanted in a working copy for
+ * an afternoon and in no build at all; a flag there is wanted in one build and
+ * not in another, and must not depend on anybody remembering to switch it back.
  */
 export interface Features {
   /**
@@ -22,16 +25,17 @@ export interface Features {
    */
   expectedRange: boolean
   /**
-   * The Mock button beside Start, which drives live mode from a bundled
-   * recording instead of the microphone, and the performance readout under the
-   * scope. A developer's affordance: live mode is otherwise only testable next
-   * to a running engine. Off in anything that ships, and dead anyway in a
-   * build without the samples it plays.
+   * The performance readout under the scope: runs, milliseconds, skipped ticks,
+   * capture ratio. It answers one question — whether the phone keeps up with an
+   * analysis every 200 ms — and it is a question asked while working on the
+   * loop, not while using the app. It shared a flag with the Mock button until
+   * the button became a build's decision (`MOCK_ENABLED`); the readout stays
+   * here, because no build wants it.
    */
-  mockLive: boolean
+  liveStats: boolean
 }
 
 export const FEATURES: Features = {
   expectedRange: false,
-  mockLive: false,
+  liveStats: false,
 }

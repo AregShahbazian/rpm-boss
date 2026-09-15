@@ -41,6 +41,14 @@ export default defineConfig(({ command }) => {
   // hides them.
   const flag = process.env.VITE_SAMPLES
   const enabled = flag === '1' || (flag !== '0' && command === 'serve')
+  /*
+   * The simulated engine behind the Mock button, decided the same way and
+   * independently: it plays a synthesised engine rather than a recording, so it
+   * needs none of the audio above. The website is the only build that turns
+   * both on (`.github/workflows/deploy.yml`); a release build has neither.
+   */
+  const mockFlag = process.env.VITE_MOCK
+  const mockEnabled = mockFlag === '1' || (mockFlag !== '0' && command === 'serve')
   return {
     base: './',
     // `jsxImportSource` is what gives every element the `css` prop. It is a
@@ -53,7 +61,7 @@ export default defineConfig(({ command }) => {
       samples(enabled, command === 'build'),
       iconBundle(),
     ],
-    define: { __SAMPLES__: JSON.stringify(enabled) },
+    define: { __SAMPLES__: JSON.stringify(enabled), __MOCK__: JSON.stringify(mockEnabled) },
     test: { environment: 'node', include: ['test/**/*.test.ts', 'src/**/*.test.ts'] },
   }
 })

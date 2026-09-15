@@ -20,8 +20,8 @@ import {REVS_PER_PULSE, type RevsPerPulse} from '../dsp/types'
 import {FEATURES} from '../features'
 import {median} from '../dsp/autocorr'
 import {LIVE_INTERVAL_MS, LIVE_SMOOTH_N, LIVE_WINDOW_S, Ring} from '../live/ring'
-import {startMockCapture} from '../live/mock'
-import {type LiveCapture, startLiveCapture} from '../live/stream'
+import {MOCK_START_RPM, type MockEngine, startMockCapture} from '../live/mock'
+import {type LiveCapture, type LiveOptions, startLiveCapture} from '../live/stream'
 import {keepScreenAwake} from './wakeLock'
 
 /** Where the audio comes from. The only difference between the two. */
@@ -32,7 +32,7 @@ export type LiveStatus = 'off' | 'starting' | 'listening'
 /**
  * What the feature costs, measured while it runs.
  *
- * Only gathered behind `FEATURES.mockLive`, and only read by the developer
+ * Only gathered behind `FEATURES.liveStats`, and only read by the developer
  * readout under the scope. The whole design rests on an assumption — that a
  * phone can run the batch analysis five times a second — and `skipped` is the
  * number that says whether it holds: it counts ticks that arrived while the
@@ -51,6 +51,14 @@ export interface LiveStats {
 
 export interface LiveState {
   status: LiveStatus
+  /**
+   * Where the audio is coming from, while it is coming from anywhere.
+   *
+   * The screen needs it and `status` cannot say it: a simulated engine and a
+   * real one are both `listening`, and the difference is the whole of what the
+   * badge over the dial is for. A reading from a microphone is never marked.
+   */
+  source?: LiveSource
   /** The last reading that succeeded: the median of the last `LIVE_SMOOTH_N`. */
   reading?: number
   /** True when the most recent window yielded nothing — silence, or no rhythm in it. */
@@ -85,9 +93,7 @@ export function useLive(onError: (code: InputErrorCode) => void, revsPerPulse: R
    * told the wrong engine gets the next reading corrected, not a restart.
    */
   const revs = useRef(revsPerPulse)
-  useEffect(() => {
-    revs.current = revsPerPulse
-  }, [revsPerPulse])
+  // Kept up to date at the foot of the hook, with the tuning that goes with it.
   const ring = useRef<Ring>(undefined)
   const capture = useRef<LiveCapture>(undefined)
   const client = useRef<AnalysisClient>(undefined)
@@ -152,18 +158,19 @@ export function useLive(onError: (code: InputErrorCode) => void, revsPerPulse: R
   const start = useCallback(
     (source: LiveSource) => {
       if (capture.current) return
+      // Every run begins at the same speed: the slider is not remembered.
+      const engine: MockEngine = {rpm: MOCK_START_RPM, revsPerPulse: revs.current}
       const buffer = new Ring()
       ring.current = buffer
       recent.current = []
       totals.current = {runs: 0, sumMs: 0, maxMs: 0, skipped: 0, frames: 0, startedAt: performance.now()}
-      setLive({status: 'starting', quiet: false})
+      setLive({status: 'starting', quiet: false, source})
 
       // Nobody touches this screen while it works; the display timeout would
       // otherwise take it mid-measurement.
       releaseScreen.current = keepScreenAwake()
       client.current = createAnalysisClient()
-      const begin = source === 'mock' ? startMockCapture : startLiveCapture
-      capture.current = begin({
+      const options: LiveOptions = {
         onChunk: (samples) => {
           buffer.push(samples)
           totals.current.frames += samples.length
@@ -175,7 +182,8 @@ export function useLive(onError: (code: InputErrorCode) => void, revsPerPulse: R
           // nothing; the rest of the codes say what they mean in both.
           onError(err.code === 'record-failed' ? 'listen-failed' : err.code)
         },
-      })
+      }
+      capture.current = source === 'mock' ? startMockCapture(options, engine) : startLiveCapture(options)
 
       const era = generation.current
 
@@ -222,7 +230,7 @@ export function useLive(onError: (code: InputErrorCode) => void, revsPerPulse: R
             t.sumMs += ms
             t.maxMs = Math.max(t.maxMs, ms)
             const elapsedS = (performance.now() - t.startedAt) / 1000
-            const stats: LiveStats | undefined = FEATURES.mockLive
+            const stats: LiveStats | undefined = FEATURES.liveStats
               ? {
                   runs: t.runs,
                   lastMs: ms,
@@ -245,7 +253,7 @@ export function useLive(onError: (code: InputErrorCode) => void, revsPerPulse: R
             const history = recent.current
             history.push(result.rpm)
             if (history.length > LIVE_SMOOTH_N) history.shift()
-            setLive({status: 'listening', reading: median(history), quiet: false, stats})
+            setLive({status: 'listening', reading: median(history), quiet: false, stats, source})
           })
           /*
            * The flag is cleared here rather than in `then`, so that a rejection
@@ -265,5 +273,32 @@ export function useLive(onError: (code: InputErrorCode) => void, revsPerPulse: R
     [onError, stop],
   )
 
-  return {live, ring, start, stop}
+  /**
+   * The simulated engine's speed, while there is one. A no-op on a microphone,
+   * which has no speed to set, and on a build with no simulated engine at all.
+   */
+  const tune = useCallback((rpm: number) => {
+    capture.current?.tune?.({rpm})
+  }, [])
+
+  /*
+   * Both of these sit below `start` and `stop` rather than beside the ref they
+   * keep, and the order is load-bearing: a ref read inside a hook callback may
+   * not be assigned by anything declared after it, and `capture.current` is
+   * assigned by both of those. Reading the hook top to bottom, the engine is
+   * started and stopped first, and only then tuned.
+   */
+  const tuneStroke = useCallback((revsPerPulse: RevsPerPulse) => {
+    capture.current?.tune?.({revsPerPulse})
+  }, [])
+
+  useEffect(() => {
+    revs.current = revsPerPulse
+    // The simulated engine follows the setting too, so that switching stroke
+    // mid-demo changes the sound and the arithmetic together, and the dial does
+    // not move.
+    tuneStroke(revsPerPulse)
+  }, [revsPerPulse, tuneStroke])
+
+  return {live, ring, start, stop, tune}
 }

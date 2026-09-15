@@ -109,6 +109,33 @@ VITE_SAMPLES=1 npm run build     # a web build that carries them
 ./scripts/apk.sh --samples       # an APK that carries them
 ```
 
+## The simulated engine
+
+The other half of the same problem: the samples give a visitor something to
+measure, and this gives them something to *watch* being measured. `VITE_MOCK`
+adds a second button beside Start which runs live mode from an engine the app
+synthesises for itself — audible, adjustable with a slider from 600 to 12,000
+rpm, and labelled on screen as simulated for as long as it runs. The signal
+never leaves the app: the microphone is not involved, no permission is asked
+for, and muting the device changes what you hear and nothing about the reading.
+
+The synthesis is one `AudioWorklet`, copied from
+[revbench](https://github.com/AregShahbazian/revbench), which is where it was
+measured against this app's own analysis.
+
+```bash
+npm run dev                      # on
+VITE_MOCK=0 npm run dev          # off
+./scripts/demo.sh                # samples and simulated engine, as the website has them
+./scripts/demo.sh --build        # the same, built and served from dist/
+./scripts/apk.sh --demo          # an APK carrying both
+```
+
+Off in every build that does not ask: a bare `npm run build`, `./scripts/apk.sh`
+and `./scripts/aab.sh` carry no synthesiser, no slider, no button, and no
+worklet asset for one. `aab.sh` has no `--demo` at all, because the bundle is
+what goes to Play.
+
 ## Android
 
 The same web build, wrapped in Capacitor. The app is `RPM Boss`,
@@ -182,7 +209,9 @@ MIT
 ## Deploy
 
 Every push to `main` runs lint, tests and build on GitHub Actions and uploads
-`dist/` over FTP to https://areg.nl/rpm-boss/. Credentials and the remote
+`dist/` over FTP to https://areg.nl/rpm-boss/. That build, and only that build,
+sets `VITE_SAMPLES=1` and `VITE_MOCK=1`: the website is a demo, so it carries
+the recordings and the simulated engine described above. Credentials and the remote
 path live in the repository secrets `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`,
 `FTP_REMOTE_DIR`. The Vite `base` is relative so the build works under any
 subpath.
