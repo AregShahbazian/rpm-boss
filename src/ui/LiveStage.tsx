@@ -12,7 +12,7 @@
 import clsx from 'clsx'
 import {useState} from 'react'
 import {useI18n} from '../i18n'
-import {MOCK_ENABLED, MOCK_START_RPM, mockRpmBounds} from '../live/mock'
+import {clampMockRpm, MOCK_ENABLED, MOCK_START_RPM, mockRpmBounds} from '../live/mock'
 import type {Ring} from '../live/ring'
 import type {LiveSource, LiveState} from '../state/useLive'
 import {LiveStats} from './LiveStats'
@@ -31,7 +31,7 @@ interface Props {
   /** The face the dial is drawn on; the rider's, see `liveSettings`. */
   maxRpm: number
   redlineRpm: number
-  onStart: (source: LiveSource) => void
+  onStart: (source: LiveSource, rpm?: number) => void
   /** How fast the simulated engine should turn. Ignored by a microphone. */
   onTune: (rpm: number) => void
 }
@@ -54,15 +54,25 @@ export function LiveStage({live, ring, rpm, motion, maxRpm, redlineRpm, onStart,
    */
   const simulated = MOCK_ENABLED && live.source === 'mock'
   const bounds = mockRpmBounds(maxRpm)
-  const [mockRpm, setMockRpm] = useState(MOCK_START_RPM)
+  /*
+   * Clamped, not assumed. 1500 is inside every face the settings currently
+   * allow — the dial cannot be set below 9,000 — but that is a fact about
+   * another file's constant, and this one would fail silently and oddly if it
+   * changed: the thumb pinned at the end of the track, the figure beside it
+   * still reading 1500, and the engine actually turning at 1500 behind a
+   * needle that says otherwise. The clamp costs a function call and removes
+   * the coupling.
+   */
+  const [mockRpm, setMockRpm] = useState(() => clampMockRpm(MOCK_START_RPM, bounds))
 
   // Not remembered between runs: every start of the simulated engine begins at
   // the same idle, so the demo is the same demo for the next visitor. Reset
   // where the run begins rather than in an effect watching for it to end —
   // there is exactly one way in, and it is a button.
   const startMock = () => {
-    setMockRpm(MOCK_START_RPM)
-    onStart('mock')
+    const rpm = clampMockRpm(MOCK_START_RPM, bounds)
+    setMockRpm(rpm)
+    onStart('mock', rpm)
   }
 
   return (

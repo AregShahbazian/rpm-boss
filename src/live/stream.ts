@@ -101,11 +101,29 @@ function liveNative({ onChunk, onOpen, onError }: LiveOptions): LiveCapture {
   let listener: PluginListenerHandle | undefined
   let feed: ((frames: Float32Array) => void) | undefined
 
-  const stop = () => {
-    if (stopped) return
-    stopped = true
+  /*
+   * Giving back the microphone, separately from deciding to.
+   *
+   * These were one function, guarded by `stopped`, and the guard was the bug: a
+   * stop that arrives while `RawAudio.start` is still in flight sets the flag
+   * and asks a recorder that does not exist yet to stop. The recorder then
+   * opens, into a run nobody is waiting for, and the second call — the one
+   * below, after `start` resolves — did nothing, because the flag was already
+   * set. The microphone stayed open until the native cap ran out, ten minutes
+   * later, with the app showing no sign of it.
+   *
+   * Idempotent rather than guarded: removing a removed listener and stopping a
+   * stopped recorder are both fine, and one of them has to be allowed to
+   * happen twice.
+   */
+  const release = () => {
     void listener?.remove()
     void RawAudio.stop().catch(() => undefined)
+  }
+
+  const stop = () => {
+    stopped = true
+    release()
   }
 
   void (async () => {
@@ -118,8 +136,9 @@ function liveNative({ onChunk, onOpen, onError }: LiveOptions): LiveCapture {
         feed(pcm16ToFloat(decodeBase64(event.pcm16)))
       })
       const started = await RawAudio.start({ maxS: LIVE_MAX_S, stream: true })
+      // Stopped while it was opening. Now there is something to stop.
       if (stopped) {
-        stop()
+        release()
         return
       }
       onOpen?.({ source: started.source, sampleRate: started.sampleRate })
@@ -164,6 +183,17 @@ export async function captureFrom(
   source.connect(capture)
   capture.connect(muted).connect(context.destination)
   await context.resume()
+  /*
+   * Checked again, because resuming a context is not instant — a suspended one
+   * in an Android WebView can take a hundred milliseconds and more, and a Stop
+   * pressed inside that window has already put the hook back to `off`. Calling
+   * `onOpen` after it sets `listening` on top of a torn-down run: the stop
+   * button and the scope on screen, the ring, the timer and the worker all
+   * gone, and nothing to do about it but press stop a second time. This is the
+   * same zombie `generation` guards the analysis against, arriving by the one
+   * door that does not go through the analysis.
+   */
+  if (!alive()) return
   onOpen?.({ source: label, sampleRate: context.sampleRate })
 }
 
@@ -173,11 +203,21 @@ function liveWorklet(options: LiveOptions): LiveCapture {
   let context: AudioContext | undefined
   let stopped = false
 
-  const stop = () => {
-    if (stopped) return
-    stopped = true
+  /*
+   * The same split as `liveNative`, for the same reason. Stop pressed while
+   * Chrome's permission prompt is still up sets the flag and releases a stream
+   * that does not exist; the user then grants, `getUserMedia` resolves, and the
+   * tracks it hands over are never stopped — the browser's recording indicator
+   * stays lit on a screen that has gone back to a dial at zero.
+   */
+  const release = () => {
     stream?.getTracks().forEach((t) => t.stop())
-    void context?.close()
+    if (context && context.state !== 'closed') void context.close()
+  }
+
+  const stop = () => {
+    stopped = true
+    release()
   }
 
   void (async () => {
@@ -191,14 +231,18 @@ function liveWorklet(options: LiveOptions): LiveCapture {
       onError(micError(e))
       return
     }
+    // Stopped while the prompt was up, or while the device was opening.
     if (stopped) {
-      stop()
+      release()
       return
     }
 
     try {
       context = new AudioContext()
       await captureFrom(context, context.createMediaStreamSource(stream), options, 'web-worklet', () => !stopped)
+      // `captureFrom` returns early on a stop, and leaves the context it was
+      // handed open. It belongs to this function, so closing it does too.
+      if (stopped) release()
     } catch (e) {
       stop()
       onError(new InputError('record-failed', e))

@@ -156,10 +156,16 @@ export function useLive(onError: (code: InputErrorCode) => void, revsPerPulse: R
   }, [stop])
 
   const start = useCallback(
-    (source: LiveSource) => {
+    (source: LiveSource, rpm: number = MOCK_START_RPM) => {
       if (capture.current) return
-      // Every run begins at the same speed: the slider is not remembered.
-      const engine: MockEngine = {rpm: MOCK_START_RPM, revsPerPulse: revs.current}
+      /*
+       * Every run begins at the same speed: the slider is not remembered. The
+       * speed itself comes from the screen rather than from the constant,
+       * because the screen is where the dial's own limits are known — the
+       * simulated engine must not be started outside the face it will be drawn
+       * on. See `mockRpmBounds`.
+       */
+      const engine: MockEngine = {rpm, revsPerPulse: revs.current}
       const buffer = new Ring()
       ring.current = buffer
       recent.current = []
