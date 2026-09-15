@@ -50,6 +50,18 @@ export const en = {
   // Ends live mode. The button shows only a stop icon, so this is the whole of
   // what a screen reader announces.
   stopListening: 'Stop listening',
+  // Starts live mode from an engine the app synthesises for itself, instead of
+  // the microphone. It exists for the demo on the website, where a visitor has
+  // no motorcycle to point a phone at. The word must say that the engine is not
+  // real - not that the app is a trial version, and not that it is broken.
+  mockEngine: 'Simulated engine',
+  // Stands over the dial the whole time that engine runs, so that a screenshot
+  // of the needle cannot be mistaken for a measurement. It is read at a glance,
+  // as a disclaimer; keep it short.
+  simulated: 'Simulated - not a real engine',
+  // Labels the slider that sets how fast the simulated engine turns. It drives
+  // the simulation, not the app, and not a motorcycle.
+  mockSpeed: 'Simulated speed',
   // Plays back the selected part of the recording.
   play: 'Play',
   // Stops playback.

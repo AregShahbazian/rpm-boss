@@ -385,3 +385,98 @@ export function NumberField({
     </label>
   )
 }
+
+/**
+ * A value dragged rather than typed, with the value beside it.
+ *
+ * The one control in the app whose native appearance cannot be left alone. A
+ * range input takes its track and thumb from the platform, and the platform
+ * decides from `color-scheme` — which the light theme sets and the dark one
+ * relies on, but an Android WebView and a desktop browser disagree about often
+ * enough that the slider would be the only thing on the screen not following
+ * the app's palette. Track, thumb and focus ring are drawn here, in both
+ * themes, from the same tokens as everything else.
+ *
+ * `-webkit-slider-thumb` and `-moz-range-thumb` cannot share a rule: a selector
+ * one engine does not recognise invalidates the whole block for it, so the two
+ * are written out separately even though they say the same thing.
+ */
+export function Slider({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string
+  value: number
+  min: number
+  max: number
+  step: number
+  onChange: (next: number) => void
+}) {
+  const id = useId()
+
+  return (
+    <div className="flex w-full items-center gap-3">
+      <label htmlFor={id} className="flex-none text-[0.8rem] text-muted">
+        {label}
+      </label>
+      <input
+        id={id}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="min-h-12 min-w-0 flex-auto cursor-pointer bg-transparent"
+        css={css`
+          appearance: none;
+
+          &::-webkit-slider-runnable-track {
+            block-size: 4px;
+            border-radius: 2px;
+            background: var(--color-btn);
+          }
+          &::-moz-range-track {
+            block-size: 4px;
+            border-radius: 2px;
+            background: var(--color-btn);
+          }
+
+          /* 24 px, not the platform's 12: this is dragged with a thumb, and
+             next to a running engine. The negative margin centres it on a
+             track the browser does not offer to centre it on. */
+          &::-webkit-slider-thumb {
+            appearance: none;
+            inline-size: 24px;
+            block-size: 24px;
+            border-radius: 50%;
+            background: var(--color-accent);
+            margin-block-start: -10px;
+          }
+          &::-moz-range-thumb {
+            inline-size: 24px;
+            block-size: 24px;
+            border: 0;
+            border-radius: 50%;
+            background: var(--color-accent);
+          }
+
+          &:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 4px;
+          }
+        `}
+      />
+      {/* The figure the engine was told, which is not the figure the app worked
+          out: that one is the big number under the dial, and the two are kept
+          apart on the screen for exactly that reason. */}
+      <span className="w-14 flex-none text-end text-[0.8rem] tabular-nums text-muted" dir="ltr">
+        {value}
+      </span>
+    </div>
+  )
+}

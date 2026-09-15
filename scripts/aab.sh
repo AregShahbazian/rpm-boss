@@ -4,6 +4,12 @@
 #   ./scripts/aab.sh              a release .aab
 #   ./scripts/aab.sh --samples    the same, carrying the demo recordings
 #
+# There is no --demo, and that is not an omission: this is the artifact that
+# goes to Play, and no release on the store carries a simulated engine. The
+# flag is cleared below rather than merely left alone, because an exported
+# VITE_MOCK in the shell that just built a demo APK would otherwise ride along
+# into the upload — and a rule that depends on remembering is not a rule.
+#
 # Same path as apk.sh: web build, copy into the native project, Gradle, but
 # `bundleRelease`, and it reads the version back out of the finished bundle
 # rather than trusting build.gradle. Play refuses an upload whose versionCode
@@ -14,12 +20,24 @@ HERE=$(dirname "$0")
 . "$HERE/jdk.sh"
 cd "$HERE/.."
 
-# The bundled engine recordings, off unless asked for. See README.
-if [ "$1" = "--samples" ]; then
-  VITE_SAMPLES=1
-  export VITE_SAMPLES
-  echo "Samples: bundled."
-fi
+for arg in "$@"; do
+  case "$arg" in
+    # The bundled engine recordings, off unless asked for. See README.
+    --samples)
+      VITE_SAMPLES=1
+      export VITE_SAMPLES
+      echo "Samples: bundled."
+      ;;
+    --demo)
+      echo "No --demo here: this is the bundle Play takes. Use apk.sh --demo." >&2
+      exit 2
+      ;;
+    *) echo "unknown option: $arg" >&2; exit 2 ;;
+  esac
+done
+
+# Whatever the shell was carrying, this build does not.
+unset VITE_MOCK
 
 AAB=android/app/build/outputs/bundle/release/app-release.aab
 

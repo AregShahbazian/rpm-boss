@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "dev:phone": "sh scripts/dev.sh",
+    "demo": "sh scripts/dev.sh --demo",
     "android:sync": "npm run build && cap sync android",
     "android:build": "npm run android:sync && cd android && ./gradlew assembleRelease"
   },

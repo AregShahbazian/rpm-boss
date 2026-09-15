@@ -36,11 +36,20 @@ function samples(enabled: boolean, building: boolean): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => {
-  // On for the dev server, off for a build, and `VITE_SAMPLES` overrides either
-  // way: `VITE_SAMPLES=1 npm run build` ships them, `VITE_SAMPLES=0 npm run dev`
-  // hides them.
-  const flag = process.env.VITE_SAMPLES
-  const enabled = flag === '1' || (flag !== '0' && command === 'serve')
+  /*
+   * The two demo affordances: the bundled engine recordings, and the simulated
+   * engine behind the Mock button. Independent of each other, and off unless
+   * asked for — in every mode, the dev server included.
+   *
+   * The dev server used to have them on by default, on the grounds that a desk
+   * has no motorcycle at it. That made `npm run dev` a different app from the
+   * one that ships, which is the wrong thing for the command a change is judged
+   * in. One rule now: what you get is the release unless you say otherwise.
+   * `./scripts/dev.sh --demo` is how you say it locally, and
+   * `.github/workflows/deploy.yml` is how the website does.
+   */
+  const enabled = process.env.VITE_SAMPLES === '1'
+  const mockEnabled = process.env.VITE_MOCK === '1'
   return {
     base: './',
     // `jsxImportSource` is what gives every element the `css` prop. It is a
@@ -53,7 +62,7 @@ export default defineConfig(({ command }) => {
       samples(enabled, command === 'build'),
       iconBundle(),
     ],
-    define: { __SAMPLES__: JSON.stringify(enabled) },
+    define: { __SAMPLES__: JSON.stringify(enabled), __MOCK__: JSON.stringify(mockEnabled) },
     test: { environment: 'node', include: ['test/**/*.test.ts', 'src/**/*.test.ts'] },
   }
 })
