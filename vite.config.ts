@@ -36,19 +36,20 @@ function samples(enabled: boolean, building: boolean): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => {
-  // On for the dev server, off for a build, and `VITE_SAMPLES` overrides either
-  // way: `VITE_SAMPLES=1 npm run build` ships them, `VITE_SAMPLES=0 npm run dev`
-  // hides them.
-  const flag = process.env.VITE_SAMPLES
-  const enabled = flag === '1' || (flag !== '0' && command === 'serve')
   /*
-   * The simulated engine behind the Mock button, decided the same way and
-   * independently: it plays a synthesised engine rather than a recording, so it
-   * needs none of the audio above. The website is the only build that turns
-   * both on (`.github/workflows/deploy.yml`); a release build has neither.
+   * The two demo affordances: the bundled engine recordings, and the simulated
+   * engine behind the Mock button. Independent of each other, and off unless
+   * asked for — in every mode, the dev server included.
+   *
+   * The dev server used to have them on by default, on the grounds that a desk
+   * has no motorcycle at it. That made `npm run dev` a different app from the
+   * one that ships, which is the wrong thing for the command a change is judged
+   * in. One rule now: what you get is the release unless you say otherwise.
+   * `./scripts/dev.sh --demo` is how you say it locally, and
+   * `.github/workflows/deploy.yml` is how the website does.
    */
-  const mockFlag = process.env.VITE_MOCK
-  const mockEnabled = mockFlag === '1' || (mockFlag !== '0' && command === 'serve')
+  const enabled = process.env.VITE_SAMPLES === '1'
+  const mockEnabled = process.env.VITE_MOCK === '1'
   return {
     base: './',
     // `jsxImportSource` is what gives every element the `css` prop. It is a

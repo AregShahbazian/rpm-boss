@@ -103,8 +103,7 @@ microphone or a file. They are off by default, and off means the audio is not
 copied into the build at all.
 
 ```bash
-npm run dev                      # on
-VITE_SAMPLES=0 npm run dev       # off
+./scripts/dev.sh --samples       # the dev server, carrying them
 VITE_SAMPLES=1 npm run build     # a web build that carries them
 ./scripts/apk.sh --samples       # an APK that carries them
 ```
@@ -124,17 +123,18 @@ The synthesis is one `AudioWorklet`, copied from
 measured against this app's own analysis.
 
 ```bash
-npm run dev                      # on
-VITE_MOCK=0 npm run dev          # off
-./scripts/demo.sh                # samples and simulated engine, as the website has them
-./scripts/demo.sh --build        # the same, built and served from dist/
+./scripts/dev.sh --demo          # samples and simulated engine, as the website has them
+./scripts/dev.sh --demo --build  # the same, built and served from dist/
 ./scripts/apk.sh --demo          # an APK carrying both
+./scripts/install.sh --demo      # and on the phone
 ```
 
-Off in every build that does not ask: a bare `npm run build`, `./scripts/apk.sh`
-and `./scripts/aab.sh` carry no synthesiser, no slider, no button, and no
-worklet asset for one. `aab.sh` has no `--demo` at all, because the bundle is
-what goes to Play.
+**Everything defaults to the release.** `npm run dev`, `./scripts/dev.sh`,
+`npm run build`, `apk.sh` and `aab.sh` all give the app as it ships — no
+synthesiser, no slider, no button, and no worklet asset for one. Two places say
+otherwise: `--demo` on the scripts above, and the deploy workflow, which is the
+website. `aab.sh` has no `--demo` at all, because the bundle is what goes to
+Play.
 
 ## Android
 
